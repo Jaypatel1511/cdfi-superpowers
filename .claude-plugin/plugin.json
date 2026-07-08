@@ -1,0 +1,22 @@
+{
+  "name": "cdfi-superpowers",
+  "version": "2026.7.0",
+  "description": "An AI skill layer over Jay Patel's published CDFI Python portfolio. Grounds an AI assistant in audited, empirically-verified CDFI tooling (NMTC eligibility, bank-CDFI peer benchmarking, HMDA descriptive analysis) instead of hallucinating tract eligibility, peer metrics, or lending distributions. No new analytical code — thin skills that pip-install and call the already-published PyPI packages.",
+  "author": {
+    "name": "Jay Patel"
+  },
+  "homepage": "https://github.com/Jaypatel1511/cdfi-superpowers",
+  "license": "MIT",
+  "keywords": [
+    "cdfi",
+    "nmtc",
+    "hmda",
+    "community-development-finance",
+    "skills"
+  ],
+  "skills": [
+    "./skills/nmtc-eligibility",
+    "./skills/cdfi-peer-benchmark",
+    "./skills/hmda-analysis"
+  ]
+}
