@@ -132,26 +132,24 @@ wrapped — its output is a disparity-by-race table, which is firewalled.)
 year_column="activity_year")` — a pure descriptive transform on a frame from
 `load_from_api`/`load_range`. No fetch, no network.
 
+Print the caveat (`r.caveat` — the `STANDARD_CRA_PROXY_CAVEAT` constant plus the
+standing no-comparator line) **beneath each table**, so no single extracted
+table is ever caveat-free:
+
 ```python
 import hmda_analyzer as h
 df = h.load_from_api(year=2023, state="RI", limit=2000)   # live CFPB pull
 r = h.cra_proxy_distribution(df, by="both")
-print(r.caveat)
 for t in r.tables:
-    print(t.dimension, t.universe, t.year)
+    print(f"--- dimension={t.dimension} universe={t.universe} year={t.year} ---")
     print(t.distribution.to_string(index=False))
-    print("classified_denominator:", t.classified_denominator, "excluded:", t.excluded)
+    print("classified_denominator:", t.classified_denominator, "  excluded:", t.excluded)
+    print(r.caveat)          # STANDARD_CRA_PROXY_CAVEAT + no-comparator line — under EVERY table
+    print()
 ```
 
-`r.caveat` (actual, verbatim — the `STANDARD_CRA_PROXY_CAVEAT` constant plus the
-standing no-comparator line):
-
-```
-CRA-proxy distribution estimate — NOT a CRA metric, rating, grade, or performance evaluation. Not assessment-area-bound: HMDA has no assessment-area concept, so this proxy spans all HMDA lending in the requested geography — a different population than any CRA exam evaluates. Mortgage-only: CRA lending tests also cover small-business, small-farm, and community-development lending, invisible to HMDA. Reporter population != CRA-covered institutions.
-Distribution only; no comparator — not interpretable as CRA performance.
-```
-
-Actual table output this session (2,000 RI LAR records → 976 originations):
+Actual output this session (2,000 RI LAR records → 976 originations). The caveat
+text under each table is copied verbatim from `r.caveat`:
 
 ```
 --- dimension=borrower universe=originated year=None ---
@@ -160,7 +158,9 @@ category  count  cra_proxy_share
 Moderate    196         0.209402
   Middle    291         0.310897
    Upper    392         0.418803
-classified_denominator: 936    excluded: {'na_income': 40}
+classified_denominator: 936   excluded: {'na_income': 40}
+CRA-proxy distribution estimate — NOT a CRA metric, rating, grade, or performance evaluation. Not assessment-area-bound: HMDA has no assessment-area concept, so this proxy spans all HMDA lending in the requested geography — a different population than any CRA exam evaluates. Mortgage-only: CRA lending tests also cover small-business, small-farm, and community-development lending, invisible to HMDA. Reporter population != CRA-covered institutions.
+Distribution only; no comparator — not interpretable as CRA performance.
 
 --- dimension=tract universe=originated year=None ---
 category  count  cra_proxy_share
@@ -168,7 +168,9 @@ category  count  cra_proxy_share
 Moderate    137         0.142116
   Middle    464         0.481328
    Upper    318         0.329876
-classified_denominator: 964    excluded: {'unknown_tract': 12}
+classified_denominator: 964   excluded: {'unknown_tract': 12}
+CRA-proxy distribution estimate — NOT a CRA metric, rating, grade, or performance evaluation. Not assessment-area-bound: HMDA has no assessment-area concept, so this proxy spans all HMDA lending in the requested geography — a different population than any CRA exam evaluates. Mortgage-only: CRA lending tests also cover small-business, small-farm, and community-development lending, invisible to HMDA. Reporter population != CRA-covered institutions.
+Distribution only; no comparator — not interpretable as CRA performance.
 ```
 
 ## Rendering the CRA-proxy output — mandatory

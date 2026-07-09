@@ -1,6 +1,6 @@
 # Package Index
 
-Jay Patel's published CDFI portfolio on PyPI (user `Jaypatel1511`). Every version
+Jay Patel's published portfolio on PyPI (user `thejaypatel1511`). Every version
 below was verified against a live PyPI JSON check **this session**; every import
 name was read from the installed wheel's `top_level.txt` this session.
 
@@ -31,20 +31,21 @@ mismatch is dist vs. import (hyphen/underscore collapse). Do not assume.
 | impact-ledger | impact-ledger | `impactledger` | 0.2.1 | Impact-investment portfolio tracker for CDFIs, private debt, and community development finance. |
 | fair-lending-screener | fair-lending-screener | `fair_lending_screener`, `fairlendingscreener` | 0.2.1 | Statistical disparate-impact analysis for HMDA data — examiner methodology, open-sourced. **Inferential fair-lending; deliberately NOT wrapped by any skill in this plugin (see caveats-and-limits.md).** |
 | cra-scraper | cra-scraper | `crascraper` | 0.1.1 | CRA exam ratings scraper/analyzer — search FFIEC database, parse Performance Evaluations. **Residential-only (Cloudflare blocks all cloud/datacenter IPs — unfixable by headers); no skill wraps it.** |
+| h1b-tracker | h1b-tracker | `h1btracker` | 0.1.0 | Analyze DOL H1B LCA disclosure data — rank employers by filing volume, salary, and sponsorship reliability. |
 
-**21 packages** verified this session.
+**22 packages** verified this session.
 
 ## Note on the count
 
-The build brief referenced "22 packages"; empirical enumeration found **21**
-PyPI distributions owned by `Jaypatel1511`. Discovery method: the PyPI profile
-page is behind a Cloudflare "Client Challenge" and could not be scraped, so the
-set was reconstructed from the GitHub account (27 repos: 21 CDFI package repos +
-`cdfi-superpowers` + two forks `pandas-datareader`/`yfinance` + three
-profile/pages repos), each candidate resolved against the live PyPI JSON, and
-each resolved dist's ownership confirmed via its `Jaypatel1511` GitHub homepage.
-The 21st package publishes under a dist name (`cdfidata`) that differs from its
-repo name (`cdfi-data`). **The 22nd could not be located empirically** (no
-matching GitHub repo, no guessable PyPI name); it is flagged here rather than
-invented. `nmtc-screener`'s PyPI metadata is bare (no author/URL) — ownership is
+The build brief referenced "22 packages"; empirical enumeration confirms **22**
+PyPI distributions owned by the PyPI user `thejaypatel1511` (GitHub owner
+`Jaypatel1511`). Discovery method: the PyPI profile page is behind a Cloudflare
+"Client Challenge" and could not be scraped, so the set was reconstructed from
+the GitHub account and each candidate resolved against the live PyPI JSON, with
+ownership confirmed via each dist's `Jaypatel1511` GitHub homepage. The initial
+GitHub reconstruction thematically filtered on CDFI-named repos and so dropped
+**h1b-tracker** — a portfolio package that is real and published but not
+CDFI-named; adding it back reconciles the count to 22. One dist publishes under a
+name (`cdfidata`) that differs from its repo name (`cdfi-data`).
+`nmtc-screener`'s PyPI metadata is bare (no author/URL) — its ownership is
 inferred from its GitHub repo and an exactly-matching summary string.

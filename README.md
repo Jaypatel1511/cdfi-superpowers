@@ -4,7 +4,7 @@
 eligibility.**
 
 `cdfi-superpowers` is an **AI skill layer** over Jay Patel's published CDFI
-Python portfolio (PyPI user [`Jaypatel1511`](https://pypi.org/user/Jaypatel1511/)).
+Python portfolio (PyPI user [`thejaypatel1511`](https://pypi.org/user/thejaypatel1511/)).
 It contains **no new analytical code** — only skills, reference docs, and thin
 usage patterns that `pip install` and call the already-published, independently
 versioned packages. When your AI answers a question about NMTC eligibility, a
@@ -67,9 +67,9 @@ self-contained.
 ## How it relates to the packages
 
 Each wrapped package is **independently published and versioned on PyPI** under
-`Jaypatel1511` and installs on its own (`pip install nmtc-mapper`, etc.). This
+`thejaypatel1511` and installs on its own (`pip install nmtc-mapper`, etc.). This
 repo does not vendor or fork them — the skills install them at their current
-published version and call their public API. The full portfolio (21 packages) is
+published version and call their public API. The full portfolio (22 packages) is
 catalogued in `references/package-index.md`.
 
 ## License

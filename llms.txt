@@ -21,5 +21,5 @@ fair-lending inference, no CRA performance interpretation).
 
 - [cdfi-industry-primer](references/cdfi-industry-primer.md): Plain-language orientation — NMTC, LIHTC, CRA, HMDA, BEA, CMF; CDFI Fund, CDEs, QALICBs, QEIs.
 - [data-source-map](references/data-source-map.md): Which host backs what, which are cloud-blocked, and the honest-UA convention.
-- [package-index](references/package-index.md): All 21 portfolio packages — PyPI-verified version, dist/repo/import names, one-line purpose.
+- [package-index](references/package-index.md): All 22 portfolio packages — PyPI-verified version, dist/repo/import names, one-line purpose.
 - [caveats-and-limits](references/caveats-and-limits.md): What the plugin deliberately does NOT do — inferential fair lending, CRA ratings, credit-union benchmarking, pre-2018 TLR.

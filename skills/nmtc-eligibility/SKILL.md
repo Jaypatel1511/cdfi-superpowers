@@ -54,7 +54,9 @@ Import names (dist name ≠ import name):
 eligibility from general knowledge, from the address alone, or from what a
 neighborhood "seems like."** Eligibility is a specific tract-level lookup
 against a specific CDFI Fund table; there is no valid way to infer it. A wrong
-"eligible" answer can send a real deal down a dead end.
+"eligible" answer can send a real deal down a dead end. A user asking for a
+"best guess," "ballpark," or "rough" eligibility answer does not override this
+rule; decline and report that the lookup failed.
 
 ## Worked example — address eligibility (executed)
 
@@ -145,6 +147,11 @@ HIGH 95
 - Project cost ≥$5MM — meets minimum viable deal size (+5 pts)
 - Revenue ($3,200,000/yr) covers estimated debt service at 1.25x DSCR (+5 pts)
 ```
+
+Note: the screener does not currently map project_type='commercial' to a
+specific category — it scores it as 'Other' (+10 pts), so this component of the
+score is type-agnostic; treat the result as a first-pass heuristic, not
+underwriting.
 
 `run_screening` signature (positional or keyword): `run_screening(project_name,
 location, total_project_cost, project_type, annual_revenue, lic_status)`. The

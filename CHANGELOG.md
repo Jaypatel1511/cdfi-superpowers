@@ -14,7 +14,7 @@ portfolio. No new analytical code; skills install and call the existing packages
   - `cdfi-peer-benchmark` — cdfi-benchmark 0.2.0 (bank CDFIs only; NaN-not-fabrication contract).
   - `hmda-analysis` — hmda-analyzer 0.5.0 (descriptive only; CRA-proxy with verbatim caveat; fair-lending firewall).
 - **References**: `cdfi-industry-primer.md`, `data-source-map.md`,
-  `package-index.md` (21 packages, PyPI-verified), `caveats-and-limits.md`.
+  `package-index.md` (22 packages, PyPI-verified), `caveats-and-limits.md`.
 - **Plugin packaging**: `.claude-plugin/plugin.json`,
   `.claude-plugin/marketplace.json` (single-plugin marketplace),
   `scripts/make_skills.sh` (builds `dist/*.skill` archives), `llms.txt`.
@@ -28,6 +28,4 @@ portfolio. No new analytical code; skills install and call the existing packages
 
 ### Known gaps (flagged, not papered over)
 
-- The build brief referenced 22 packages; 21 were located empirically. The 22nd
-  could not be found (no matching GitHub repo, no guessable PyPI name).
 - `nmtc-screener` PyPI metadata is bare; ownership inferred from its GitHub repo.
