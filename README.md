@@ -3,14 +3,22 @@
 **Your AI, grounded in audited CDFI tooling instead of hallucinating tract
 eligibility.**
 
-`cdfi-superpowers` is an **AI skill layer** over Jay Patel's published CDFI
-Python portfolio (PyPI user [`thejaypatel1511`](https://pypi.org/user/thejaypatel1511/)).
-It contains **no new analytical code** — only skills, reference docs, and thin
-usage patterns that `pip install` and call the already-published, independently
-versioned packages. When your AI answers a question about NMTC eligibility, a
-bank CDFI's peer metrics, or HMDA lending distributions, these skills make it
-call real, audited tools and report what they return — including N/A and errors —
-rather than inventing a plausible-sounding number.
+`cdfi-superpowers` is an **AI skill layer for the CDFI industry** — NMTC
+eligibility, bank CDFI peer benchmarking, and HMDA lending analysis, built for
+lenders, CDEs, compliance teams, and community development researchers.
+
+Generic AI assistants confidently invent answers in this domain: wrong tract
+eligibility, fabricated peer medians, "CRA performance" claims from proxy data.
+In a field where numbers end up in loan committees, applications, and compliance
+reviews, that's not a quirk — it's a liability. These skills fix that by making
+your AI call real, open-source, audited tools and report exactly what they
+return — including N/A and errors — rather than inventing a plausible-sounding
+number.
+
+The skills contain **no new analytical code**. Each one `pip install`s
+independently versioned, openly published Python packages (MIT-licensed, on
+[PyPI](https://pypi.org/user/thejaypatel1511/)) and teaches the AI to use them
+correctly, with the methodology caveats those tools ship with.
 
 ## The three skills
 
@@ -20,8 +28,8 @@ rather than inventing a plausible-sounding number.
 | **cdfi-peer-benchmark** | Benchmark a **bank** CDFI against FDIC peers (NIM, ROAA, capital, …) | cdfi-benchmark 0.2.0 |
 | **hmda-analysis** | Pull HMDA LAR data and produce **descriptive** cuts + a CRA-**proxy** distribution | hmda-analyzer 0.5.0 |
 
-Versions were verified against live PyPI this session; every code example in
-each skill was actually executed and shows real output.
+Versions were verified against live PyPI at time of writing; every code example
+in each skill was actually executed and shows real output.
 
 ### What these skills refuse to do
 
