@@ -12,7 +12,7 @@ mismatch is dist vs. import (hyphen/underscore collapse). Do not assume.
 |---|---|---|---|---|
 | nmtc-mapper | nmtc-mapper | `nmtcmapper` | 0.3.3 | Automated NMTC eligibility checker — geocode addresses and check Low-Income Community status using CDFI Fund + Census data. **(wrapped: nmtc-eligibility)** |
 | nmtc-screener | nmtc-screener | `nmtc_screener` | 0.1.0 | CLI tool for NMTC feasibility screening. **(wrapped: nmtc-eligibility)** |
-| cdfi-benchmark | cdfi-benchmark | `cdfibenchmark` | 0.2.0 | CDFI/MDI peer benchmarking from FDIC call-report data — NIM, efficiency ratio, ROAA, capital, and more. **(wrapped: cdfi-peer-benchmark)** |
+| cdfi-benchmark | cdfi-benchmark | `cdfibenchmark` | 0.2.1 | CDFI/MDI peer benchmarking from FDIC call-report data — NIM, efficiency ratio, ROAA, capital, and more. **(wrapped: cdfi-peer-benchmark)** |
 | hmda-analyzer | hmda-analyzer | `hmda_analyzer`, `hmdaanalyzer` | 0.5.0 | HMDA mortgage-lending analyzer — denial rates, disparities, lending deserts, lender benchmarking; carries the descriptive CRA-proxy transform. **(wrapped: hmda-analysis, descriptive subset only)** |
 | nmtc-calc | nmtc-calc | `nmtccalc` | 0.2.1 | Calculator for NMTC leveraged transactions. |
 | nmtc-application-builder | nmtc-application-builder | `nmtcapp` | 1.1.4 | Flagship NMTC application intelligence platform — pipeline analysis, eligibility validation, readiness scoring, visualization for CDEs. |

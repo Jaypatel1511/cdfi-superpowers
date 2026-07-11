@@ -34,10 +34,10 @@ number.
 ## Install
 
 ```
-pip install "cdfi-benchmark>=0.2.0"
+pip install "cdfi-benchmark>=0.2.1"
 ```
 
-Verified this session: **cdfi-benchmark 0.2.0** (PyPI).
+Verified this session: **cdfi-benchmark 0.2.1** (PyPI).
 
 **Import name is `cdfibenchmark`** (no underscore, no hyphen). There is no
 `cdfi_benchmark` alias — `import cdfi_benchmark` will fail.
@@ -93,10 +93,10 @@ Actual output this session:
 ```
                      metric  institution  peer_median  peer_25th  peer_75th  vs_median   status  peer_count
   Net Interest Margin (NIM)     3.080000     3.010296   2.804187   3.259659   0.069704 ADEQUATE          20
-           Efficiency Ratio    58.181818    57.511323  51.880593  63.108702   0.670495   STRONG          20
+           Efficiency Ratio    71.910112    70.624617  64.647189  80.842358   1.285495 ADEQUATE          20
 Return on Avg Assets (ROAA)     1.000000     0.940811   0.717540   1.072620   0.059189   STRONG          20
 Return on Avg Equity (ROAE)     8.928571     8.030005   6.523744  10.491227   0.898566 ADEQUATE          20
-       Tier 1 Capital Ratio    11.500000    12.830947  10.664911  14.552562  -1.330947 ADEQUATE          20
+      Tier 1 Leverage Ratio    11.500000    12.830947  10.664911  14.552562  -1.330947   STRONG          20
           Loans-to-Deposits    80.952381    82.661433  68.312007  91.397624  -1.709052   STRONG          20
   Non-Performing Loan Ratio     0.872093     1.555798   1.139816   2.220471  -0.683705   STRONG          20
  Loan Loss Reserve Coverage   133.333333    80.408055  58.106357 122.518310  52.925278   STRONG          20
@@ -125,10 +125,10 @@ Actual output this session:
 ```
                      metric  institution   status
   Net Interest Margin (NIM)     3.080000 ADEQUATE
-           Efficiency Ratio    58.181818   STRONG
+           Efficiency Ratio    71.910112 ADEQUATE
 Return on Avg Assets (ROAA)     1.000000   STRONG
 Return on Avg Equity (ROAE)          NaN      N/A
-       Tier 1 Capital Ratio          NaN      N/A
+      Tier 1 Leverage Ratio          NaN      N/A
           Loans-to-Deposits    80.952381   STRONG
   Non-Performing Loan Ratio     0.872093   STRONG
  Loan Loss Reserve Coverage   133.333333   STRONG
@@ -191,6 +191,9 @@ except (FDICAPIError, FDICResponseError) as e:
   "institution not found," don't proceed with an empty profile.
 - **FDIC API down / malformed** → `FDICAPIError` / `FDICResponseError`; report it.
 - **Missing call-report field** → NaN + `N/A` status; render as N/A.
+- **Name search** (`search_institutions(name=...)`) matches active institutions on
+  substring; a zero-hit search on a valid name form is a legitimate empty result,
+  not an error.
 
 ## Caveats
 

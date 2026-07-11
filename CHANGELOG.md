@@ -2,6 +2,12 @@
 
 All notable changes to `cdfi-superpowers`. Versioning is CalVer (`YYYY.M.MINOR`).
 
+## 2026.7.1
+
+- Synced `cdfi-peer-benchmark` skill to cdfi-benchmark 0.2.1 (leverage-ratio
+  metric, real institution names, working name search, corrected efficiency
+  ratio); examples re-executed against the published wheel.
+
 ## 2026.7.0 — Phase 1
 
 Initial public skeleton — an AI skill layer over Jay Patel's published CDFI PyPI

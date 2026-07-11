@@ -25,7 +25,7 @@ correctly, with the methodology caveats those tools ship with.
 | Skill | What it does | Backed by |
 |---|---|---|
 | **nmtc-eligibility** | Is this address/tract NMTC eligible? Distress tier? Project feasibility? | nmtc-mapper 0.3.3, nmtc-screener 0.1.0 |
-| **cdfi-peer-benchmark** | Benchmark a **bank** CDFI against FDIC peers (NIM, ROAA, capital, …) | cdfi-benchmark 0.2.0 |
+| **cdfi-peer-benchmark** | Benchmark a **bank** CDFI against FDIC peers (NIM, ROAA, capital, …) | cdfi-benchmark 0.2.1 |
 | **hmda-analysis** | Pull HMDA LAR data and produce **descriptive** cuts + a CRA-**proxy** distribution | hmda-analyzer 0.5.0 |
 
 Versions were verified against live PyPI at time of writing; every code example
