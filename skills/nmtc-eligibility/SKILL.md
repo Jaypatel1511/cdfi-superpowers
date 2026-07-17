@@ -148,6 +148,24 @@ Apply it:
   is unknown or earlier, confirm it before relying on the answer — for a
   pre-Sept-1-2023 closing the 2011–2015 vintage (not carried here) governs.
 
+**Island Areas are a second scope hole of the same class.** This table's
+~85,395 rows cover the **50 states + DC + Puerto Rico only** (PR verified
+present this session). The **Island Areas — American Samoa, Guam, the CNMI, and
+the US Virgin Islands — were NOT covered by the 2016–2020 ACS** and are absent
+from this dataset entirely. Per the CDFI Fund's *2016-2020 ACS Data FAQ* (dated
+**Sept 1, 2023**, Q3 General), CDEs should continue using the **2011–2015** LIC
+data in the Island Areas, with Island Area transition dates "to be provided"
+when the 2020 Island Areas data was released. An Island Area address/tract that
+is absent here is therefore **not "ineligible" — this package does not carry the
+governing data for the Island Areas.** Say so and route to CIMS.
+*Freshness caveat, stated because it is load-bearing:* the CDFI Fund **released
+the 2020 Island Areas datasets and updated transition FAQs** (CDFI Fund
+news/567, ~Dec 2023) — those updated FAQs likely set the Island Area transition
+dates that the Sept-1-2023 FAQ left open. **I could not reach `cdfifund.gov` to
+read news/567 this session**, so this skill does not assert current Island Area
+transition dates; confirm them in the current FAQ before relying on any Island
+Area timing.
+
 ## Worked example — address eligibility (executed)
 
 ```python
@@ -199,9 +217,15 @@ alone returns the bound method object, not the text.
 
 A tract that is **present in the table with an explicit NO flag** — distinct
 from an absent tract (next example). Verified this session: `11001980000` **is**
-one of the 85,395 rows, flagged not-eligible, with unpopulated demographics.
-This is a real DC non-residential tract (the `9800xx` series is special
-land-use — parks, water — with no resident population, hence NaN rates).
+one of the 85,395 rows, flagged not-eligible, with null (NaN) poverty and
+income. The CDFI Fund documents several reasons a tract carries null
+demographics: per its *2016-2020 ACS Data FAQ* (`NMTC_LIC_FAQs_2020_ACS_Sept1_2023.pdf`,
+Q2), the Census Bureau could not estimate income or poverty for such tracts —
+a significant majority have no or very low population, and the remainder's
+population is largely in **group quarters** (e.g. prisons, college dormitories),
+which the ACS excludes from income and poverty calculations. Which of those
+applies to `11001980000` is not something this lookup reports, so do not assert
+it.
 
 ```python
 import nmtcmapper as nm
@@ -218,8 +242,9 @@ False ineligible nan nan
 verified-ineligible | tract_found: True
 ```
 
-`poverty_rate` and `ami_ratio` came back **NaN** because this tract has no
-population to measure — render them "not available," never invent a number.
+`poverty_rate` and `ami_ratio` came back **NaN** — the Fund does not publish an
+income or poverty estimate for this tract (see the FAQ Q2 reasons above) —
+render them "not available," never invent a number.
 `nmtc_eligible=False` / `eligibility_status='verified-ineligible'` /
 `tract_found=True` is a **real NO from the table** — the answer *is*
 ineligible. This is NOT the third state; contrast the next example, where the
@@ -265,6 +290,18 @@ report it as "not eligible." The `Description` line —
 *"Indeterminate — eligibility not verified (no match / tract absent)"* — is the
 verbatim value of `DISTRESS_LEVELS["unknown"]` in
 `nmtcmapper/data/schema.py`.
+
+**The program administrator documents this exact case — it is not just a
+first-principles argument.** The CDFI Fund's *2016-2020 ACS Data FAQ*
+(`NMTC_LIC_FAQs_2020_ACS_Sept1_2023.pdf`, **Q10**, *"I can't find a 2010 census
+tract in the 2016-2020 ACS Low-Income Community data. Where is it?"*) explains
+that the 2011–2015 data is built on **2010** census tracts and the 2016–2020
+data on **2020** tracts, and that as part of the 2020 census the Bureau
+**eliminated certain 2010 tracts and folded their land into new tracts** — so a
+tract absent from this table is a **vintage artifact, not an ineligibility
+finding**. The FAQ routes the reader to the Census Bureau tract-relationship
+files and to CIMS for geocoding; do the same rather than reporting "not
+eligible."
 
 The same third state reaches you from `check_address` when an address does not
 geocode: `nmtc_eligible=None`, `distress_level="unknown"`,
