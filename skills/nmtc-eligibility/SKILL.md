@@ -115,6 +115,39 @@ and the correct next step is to re-check against the vintage in force at
 application time, not to declare the deal dead. A false "ineligible" is exactly
 as damaging as a false "eligible," in the opposite direction.
 
+## The vintage-scope rule (non-negotiable)
+
+**This package carries the 2016–2020 ACS vintage ONLY** (the 85,395-tract table
+below). NMTC LIC eligibility is governed by the ACS vintage tied to the deal's
+**QLICI close date**, and answering the wrong vintage confidently is the same
+class of failure as rendering `None` as "not eligible" — a confident answer
+against data that does not govern. The CDFI Fund's transition rules (primary:
+CDFI Fund, *2016-2020 ACS Data FAQ*, `cdfifund.gov/news/537` and
+`NMTC_LIC_FAQs_2020_ACS_Sept1_2023.pdf`; secondary, quoted verbatim: NMTC
+Coalition, `nmtccoalition.org/2023/09/06/new-nmtc-data`):
+
+| QLICI close date | Governing data | May this package answer? |
+|---|---|---|
+| **before Sept 1, 2023** | **must use 2011–2015** ACS | **No** — 2011–2015 is not carried here |
+| **Sept 1, 2023 – Aug 31, 2024** | **may use either** 2011–2015 or 2016–2020 | Yes, but the 2011–2015 vintage is equally permitted |
+| **on/after Sept 1, 2024** | **must use 2016–2020** ACS on 2020 tracts | Yes — authoritative |
+
+Apply it:
+
+- **Close date before Sept 1, 2023** → the 2016–2020 table does **not** govern;
+  2011–2015 ACS does, and this package does **not** carry it. Do **not** answer
+  from the 2016–2020 table. Say so and route the user to the CDFI Fund's CIMS
+  (CDFI Information Mapping System), which carries the governing vintage.
+- **Close date in the Sept 1, 2023 – Aug 31, 2024 window** → the 2016–2020
+  answer is valid and permitted, but state that 2011–2015 is **also** an
+  acceptable basis in this window, so the deal may qualify under the other
+  vintage even if 2016–2020 says NO.
+- **Close date on/after Sept 1, 2024, or unknown** → state which vintage the
+  answer is based on (2016–2020) and that it is valid for QLICIs closing
+  on/after Sept 1, 2023 and mandatory on/after Sept 1, 2024. If the close date
+  is unknown or earlier, confirm it before relying on the answer — for a
+  pre-Sept-1-2023 closing the 2011–2015 vintage (not carried here) governs.
+
 ## Worked example — address eligibility (executed)
 
 ```python
@@ -325,18 +358,30 @@ is only as honest as this input.
   include `nmtc_eligible`, `distress_level`, `poverty_rate`, `ami_ratio`,
   `unemployment_rate`, `is_non_metro`, `is_high_migration_rural`,
   `is_nmtc_native_area`, `severe_distress`, `deep_distress`. This is a
-  2016–2020 ACS-based vintage (mandatory for QLICIs closed on/after Sept 1,
-  2024). Report the vintage with the answer; the CDFI Fund periodically
-  re-bases eligibility, and a deal must be checked against the vintage in force
-  at application time. 0.4.0 validates this structure at load
+  2016–2020 ACS-based vintage. Per the CDFI Fund's transition rules this vintage
+  became **usable as of Sept 1, 2023** and is **mandatory for QLICIs closing
+  on/after Sept 1, 2024** (primary: CDFI Fund, *2016-2020 ACS Data FAQ*,
+  `cdfifund.gov/news/537` and `NMTC_LIC_FAQs_2020_ACS_Sept1_2023.pdf`; secondary,
+  stating the mandatory date plainly: NMTC Coalition,
+  `nmtccoalition.org/2023/09/06/new-nmtc-data`). This package carries **only**
+  this vintage — see the vintage-scope rule above before answering for any deal
+  whose QLICI closed before Sept 1, 2024. Report the vintage with the answer;
+  the CDFI Fund periodically re-bases eligibility, and a deal must be checked
+  against the vintage in force at its QLICI close date. 0.4.0 validates this
+  structure at load
   (`EligibilitySchemaError` / `EligibilityValueError`) before trusting any row,
   because the loader binds columns positionally.
 
 ## Failure modes
 
 **Geocoder (0.4.0 splits the old single `None` return into four distinct
-outcomes).** `geocode_address` / `check_address` now behave as follows
-(all verified this session against the installed wheel):
+outcomes).** `geocode_address` / `check_address` now behave as follows. All
+four executed this session against the installed 0.4.0 wheel: the no-match,
+disagree, and agree branches ran against the live Census endpoint; the
+transport failure was **induced** by pointing the geocoder URL at a closed
+local port, which raised `GeocoderTransportError` (`connection/DNS`,
+`isinstance NMTCMapperError == True`), message naming the failure kind and the
+address.
 
 - **Transport / HTTP-status / decode failure** (403, 5xx, timeout,
   connection/DNS, non-JSON body), after retries are exhausted → **raises
