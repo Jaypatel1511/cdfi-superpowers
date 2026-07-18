@@ -122,9 +122,11 @@ below). NMTC LIC eligibility is governed by the ACS vintage tied to the deal's
 **QLICI close date**, and answering the wrong vintage confidently is the same
 class of failure as rendering `None` as "not eligible" — a confident answer
 against data that does not govern. The CDFI Fund's transition rules (primary:
-CDFI Fund, *2016-2020 ACS Data FAQ*, `cdfifund.gov/news/537` and
-`NMTC_LIC_FAQs_2020_ACS_Sept1_2023.pdf`; secondary, quoted verbatim: NMTC
-Coalition, `nmtccoalition.org/2023/09/06/new-nmtc-data`):
+CDFI Fund, *2016-2020 ACS Data FAQ*, updated **Feb 1, 2024** —
+`NMTC_LIC_FAQs_2020_ACS_Sept1_2023_Update_Jan2024.pdf` at
+`cdfifund.gov/system/files/2024-01/`, announced at `cdfifund.gov/news/567`;
+secondary, quoted verbatim: NMTC Coalition,
+`nmtccoalition.org/2023/09/06/new-nmtc-data`):
 
 | QLICI close date | Governing data | May this package answer? |
 |---|---|---|
@@ -152,19 +154,17 @@ Apply it:
 ~85,395 rows cover the **50 states + DC + Puerto Rico only** (PR verified
 present this session). The **Island Areas — American Samoa, Guam, the CNMI, and
 the US Virgin Islands — were NOT covered by the 2016–2020 ACS** and are absent
-from this dataset entirely. Per the CDFI Fund's *2016-2020 ACS Data FAQ* (dated
-**Sept 1, 2023**, Q3 General), CDEs should continue using the **2011–2015** LIC
-data in the Island Areas, with Island Area transition dates "to be provided"
-when the 2020 Island Areas data was released. An Island Area address/tract that
-is absent here is therefore **not "ineligible" — this package does not carry the
-governing data for the Island Areas.** Say so and route to CIMS.
-*Freshness caveat, stated because it is load-bearing:* the CDFI Fund **released
-the 2020 Island Areas datasets and updated transition FAQs** (CDFI Fund
-news/567, ~Dec 2023) — those updated FAQs likely set the Island Area transition
-dates that the Sept-1-2023 FAQ left open. **I could not reach `cdfifund.gov` to
-read news/567 this session**, so this skill does not assert current Island Area
-transition dates; confirm them in the current FAQ before relying on any Island
-Area timing.
+from this package's table entirely. The CDFI Fund publishes a **separate**
+Island Areas NMTC LIC file — `NMTC_LIC_Territory_2020_December_2023.xlsx`, built
+on the **2020 Island Areas Decennial Census** (not the 2016–2020 ACS), released
+Dec 19, 2023 and available in CIMS as of Jan 25, 2024 — which **this package
+does not carry**. Per the CDFI Fund's *2016-2020 ACS Data FAQ* (updated Feb 1,
+2024, General Q3): *"For Island areas, CDEs should continue to use 2011-2015
+NMTC Low-Income Community eligibility data and follow the same transition dates
+outlined in question 3."* An Island Area address/tract that is absent here is
+therefore **"not carried by this package," never "ineligible"** — route to CIMS
+or to the separate territory file; do not answer it from this 2016–2020 ACS
+table.
 
 ## Worked example — address eligibility (executed)
 
@@ -219,8 +219,9 @@ A tract that is **present in the table with an explicit NO flag** — distinct
 from an absent tract (next example). Verified this session: `11001980000` **is**
 one of the 85,395 rows, flagged not-eligible, with null (NaN) poverty and
 income. The CDFI Fund documents several reasons a tract carries null
-demographics: per its *2016-2020 ACS Data FAQ* (`NMTC_LIC_FAQs_2020_ACS_Sept1_2023.pdf`,
-Q2), the Census Bureau could not estimate income or poverty for such tracts —
+demographics: per its *2016-2020 ACS Data FAQ* (updated Feb 1, 2024;
+`NMTC_LIC_FAQs_2020_ACS_Sept1_2023_Update_Jan2024.pdf`, General Q2), the Census
+Bureau could not estimate income or poverty for such tracts —
 a significant majority have no or very low population, and the remainder's
 population is largely in **group quarters** (e.g. prisons, college dormitories),
 which the ACS excludes from income and poverty calculations. Which of those
@@ -292,9 +293,10 @@ verbatim value of `DISTRESS_LEVELS["unknown"]` in
 `nmtcmapper/data/schema.py`.
 
 **The program administrator documents this exact case — it is not just a
-first-principles argument.** The CDFI Fund's *2016-2020 ACS Data FAQ*
-(`NMTC_LIC_FAQs_2020_ACS_Sept1_2023.pdf`, **Q10**, *"I can't find a 2010 census
-tract in the 2016-2020 ACS Low-Income Community data. Where is it?"*) explains
+first-principles argument.** The CDFI Fund's *2016-2020 ACS Data FAQ* (updated
+Feb 1, 2024; `NMTC_LIC_FAQs_2020_ACS_Sept1_2023_Update_Jan2024.pdf`, **Q10**,
+*"I can't find a 2010 census tract in the 2016-2020 ACS Low-Income Community
+data. Where is it?"*) explains
 that the 2011–2015 data is built on **2010** census tracts and the 2016–2020
 data on **2020** tracts, and that as part of the 2020 census the Bureau
 **eliminated certain 2010 tracts and folded their land into new tracts** — so a
@@ -397,9 +399,10 @@ is only as honest as this input.
   `is_nmtc_native_area`, `severe_distress`, `deep_distress`. This is a
   2016–2020 ACS-based vintage. Per the CDFI Fund's transition rules this vintage
   became **usable as of Sept 1, 2023** and is **mandatory for QLICIs closing
-  on/after Sept 1, 2024** (primary: CDFI Fund, *2016-2020 ACS Data FAQ*,
-  `cdfifund.gov/news/537` and `NMTC_LIC_FAQs_2020_ACS_Sept1_2023.pdf`; secondary,
-  stating the mandatory date plainly: NMTC Coalition,
+  on/after Sept 1, 2024** (primary: CDFI Fund, *2016-2020 ACS Data FAQ*, updated
+  Feb 1, 2024 — `NMTC_LIC_FAQs_2020_ACS_Sept1_2023_Update_Jan2024.pdf` at
+  `cdfifund.gov/system/files/2024-01/`, announced at `cdfifund.gov/news/567`;
+  secondary, stating the mandatory date plainly: NMTC Coalition,
   `nmtccoalition.org/2023/09/06/new-nmtc-data`). This package carries **only**
   this vintage — see the vintage-scope rule above before answering for any deal
   whose QLICI closed before Sept 1, 2024. Report the vintage with the answer;
