@@ -2,6 +2,29 @@
 
 All notable changes to `cdfi-superpowers`. Versioning is CalVer (`YYYY.M.MINOR`).
 
+## 2026.7.2
+
+- Synced `nmtc-eligibility` skill to nmtc-mapper 0.4.1. Install floor raised to
+  `>=0.4.1`.
+  - **Tri-state answer space (0.4.0):** `nmtc_eligible` is `Optional[bool]`.
+    `None` / `"unknown"` means could-not-determine and is never "not eligible".
+    New non-negotiable third-state rule; new `eligibility_status` four-way
+    property; absent-tract worked example.
+  - **Geocoder vintage bind (0.4.1):** the geocoder now resolves onto the
+    eligibility table's 2020 tract basis (`schema.TRACT_VINTAGE`). Documented as
+    data-source fragility context.
+  - **OZ "No" is ambiguous:** a `Yes` may be reported as fact; a `No` cannot
+    distinguish not-designated from a 2010/2020 tract-vintage miss (~16% of
+    designations unreachable). Flagship example annotated accordingly.
+  - **`is_nmtc_native_area` is always `False`** — no data source populates it; a
+    `False` means "not determined", not "not a Native Area".
+  - **FAQ citations re-pointed** to the current Feb 1 2024 version of the NMTC
+    LIC ACS FAQ (was the superseded Sept 1 2023 version).
+  - **Island Areas scope corrected:** not covered by the 2016-2020 ACS; the CDFI
+    Fund publishes a separate territory file this package does not carry.
+  - **Vintage-scope rule:** the three-window QLICI transition keyed to close
+    date.
+
 ## 2026.7.1
 
 - Synced `cdfi-peer-benchmark` skill to cdfi-benchmark 0.2.1 (leverage-ratio
