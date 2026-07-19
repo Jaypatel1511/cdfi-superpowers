@@ -11,11 +11,37 @@
   "plugins": [
     {
       "name": "cdfi-superpowers",
+      "displayName": "CDFI Superpowers",
       "source": "./",
-      "description": "AI skills for NMTC eligibility, bank-CDFI peer benchmarking, and HMDA descriptive analysis, backed by audited PyPI packages.",
+      "description": "AI skills for NMTC eligibility, bank-CDFI peer benchmarking, and HMDA descriptive analysis, backed by audited PyPI packages — reports errors and N/A instead of fabricating tract eligibility or peer metrics.",
       "version": "2026.7.2",
+      "author": {
+        "name": "Jay Patel"
+      },
       "license": "MIT",
-      "homepage": "https://github.com/Jaypatel1511/cdfi-superpowers"
+      "homepage": "https://github.com/Jaypatel1511/cdfi-superpowers",
+      "repository": "https://github.com/Jaypatel1511/cdfi-superpowers",
+      "category": "finance",
+      "keywords": [
+        "cdfi",
+        "nmtc",
+        "hmda",
+        "fair-lending",
+        "cra",
+        "community-development-finance",
+        "opportunity-zones",
+        "regtech",
+        "fintech"
+      ],
+      "tags": [
+        "cdfi",
+        "nmtc",
+        "hmda",
+        "fair-lending",
+        "finance",
+        "compliance",
+        "claude-code-plugin"
+      ]
     }
   ]
 }
