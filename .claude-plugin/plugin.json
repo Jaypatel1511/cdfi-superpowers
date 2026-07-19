@@ -6,13 +6,22 @@
     "name": "Jay Patel"
   },
   "homepage": "https://github.com/Jaypatel1511/cdfi-superpowers",
+  "repository": "https://github.com/Jaypatel1511/cdfi-superpowers",
   "license": "MIT",
   "keywords": [
     "cdfi",
     "nmtc",
     "hmda",
+    "fair-lending",
+    "cra",
+    "community-reinvestment-act",
     "community-development-finance",
-    "skills"
+    "opportunity-zones",
+    "fdic",
+    "regtech",
+    "fintech",
+    "claude-code",
+    "ai-skills"
   ],
   "skills": [
     "./skills/nmtc-eligibility",
