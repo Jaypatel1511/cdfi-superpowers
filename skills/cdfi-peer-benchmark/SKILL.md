@@ -61,6 +61,42 @@ call-report field), and labels its status **`N/A`**. The AI must render that as
 plausible-looking number. A fabricated capital ratio in a benchmark is exactly
 the failure this contract exists to prevent.
 
+## The period-basis rule (non-negotiable)
+
+**NIM, ROAA, and ROAE are not annualized at interim report dates.** Disclosed verbatim in
+`cdfi-benchmark` 0.2.1 `CHANGELOG.md`, "Known issues":
+
+> **Annualization / period basis (D4) is deferred to 0.3.0.** NIM, ROAA, and
+> ROAE are computed from as-reported YTD flows without annualizing interim
+> periods, so non-Q4 figures are not annualized. The decision (adopt the FDIC
+> precomputed `NIMY` / `ROA` / `ROE` fields) is made and lands in 0.3.0; it is
+> intentionally out of scope for this field-semantics release.
+
+Each of these three divides a **year-to-date flow** by a **point-in-time stock**, so at an interim
+`report_date` the numerator covers part of a year while the denominator does not. A 3/31 date reads
+roughly **4× low**, 6/30 roughly **2× low**, 9/30 roughly **1.33× low**. Only a **12/31**
+`report_date` is correct as reported.
+
+The other five metrics — Efficiency Ratio, Tier 1 Leverage Ratio, Loans-to-Deposits, Non-Performing
+Loan Ratio, Loan Loss Reserve Coverage — are ratios of same-period flows or of stocks to stocks, and
+are **not** affected.
+
+Rules:
+
+- **Read `report_date` before presenting NIM, ROAA, or ROAE.** If it is not a 12/31 date, say so in
+  the same breath as the number: these are un-annualized YTD figures, understated for the period.
+- **Do not annualize them yourself.** Multiplying by four turns a package-reported figure into one
+  you invented, and the correct fix (the FDIC precomputed `NIMY` / `ROA` / `ROE` fields) is a
+  different computation, not a scalar. Report what the package returned, labeled.
+- **Distinguish the relative read from the level read.** If the institution and every peer share the
+  same `report_date`, they carry the same period scaling, so "above / below the peer median"
+  survives an interim date — the *magnitude* still does not. **Verify the peer `report_date`s match
+  the institution's before relying on even the relative read.** A subject at 3/31 compared against
+  peers at 12/31 is un-annualized against annualized, and distorts the comparison in the same ~4×
+  direction. State which claim you are making, and say whether the dates matched.
+- If the user asks for an annualized figure, say the package does not produce one yet and that it
+  lands in `cdfi-benchmark` 0.3.0 — do not compute it.
+
 ## Worked example — full benchmark flow (executed)
 
 The pipeline is: `get_financials(cert)` → build a peer group →
@@ -101,6 +137,10 @@ Return on Avg Equity (ROAE)     8.928571     8.030005   6.523744  10.491227   0.
   Non-Performing Loan Ratio     0.872093     1.555798   1.139816   2.220471  -0.683705   STRONG          20
  Loan Loss Reserve Coverage   133.333333    80.408055  58.106357 122.518310  52.925278   STRONG          20
 ```
+
+Note the `report_date` is **2024-12-31**. That is the one period basis at which NIM, ROAA, and ROAE
+need no annualization — this example is deliberately Q4 and is **not** evidence that interim dates
+are safe. At a 3/31, 6/30, or 9/30 date those three rows require the period-basis disclosure above.
 
 ## Worked example — the NaN contract in action (executed)
 
@@ -203,3 +243,6 @@ except (FDICAPIError, FDICResponseError) as e:
   comparable-size FDIC bank, not a certified CDFI-only cohort.
 - `build_sample_peer_group` returns **synthetic** peers for demonstration; label
   any output built on it as illustrative, not a real peer comparison.
+- **NIM, ROAA, and ROAE are un-annualized YTD figures at any interim `report_date`** — see the
+  period-basis rule above. Only a 12/31 `report_date` is annualized as reported. Every other metric
+  in the summary table is period-consistent.

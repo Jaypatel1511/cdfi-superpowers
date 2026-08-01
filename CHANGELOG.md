@@ -2,6 +2,25 @@
 
 All notable changes to `cdfi-superpowers`. Versioning is CalVer (`YYYY.M.MINOR`).
 
+## 2026.7.3
+
+### Fixed
+- **cdfi-peer-benchmark: added the missing annualization / period-basis disclosure.** The skill
+  covered data quality, heuristic peer groups, and synthetic sample peers, but carried no reference
+  to `cdfi-benchmark` 0.2.1's disclosed non-annualization of NIM, ROAA, and ROAE at interim report
+  dates — the skill's core output. An AI following the prior text would compare an interim NIM
+  against a peer median and state the level as fact, understated by up to ~4×. Added a
+  non-negotiable period-basis rule (disclosure quoted verbatim from the package CHANGELOG), a
+  caveat bullet, and a note marking the worked example's 12/31 `report_date` as the one basis at
+  which the issue does not arise. No package version change; floor remains `cdfi-benchmark>=0.2.1`.
+
+### Changed
+- **Marketplace/plugin metadata, released here rather than under 2026.7.2.** Commits `542152c` and
+  `ce37550` (July 18 2026) added `displayName`, `author`, `repository`, `category`, `keywords`, and
+  `tags`, and expanded the plugin description — all after 2026.7.2 was cut, so they sat on `main`
+  unversioned. No skill text, no analytical behavior, and no dependency floors changed. Recorded
+  here so the version history reflects what actually shipped under each tag.
+
 ## 2026.7.2
 
 - Synced `nmtc-eligibility` skill to nmtc-mapper 0.4.1. Install floor raised to
