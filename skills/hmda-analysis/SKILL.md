@@ -46,7 +46,9 @@ of scope; if the user wants them, that is the inferential territory above.
 
 - "Pull 2023 HMDA LAR records for Rhode Island."
 - "Show mortgage lending by county for this state."
-- "Multi-year HMDA for county 17031, 2020–2023."
+- "Multi-year HMDA for county 17031, 2022–2024."
+- "Multi-year HMDA for county 17031, 2020–2023." — **spans the tract-vintage boundary**; see the
+  tract-vintage rule below before any tract-level cut.
 - "What's the CRA-proxy borrower-income distribution for this pull?"
 
 ## When NOT to use
@@ -101,6 +103,43 @@ So: **never report a partial multi-year result.** If `load_range` raises, name
 the failing year and report the error — do not present the years that happened
 to succeed.
 
+## The tract-vintage boundary (non-negotiable)
+
+**HMDA LAR census tracts change basis between data year 2021 and 2022.** Data years 2018–2021 carry
+**2010** census tracts; 2022 onward carry **2020** census tracts. Verified empirically against live
+LAR data for King County WA (53033), District of Columbia (11001), and Fulton County GA (13121) in
+August 2026 — the flip is clean, national, and has no mixed year.
+
+`load_range` will happily return a frame spanning that boundary. Its fail-loud contract is intact
+and does exactly what it promises — the schema guard passes, the `activity_year` provenance
+assertion passes, every individual row is valid. **That is what makes this dangerous:** the frame
+looks correct and carries no vintage marker.
+
+The consequence: a GEOID string present in both 2021 and 2022 can denote **two different polygons**.
+Grouping on `census_tract` across the boundary silently averages two geographies into one row. In
+King County alone, 308 GEOID strings appear on both sides; only about a third are a clean 1:1
+identity, and roughly 71% of each year's rows land on a colliding key. Nothing raises. Nothing warns.
+
+Rules:
+
+- **Never group or join on `census_tract` across a frame that spans 2021→2022.** This includes
+  `lending_by_tract` and any `groupby("census_tract")` you write yourself. If the user asked for a
+  multi-year tract cut spanning the boundary, say plainly that the tract identifiers are not
+  comparable across it.
+- **Split the frame at the boundary and report the two eras separately** — 2018–2021 on 2010 tracts,
+  2022+ on 2020 tracts, each labeled with its basis. Two labeled tables beat one silently wrong one.
+- **Do not crosswalk the tracts yourself.** Mapping 2010 tracts to 2020 tracts is a methodology
+  decision with real choices in it (splits, merges, area vs. population weighting). It is not a
+  lookup, and improvising one produces numbers you cannot defend.
+- **This rule is about tract-KEYED GROUPING, not about the data being unusable.** Per-row work across
+  the boundary is fine — see below.
+
+**What is NOT affected.** `cra_proxy_distribution` classifies each row using the income percentage
+carried **on that row**, so it never joins across tracts or groups on a tract key. A multi-year
+CRA-proxy distribution spanning the boundary is sound, and its per-year cut remains correct. Do not
+suppress it. `lending_by_county` and `lending_by_state` are likewise unaffected — county and state
+FIPS did not change at this boundary.
+
 ## Worked example — descriptive lending cut (executed)
 
 ```python
@@ -125,6 +164,10 @@ Descriptive functions this skill wraps: `lending_by_county`, `lending_by_state`,
 `lending_by_tract`, `top_lenders_by_volume`, `lender_summary`, `lender_vs_market`,
 `lending_desert_score`, and `cra_proxy_distribution`. (`summary_table` is **not**
 wrapped — its output is a disparity-by-race table, which is firewalled.)
+
+**`lending_by_tract` carries the tract-vintage constraint above** — it is safe within a single
+vintage era and silently wrong across the 2021→2022 boundary. Check the frame's `activity_year`
+range before calling it.
 
 ## Worked example — CRA-proxy distribution (executed, LIVE data)
 
@@ -243,3 +286,6 @@ wheel and is the authoritative source for the firewall and limitations.
 - HMDA `income` is lender-relied-upon (often combined co-applicant) income — an
   imperfect, likely upward-biased proxy for borrower income (tends to understate
   LMI borrower share).
+- **HMDA tract identifiers are not comparable across the 2021→2022 data-year boundary** (2010 vs
+  2020 census tracts) — see the tract-vintage rule above. Any tract-keyed aggregation must stay
+  within one era.

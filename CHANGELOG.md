@@ -2,6 +2,24 @@
 
 All notable changes to `cdfi-superpowers`. Versioning is CalVer (`YYYY.M.MINOR`).
 
+## 2026.7.4
+
+### Fixed
+- **hmda-analysis: added the tract-vintage boundary rule.** HMDA LAR carries 2010 census tracts for
+  data years 2018–2021 and 2020 census tracts from 2022 onward. The skill had no mention of vintage
+  or tract boundaries, documented `lending_by_tract` without qualification, and its own "When to use"
+  example (`2020–2023`) spanned the boundary — so an AI following it would produce a tract-level cut
+  that silently merges two different geographies under identical GEOID strings. Confirmed empirically
+  in King County WA, DC, and Fulton County GA (August 2026): 308 colliding GEOIDs in King County
+  alone, ~71% of each year's rows on a colliding key, nothing raised. Added a non-negotiable
+  tract-vintage section, corrected the example, annotated `lending_by_tract`, and added a caveat
+  bullet. Also states explicitly what is *not* affected (`cra_proxy_distribution`, which classifies
+  per-row; `lending_by_county` / `lending_by_state`, whose FIPS did not change) so the rule does not
+  over-warn.
+- No package version change. The underlying defect is tracked for `hmda-analyzer` 0.6.0, where
+  `lending_by_tract` will fail loud on a vintage-spanning frame; this skill change is the interim
+  guard for skill-mediated use.
+
 ## 2026.7.3
 
 ### Fixed
