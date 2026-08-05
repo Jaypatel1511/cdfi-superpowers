@@ -12,8 +12,10 @@ statistical significance testing, or any "fair lending" inference.
 
 `hmda-analyzer` the package *does* ship disparity functions
 (`disparity_ratio`, `denial_rate_by_race`, `denial_reasons_by_race`,
-`generate_disparity_report`, and `summary_table` — whose output is a
-disparity-by-race table). The `fair-lending-screener` package (v0.2.1) exists for
+`denial_rate_by_income_band`, `generate_disparity_report`, `summary_table` —
+whose output is a disparity-by-race table — and `racial_composition_by_tract`).
+Re-checked against 0.6.0's 33 exports; the list is complete. The
+`fair-lending-screener` package (v0.2.1) exists for
 statistical disparate-impact analysis. **Neither is wrapped by any skill in this
 plugin's v1**, by design. If a user wants inferential fair-lending work, the AI
 declines and explains the descriptive/inferential distinction — it does not

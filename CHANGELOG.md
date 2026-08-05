@@ -2,6 +2,114 @@
 
 All notable changes to `cdfi-superpowers`. Versioning is CalVer (`YYYY.M.MINOR`).
 
+## 2026.7.5
+
+### Fixed
+- **hmda-analysis: corrected a false safe-list.** 2026.7.4 stated that
+  "`lending_by_county` and `lending_by_state` are likewise unaffected — county and state FIPS did
+  not change at this boundary." **County FIPS did change at exactly that boundary.** Alaska retired
+  `02261` (Valdez-Cordova) into `02063` (Chugach) + `02066` (Copper River), landing in the LAR at
+  2021→2022. Verified against live LAR this session, full-state Alaska pulls with
+  `limit_truncated=False` in both years: `02261` carries 323 rows in 2021 and 0 in 2022; `02063`
+  and `02066` carry 0 in 2021 and 158 and 40 in 2022. A pooled 2021+2022 `lending_by_county`
+  fragments one county into three rows. This was worse than over-warning: a safe-list broader than
+  the safety, telling an AI to confidently pool a cut the package now refuses. `lending_by_state`
+  remains correct and is still listed as unaffected. Scope is stated narrowly — one county at one
+  boundary — so the correction does not over-swing into "all county work is unsafe."
+
+### Added
+- **hmda-analysis: the 2023→2024 boundary, which the skill did not know existed.** Connecticut
+  replaced its eight legacy counties (`09001`…`09015`) with nine planning regions
+  (`09110`…`09190`) for federal statistical use (87 FR 34235, 2022-06-06; Census lists it as the
+  sole county-equivalent change of the 2020s), landing in the LAR at 2023→2024 and moving every CT
+  tract GEOID's first five digits. It is a different shape from 2021→2022: there GEOIDs are reused
+  for different ground (silent collision), here the key sets are disjoint (a pooled frame doubles
+  rows). Confined to one state; the refusal is national, and the package's message says so and
+  prices the cost.
+
+### Changed
+- **hmda-analysis synced to hmda-analyzer 0.6.0** (published to PyPI 2026-08-05). Verified against
+  a clean-venv install of the published wheel; every figure below was re-read from it.
+  - **The vintage section rewritten around the refusal.** In 0.5.0 the rule was an instruction an
+    AI had to remember; in 0.6.0 the package enforces it. Six guarded geography-keyed aggregation
+    sites across five public functions (`lending_by_tract`, `lending_by_county`,
+    `lending_desert_score`, `racial_composition_by_tract`, and `lender_summary` — guarded twice,
+    once per key) raise `GeographyVintageError`. `lending_by_state` is deliberately unguarded.
+    Added a rule-zero prohibition on routing around it: no `try`/`except` that proceeds (every
+    refusal subclasses `ValueError`, so a bare `except ValueError` catches it), no hand-rolled
+    `groupby` to recover the declined number, no self-improvised crosswalk.
+  - **The two refusals separated, because conflating them yields advice that does not work.**
+    (1) *Unmapped year* — 2024 and 2025 have no cited tract basis, so pooling either with any other
+    year refuses; excluding a state does not help, because the verdict is computed from the years
+    the frame spans, never from the rows it contains. (2) *Two cited bases in one frame* — e.g. the
+    county map across 2023→2024, where the refusal names the Connecticut cause. Both messages are
+    quoted verbatim from the installed wheel. Also documents that which refusal fires is a function
+    of the key, not the boundary: at 2023→2024 a tract-keyed call hits (1) while a county-keyed
+    call hits (2), and only the county key surfaces the Connecticut text.
+  - **"Filtering rows is never a way through" stated explicitly**, because it is the intuitive
+    thing to try. Both refusals resolve the same two ways, both of which change the years rather
+    than the rows: split at the boundary into two labelled panels (endorsed), or narrow with
+    `vintage=` — which takes the *basis* year, not the data year.
+  - **The bundled `tract_vintage_methodology.md` (242,085 bytes) named as authoritative.**
+    `get_methodology_path` now takes a filename; the old no-argument call still returns
+    `cra_proxy_methodology.md` (22,313 bytes) unchanged.
+  - **`lender_vs_market` small-N suppression surfaced.** A silent 5-application threshold
+    (`MIN_APPLICATIONS_FOR_RATE`) was dropping race groups entirely in 0.5.0 with nothing recording
+    it; 0.6.0 discloses it in six columns, three per side, because the two frames are suppressed
+    independently. The skill now requires surfacing them whenever the table is rendered, the same
+    way it requires the CRA-proxy caveat — an absent group that is not named reads as a group with
+    no lending. Verified on a 60-row frame: five protected classes suppressed market-side, 10
+    applications, all named.
+  - **`lending_desert_score` documented as it actually computes.** `is_lending_desert` is a
+    conjunction (`app_percentile < 25` **and** `denial_rate > 0.15`), not a cut on `desert_score`;
+    below `DESERT_TRACT_FLOOR` (5) tracts the flag is arithmetically unreachable and the call raises
+    `UnreachableFlagError` rather than returning a fabricated `False`. No housing-unit figure is
+    read anywhere — the "expected volume based on housing units" claim was removed from the package
+    in 0.6.0 as unfounded, and the skill now forbids it in output. (It never appeared in this
+    repo's prose; nothing had to be deleted.)
+  - **`cra_proxy_distribution(include_purchased=True)` now raises `EmptyUniverseError`** on a frame
+    with no action-6 rows — which is always, for API-loaded frames, since `API_ACTIONS_TAKEN` never
+    fetches action 6. Purchased-loan analysis requires `load_from_file` with data obtained another
+    way. The signature line also now shows the 0.6.0 keyword-only arguments.
+  - **`limit=` documented as truncation, not sampling.** Every loaded frame carries
+    `limit_truncated`, written even when `False`; under `load_range` it is per year and therefore
+    not uniform across the frame. A truncated pull must never be described as a sample, and
+    `limit_truncated=True` must be disclosed beside the number.
+  - **Constants section added, with definition paths rather than re-export paths.** The three basis
+    maps and `basis_year` are top-level exports; the thresholds are not.
+    `MIN_APPLICATIONS_FOR_RATE`, `API_ACTIONS_TAKEN` and `TRUNCATED_COLUMN` are defined in
+    `hmdaanalyzer.data.schema`; `DESERT_PERCENTILE_THRESHOLD`, `DESERT_DENIAL_RATE_FLOOR` and
+    `DESERT_TRACT_FLOOR` in `hmdaanalyzer.geography_vintage`. The `analysis.disparity`,
+    `analysis.geographic` and `data.loader` paths resolve to the same objects but are re-exports;
+    citing them sends a reader to a file where the constant cannot be changed. `DESERT_TRACT_FLOOR`
+    is *derived* from the percentile threshold at import, not configured.
+  - **Python floor is now `>=3.11`** (0.5.0 was `>=3.9`), and the install section leads with it: on
+    Python 3.10 or older a bare `pip install hmda-analyzer` does not fail — pip resolves backwards
+    and silently installs 0.5.0, the version with none of the above. The skill now pins
+    `"hmda-analyzer>=0.6.0"` and requires checking `h.__version__` before quoting any number.
+  - All four new typed errors added to the "Data source & typed errors" and "Failure modes" lists.
+- **hmda-analysis firewall: `denial_rate_by_income_band` added to the not-wrapped list.** Re-checked
+  against 0.6.0's `__all__`, which grew 25 → 33. The eight additions are three basis maps, four
+  exception classes and the `basis_year` helper — no new analysis function, so nothing *new* belongs
+  behind the firewall. But `denial_rate_by_income_band` shipped in 0.5.0, was never named in the
+  firewall paragraph, and was neither wrapped nor firewalled: it lives in
+  `hmdaanalyzer.analysis.disparity` and its own docstring states its purpose as identifying
+  "income-based disparities." Now firewalled, with the reasoning stated.
+  `racial_composition_by_tract` was named in the prose but missing from the enumerated list; added.
+  No firewalled function was wrapped; the descriptive/inferential firewall is unchanged.
+- **README, `llms.txt`, `references/package-index.md`: stale package pins corrected.** All three
+  pinned `nmtc-mapper 0.3.3` against the nmtc-eligibility skill's load-bearing `>=0.4.1` floor, and
+  `hmda-analyzer 0.5.0`. Now `>=0.4.1` and `>=0.6.0` respectively, with the Python floor noted.
+  Nothing in the nmtc-eligibility skill body was touched.
+- **README now states the plugin version** (`2026.7.5`), which both manifests carried and it did
+  not.
+
+### Known — noticed, not changed
+- `llms.txt` line 17 pins `cdfi-benchmark 0.2.0`, while the README, the cdfi-peer-benchmark skill,
+  and the 2026.7.3 CHANGELOG entry all carry `>=0.2.1`. Same class of stale-index defect as the
+  pins fixed above, but it belongs to the cdfi-peer-benchmark sync and was left for it rather than
+  corrected here unverified.
+
 ## 2026.7.4
 
 ### Fixed
