@@ -24,13 +24,13 @@ correctly, with the methodology caveats those tools ship with.
 
 | Skill | What it does | Backed by |
 |---|---|---|
-| **nmtc-eligibility** | Is this address/tract NMTC eligible? Distress tier? Project feasibility? | nmtc-mapper >=0.4.1, nmtc-screener 0.1.0 |
+| **nmtc-eligibility** | Is this address/tract NMTC eligible? Distress tier? Project feasibility? | nmtc-mapper >=0.4.2, nmtc-screener 0.1.0 |
 | **cdfi-peer-benchmark** | Benchmark a **bank** CDFI against FDIC peers (NIM, ROAA, capital, …) | cdfi-benchmark 0.2.1 |
 | **hmda-analysis** | Pull HMDA LAR data and produce **descriptive** cuts + a CRA-**proxy** distribution | hmda-analyzer >=0.6.0 (Python >=3.11) |
 
 Versions were verified against live PyPI at time of writing; every code example
 in each skill was actually executed and shows real output. Where a floor is shown
-as `>=`, it is **load-bearing** and the skill says why: `nmtc-mapper >=0.4.1`
+as `>=`, it is **load-bearing** and the skill says why: `nmtc-mapper >=0.4.2`
 binds the geocoder vintage to the eligibility table's 2020 tract basis, and
 `hmda-analyzer >=0.6.0` is where the geography-vintage refusal exists at all.
 Note `hmda-analyzer 0.6.0` requires **Python >=3.11** — on an older interpreter
@@ -51,7 +51,7 @@ See `references/caveats-and-limits.md` for the full boundary list.
 
 ## Version
 
-**cdfi-superpowers 2026.7.5** (CalVer, `YYYY.M.MINOR`). This is the plugin
+**cdfi-superpowers 2026.7.6** (CalVer, `YYYY.M.MINOR`). This is the plugin
 version carried by `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json`;
 the three manifests and this line move together. It versions the *skills*, not
 the wrapped PyPI packages — those are independently versioned and are listed in

@@ -2,6 +2,55 @@
 
 All notable changes to `cdfi-superpowers`. Versioning is CalVer (`YYYY.M.MINOR`).
 
+## 2026.7.6
+
+### Changed
+- **nmtc-eligibility synced to nmtc-mapper 0.4.2** (published to PyPI 2026-08-05). Verified against
+  a clean-venv, cold-cache, isolated-`HOME` install of the published wheel; every executed block in
+  the skill was re-run against it and **no figure moved**.
+  - **Install floor raised `>=0.4.1` → `>=0.4.2`, and the floor paragraph gained its third
+    reason.** A tract reaches LIC status by three routes; the CDFI Fund publishes the poverty and
+    80%-AMI routes in the eligibility workbook's column C and the §45D(e)(5) high-migration-rural
+    route in column N. Pre-0.4.2 read column C alone as the entire verdict while separately
+    parsing, storing and surfacing column N as `is_high_migration_rural`. Re-derived from the live
+    table this session: 1,422 tracts carry the high-migration-rural designation and **168 qualify
+    on that route alone** — all non-metro, all in the (80%, 85%] MFI band. Those 168 were reported
+    ineligible by a package simultaneously surfacing the evidence of their eligibility. This is the
+    skill's own third-state rule — "a false 'ineligible' is exactly as damaging as a false
+    'eligible'" — shipped as a defect in its own backing dependency, which is why the floor is
+    load-bearing rather than version hygiene. 0.4.2 reads the verdict as **C or N**.
+  - **Corrected the release history the sync was scoped from.** The CDFI Fund moved the C/N
+    boundary in **July 2026**, folding the high-migration-rural route into column C and renaming
+    that column's header. Against the workbook the loader downloads today the 168-tract divergence
+    is therefore **no longer reproducible** (HMR-yes/column-C-no is now an empty set), and 0.4.1
+    does not answer at all — its positional header validation raises `EligibilitySchemaError` and
+    loads nothing (executed this session). The skill states both presentations rather than the
+    unreachable one.
+  - **Added an `is_high_migration_rural` diagnostic** at the field list, written to what is
+    actually observable on a stale install: `EligibilitySchemaError` against the current workbook,
+    or a self-contradicting `is_high_migration_rural=True` / `nmtc_eligible=False` against a cached
+    pre-July-2026 one. Remedy named (upgrade) and checkable with tract `01013953500`, the first of
+    the 168 — `nmtc_eligible=True`, `is_high_migration_rural=True`, `distress_level='lic'` on 0.4.2.
+  - **The 1,408 OZ vintage-miss figure re-derived rather than carried forward.** Previously cited to
+    the 0.4.1 Known Issues; independently recomputed this session as 1,408 of the 8,764 designated
+    OZ tracts (16.1%) absent from the 85,395-row 2020-basis table. Figure holds on 0.4.2.
+  - **`is_nmtc_native_area` re-verified** as `True`-count 0 across all 85,395 rows on 0.4.2;
+    citation moved to the 0.4.2 Known Issues. Field retained — its removal is coordinated with
+    nmtc-mapper 0.5.0.
+  - **Geocoder failure-mode provenance corrected to 0.4.2**, with all four branches re-executed:
+    agreement and no-match against the live Census endpoint, transport failure and ambiguous-address
+    both induced. `0.4.0`/`0.3.4+` attributions elsewhere in the file are accurate history and were
+    left as written.
+- **Stale `nmtc-mapper` pins corrected in three places** — `README.md`, `llms.txt` and
+  `references/package-index.md` all read `>=0.4.1` against the skill's new `>=0.4.2` floor; now
+  `>=0.4.2`. Manifests to 2026.7.6 and the README version line with them.
+
+### Noticed, not changed
+- **`llms.txt` pins `cdfi-benchmark 0.2.0`** against `>=0.2.1` everywhere else in the repo. Different
+  package, and the cdfi-peer-benchmark skill has not been verified against an install; correcting the
+  string without that verification would assert a sync that has not happened. Left for that skill's
+  own release. (Recorded here for the third time.)
+
 ## 2026.7.5
 
 ### Fixed

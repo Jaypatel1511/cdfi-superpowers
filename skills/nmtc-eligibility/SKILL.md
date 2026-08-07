@@ -36,16 +36,45 @@ tract up in the CDFI Fund's NMTC Low-Income Community (LIC) eligibility table.
 ## Install
 
 ```
-pip install "nmtc-mapper>=0.4.1" nmtc-screener
+pip install "nmtc-mapper>=0.4.2" nmtc-screener
 ```
 
-Verified this session (PyPI): **nmtc-mapper 0.4.1**, **nmtc-screener 0.1.0**
-(`nmtc-calc 0.2.1` is pulled in as a dependency). The `>=0.4.1` floor is not
-cosmetic — 0.4.0 is where `nmtc_eligible` became tri-state (see below), and
-0.4.1 binds the geocoder vintage to the eligibility table's 2020 tract basis
-(see Data dependencies & fragility). A reader on 0.3.x following this skill's
-third-state guidance would never see `None`, because 0.3.x collapses "could not
-determine" into `False`.
+Verified this session (PyPI): **nmtc-mapper 0.4.2**, **nmtc-screener 0.1.0**
+(`nmtc-calc 0.2.1` is pulled in as a dependency). The `>=0.4.2` floor is not
+cosmetic — 0.4.0 is where `nmtc_eligible` became tri-state (see below), 0.4.1
+binds the geocoder vintage to the eligibility table's 2020 tract basis (see Data
+dependencies & fragility), and **0.4.2 is the release that stopped reporting 168
+statutorily-eligible tracts as ineligible.** A reader on 0.3.x following this
+skill's third-state guidance would never see `None`, because 0.3.x collapses
+"could not determine" into `False`.
+
+**The third reason is this skill's own rule, shipped as a defect.** The
+third-state rule below says a fabricated negative "kills a deal that may
+genuinely qualify," and that "a false 'ineligible' is exactly as damaging as a
+false 'eligible,' in the opposite direction." Pre-0.4.2 the backing package
+delivered exactly that harm — not through a `None` rendered as "no," but through
+a confident `False`. A tract can reach LIC status by three routes; the CDFI Fund
+publishes the poverty and 80%-AMI routes in the workbook's **column C** and the
+§45D(e)(5) **high-migration-rural** route (MFI ≤ 85% AMI in a county with ≥10%
+net out-migration over 20 years) in **column N**. Pre-0.4.2 read column C alone
+as the entire verdict while separately parsing, storing and surfacing column N
+as `is_high_migration_rural`. Verified against the live table this session:
+**1,422 tracts carry the high-migration-rural designation and 168 of them
+qualify on that route alone** — all non-metro, all in the (80%, 85%] MFI band.
+Those 168 were reported ineligible by a package that was, in the same object,
+reporting the evidence of their eligibility. 0.4.2 reads the verdict as **C or
+N**. That is why the floor is `>=0.4.2` and not a version-hygiene preference: it
+is the line below which this skill's central rule is violated by its own
+dependency.
+
+**On the current workbook a pre-0.4.2 install does not answer at all.** The Fund
+moved the C/N boundary in **July 2026**, folding the high-migration-rural route
+into column C and renaming that column's header. 0.4.1 validates the header
+positionally, so against the workbook the loader downloads today it raises
+`EligibilitySchemaError` and loads nothing (executed this session). The 168-tract
+divergence was real against the pre-July-2026 edition; today the same defect
+presents as a hard load failure. Either way `>=0.4.2` is the floor — 0.4.2 reads
+`C or N` and is therefore correct on both sides of the boundary move.
 
 Import names (dist name ≠ import name):
 
@@ -179,7 +208,9 @@ result.summary()          # prints a formatted block; returns None
 print(result.eligibility_status)   # -> 'verified-eligible'
 ```
 
-Actual output this session (nmtc-mapper 0.4.1, clean-venv PyPI install; byte-identical on 0.4.0):
+Actual output this session (nmtc-mapper 0.4.2, clean-venv PyPI install, cold
+cache, isolated `HOME`). The block below re-executed **unchanged** from the
+revision of this file that recorded it on 0.4.1 — no figure moved:
 
 ```
 NMTC Eligibility Result
@@ -220,11 +251,23 @@ table). Properties: `distress_description` (plain-English line, e.g. *"Severe
 Distress — qualifies for 85% investment commitment"*) and
 **`eligibility_status`** (the four-way string above).
 
+**`is_high_migration_rural` is the field that exposes a stale install.** It is
+one of the three routes to LIC status (§45D(e)(5)), and pre-0.4.2 the package
+surfaced it while excluding it from the verdict — see the install note. On a
+pre-0.4.2 install one of two things happens, and **both mean the eligibility
+verdict is wrong or absent**: against the current workbook the loader raises
+`EligibilitySchemaError` and returns nothing; against a cached pre-July-2026
+workbook it returns `is_high_migration_rural=True` alongside
+`nmtc_eligible=False` — a result contradicting itself. The remedy for both is
+the same: **upgrade to `>=0.4.2`.** Check it with tract **`01013953500`**, the
+first of the 168 — on 0.4.2 it returns `nmtc_eligible=True`,
+`is_high_migration_rural=True`, `distress_level='lic'` (verified this session).
+
 **`is_nmtc_native_area` is always `False` in this package** — no column in the
-live `.xlsb` populates it (verified this session: `False` for all 85,395 tracts,
-`True` count 0; nmtc-mapper 0.4.1 Known Issues). It is hardcoded/defaulted, so a
-`False` here means **"not determined," not "not a Native Area."** Do not report
-it as a fact about a tract.
+live `.xlsb` populates it (re-verified this session on 0.4.2: `False` for all
+85,395 tracts, `True` count 0; nmtc-mapper 0.4.2 Known Issues). It is
+hardcoded/defaulted, so a `False` here means **"not determined," not "not a
+Native Area."** Do not report it as a fact about a tract.
 
 Note `.summary` is a **method** — call `result.summary()`. `result.summary`
 alone returns the bound method object, not the text.
@@ -399,9 +442,11 @@ is only as honest as this input.
   tracts, the geocoder now returns 2020 tracts, and the ~16% that
   split/merged/renumbered can never match — a confident `False` for 1,408 of the
   8,764 designated OZs (16.1%). Same posture as the third-state rule — an
-  unknowable negative is not a negative. (nmtc-mapper 0.4.1 Known Issues; the fix
-  to `Optional[bool]` is slated for 0.5.0. The 8,764-tract OZ load verified this
-  session; the 1,408 vintage-miss count is from the 0.4.1 Known Issues.)
+  unknowable negative is not a negative. (nmtc-mapper 0.4.2 Known Issues; the fix
+  to `Optional[bool]` is slated for 0.5.0. Both figures re-derived directly this
+  session on 0.4.2, not carried forward on trust: the OZ load is 8,764 tracts,
+  and 1,408 of them — 16.1% — are absent from the 85,395-row 2020-basis
+  eligibility table and so can never match.)
 
 ## Data dependencies & fragility (must document)
 
@@ -450,12 +495,13 @@ is only as honest as this input.
 
 **Geocoder (0.4.0 splits the old single `None` return into four distinct
 outcomes).** `geocode_address` / `check_address` now behave as follows. All
-four executed this session against the installed 0.4.0 wheel: the no-match,
-disagree, and agree branches ran against the live Census endpoint; the
-transport failure was **induced** by pointing the geocoder URL at a closed
-local port, which raised `GeocoderTransportError` (`connection/DNS`,
-`isinstance NMTCMapperError == True`), message naming the failure kind and the
-address.
+four executed this session against the installed 0.4.2 wheel: the no-match and
+agree branches ran against the live Census endpoint; the transport failure was
+**induced** by pointing the geocoder URL at a closed local port, which raised
+`GeocoderTransportError` (`connection/DNS`, `isinstance NMTCMapperError ==
+True`), message naming the failure kind and the address; the disagree branch was
+**induced** by returning two matches on different tracts, which raised
+`AmbiguousAddressError` naming both candidates and stating it refuses to guess.
 
 - **Transport / HTTP-status / decode failure** (403, 5xx, timeout,
   connection/DNS, non-JSON body), after retries are exhausted → **raises
