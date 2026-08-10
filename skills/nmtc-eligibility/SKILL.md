@@ -54,13 +54,15 @@ genuinely qualify," and that "a false 'ineligible' is exactly as damaging as a
 false 'eligible,' in the opposite direction." Pre-0.4.2 the backing package
 delivered exactly that harm — not through a `None` rendered as "no," but through
 a confident `False`. A tract can reach LIC status by three routes; the CDFI Fund
-publishes the poverty and 80%-AMI routes in the workbook's **column C** and the
+published the poverty and 80%-AMI routes in the workbook's **column C** and the
 §45D(e)(5) **high-migration-rural** route (MFI ≤ 85% AMI in a county with ≥10%
-net out-migration over 20 years) in **column N**. Pre-0.4.2 read column C alone
-as the entire verdict while separately parsing, storing and surfacing column N
-as `is_high_migration_rural`. Verified against the live table this session:
-**1,422 tracts carry the high-migration-rural designation and 168 of them
-qualify on that route alone** — all non-metro, all in the (80%, 85%] MFI band.
+net out-migration over 20 years) in **column N** (the layout in force through
+June 2026 — see the note below). Pre-0.4.2 read column C alone as the entire
+verdict while separately parsing, storing and surfacing column N as
+`is_high_migration_rural`. Verified against the live table this session:
+**1,422 tracts carry the high-migration-rural designation, and 168 of them fail
+both the ≥20%-poverty and ≤80%-AMI prongs** — all non-metro, all in the
+(80%, 85%] MFI band, so §45D(e)(5) is the only route by which they qualify.
 Those 168 were reported ineligible by a package that was, in the same object,
 reporting the evidence of their eligibility. 0.4.2 reads the verdict as **C or
 N**. That is why the floor is `>=0.4.2` and not a version-hygiene preference: it
@@ -69,8 +71,8 @@ dependency.
 
 **On the current workbook a pre-0.4.2 install does not answer at all.** The Fund
 moved the C/N boundary in **July 2026**, folding the high-migration-rural route
-into column C and renaming that column's header. 0.4.1 validates the header
-positionally, so against the workbook the loader downloads today it raises
+into column C and renaming that column's header. 0.4.1 pins column C's exact
+header string, so against the workbook the loader downloads today it raises
 `EligibilitySchemaError` and loads nothing (executed this session). The 168-tract
 divergence was real against the pre-July-2026 edition; today the same defect
 presents as a hard load failure. Either way `>=0.4.2` is the floor — 0.4.2 reads
