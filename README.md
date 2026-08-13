@@ -26,15 +26,20 @@ correctly, with the methodology caveats those tools ship with.
 |---|---|---|
 | **nmtc-eligibility** | Is this address/tract NMTC eligible? Distress tier? Project feasibility? | nmtc-mapper >=0.4.2, nmtc-screener 0.1.0 |
 | **cdfi-peer-benchmark** | Benchmark a **bank** CDFI against FDIC peers (NIM, ROAA, capital, …) | cdfi-benchmark 0.2.1 |
-| **hmda-analysis** | Pull HMDA LAR data and produce **descriptive** cuts + a CRA-**proxy** distribution | hmda-analyzer >=0.6.0 (Python >=3.11) |
+| **hmda-analysis** | Pull HMDA LAR data and produce **descriptive** cuts + a CRA-**proxy** distribution | hmda-analyzer >=0.6.0 |
 
 Versions were verified against live PyPI at time of writing; every code example
 in each skill was actually executed and shows real output. Where a floor is shown
 as `>=`, it is **load-bearing** and the skill says why: `nmtc-mapper >=0.4.2`
 binds the geocoder vintage to the eligibility table's 2020 tract basis, and
 `hmda-analyzer >=0.6.0` is where the geography-vintage refusal exists at all.
-Note `hmda-analyzer 0.6.0` requires **Python >=3.11** — on an older interpreter
-`pip install hmda-analyzer` resolves backwards to 0.5.0 without failing.
+
+`hmda-analyzer 0.6.0` alone required **Python >=3.11**; **0.6.1 relaxed that back
+to >=3.9** while keeping the refusal (verified this session: `>=0.6.0` resolves to
+0.6.1, whose `__all__` still exports `GeographyVintageError` and the three basis
+maps). The pinned floor stays `>=0.6.0` because 0.6.1 changed nothing the skill
+layer depends on — but pin the floor rather than installing bare, since a bare
+`pip install hmda-analyzer` is what silently resolves backwards to 0.5.0.
 
 ### What these skills refuse to do
 
@@ -51,7 +56,7 @@ See `references/caveats-and-limits.md` for the full boundary list.
 
 ## Version
 
-**cdfi-superpowers 2026.7.6** (CalVer, `YYYY.M.MINOR`). This is the plugin
+**cdfi-superpowers 2026.8.0** (CalVer, `YYYY.M.MINOR`). This is the plugin
 version carried by `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json`;
 the three manifests and this line move together. It versions the *skills*, not
 the wrapped PyPI packages — those are independently versioned and are listed in
@@ -59,9 +64,28 @@ the table above. See `CHANGELOG.md` for what changed under each release.
 
 ## Install
 
-### (a) Claude Code / Cowork — plugin marketplace
+The skills live in **`.agents/skills/`** — the agent-neutral location defined by
+the [Agent Skills spec](https://github.com/agentskills/agentskills), which Claude
+Code, GitHub Copilot, and other spec-conformant agents all read.
 
-Add this repo as a marketplace, then install the plugin:
+> ### Runtime requirement — read this first
+>
+> These skills are not self-contained prose. Each one **`pip install`s a package
+> from PyPI and executes Python**, and each calls a public federal data endpoint
+> at run time. They need:
+>
+> - **Python >=3.9** and **pip** (>=3.11 recommended)
+> - **Network access to `pypi.org`**, plus the endpoints the skill you use hits:
+>   `geocoding.geo.census.gov` and `www.cdfifund.gov` (nmtc-eligibility),
+>   `banks.data.fdic.gov` (cdfi-peer-benchmark), `ffiec.cfpb.gov` (hmda-analysis)
+>
+> In a locked-down enterprise environment where PyPI or those hosts are blocked,
+> **these skills cannot work** — the agent will load the skill and then fail at the
+> install or the first call. Check egress before installing. See
+> `references/data-source-map.md` for the full host list and which are known to be
+> blocked from cloud/datacenter IPs.
+
+### (a) Claude Code / Cowork — plugin marketplace
 
 ```
 /plugin marketplace add Jaypatel1511/cdfi-superpowers
@@ -70,7 +94,7 @@ Add this repo as a marketplace, then install the plugin:
 
 ### (b) claude.ai — upload a `.skill`
 
-Build the skill archives and upload the one(s) you want in the claude.ai skills UI:
+Build the archives and upload the one(s) you want in the claude.ai skills UI:
 
 ```
 bash scripts/make_skills.sh
@@ -79,11 +103,59 @@ bash scripts/make_skills.sh
 This writes `dist/nmtc-eligibility.skill`, `dist/cdfi-peer-benchmark.skill`, and
 `dist/hmda-analysis.skill` — each a zip with `SKILL.md` at its root.
 
-### (c) Any other AI — raw markdown / llms.txt
+### (c) GitHub Copilot
 
-Point any assistant at the raw Markdown. `llms.txt` at the repo root indexes the
-skills and references for AI crawlers; each `skills/*/SKILL.md` is
-self-contained.
+Copilot discovers skills from `.agents/skills/` in a project, or from
+`~/.copilot/skills/` for every project. It does **not** scan a bare `skills/`
+directory — which is why this repo uses `.agents/skills/`.
+
+**Project scope** — clone the repo into a workspace and Copilot reads
+`.agents/skills/` directly, no copying:
+
+```
+git clone https://github.com/Jaypatel1511/cdfi-superpowers.git
+```
+
+**Personal scope (all projects)** — copy the skill folders into your personal
+skills directory, then reload:
+
+```
+git clone https://github.com/Jaypatel1511/cdfi-superpowers.git /tmp/cdfi-superpowers
+mkdir -p ~/.copilot/skills
+cp -R /tmp/cdfi-superpowers/.agents/skills/* ~/.copilot/skills/
+```
+
+Then in Copilot CLI run `/skills reload` and confirm the three skills are listed.
+
+**Or with the GitHub CLI** (requires `gh` >= 2.90; installs one skill at a time):
+
+```
+gh skill install Jaypatel1511/cdfi-superpowers nmtc-eligibility \
+  --allow-hidden-dirs --agent github-copilot --scope user
+```
+
+`--allow-hidden-dirs` is **required**, not optional: `gh skill` treats
+`.agents/skills/` as a hidden directory and finds nothing without it (it reports
+"no standard skills found, but 3 skill(s) exist in hidden directories"). The
+skill name is also required when running non-interactively. Repeat for
+`cdfi-peer-benchmark` and `hmda-analysis`, or drop `--scope user` to install into
+the current repository instead.
+
+### (d) Cursor and any other spec-conformant agent
+
+Copy the skill folder(s) you want into your project's `.agents/skills/`:
+
+```
+cp -R .agents/skills/nmtc-eligibility /path/to/your-project/.agents/skills/
+```
+
+Each `SKILL.md` is self-contained — one file, no assets, no build step.
+
+### (e) Crawler index — not an install
+
+`llms.txt` at the repo root indexes the skills and references for AI crawlers.
+It is a discovery aid, **not an installation method**; an assistant reading it
+still needs the runtime above to actually run anything.
 
 ## How it relates to the packages
 

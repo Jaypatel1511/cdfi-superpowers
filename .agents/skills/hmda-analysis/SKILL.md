@@ -7,6 +7,12 @@ description: >-
   records", "mortgage lending data for [county/state/lender]", or "multi-year
   HMDA". DESCRIPTIVE ONLY — this skill does not do disparity, disparate-impact,
   or fair-lending analysis. Backed by the audited PyPI package hmda-analyzer.
+compatibility: >-
+  Requires Python >=3.9, pip, and network access to pypi.org plus ffiec.cfpb.gov
+  (CFPB HMDA API for LAR records). Pin `hmda-analyzer>=0.6.0` rather than
+  installing bare: a bare install on an old interpreter can resolve backwards to
+  0.5.0, which lacks the geography-vintage refusal. Full-state and multi-year
+  pulls transfer large volumes of records.
 ---
 
 # HMDA Analysis (descriptive)

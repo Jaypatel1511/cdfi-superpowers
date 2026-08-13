@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "Single-plugin marketplace for cdfi-superpowers — an AI skill layer over Jay Patel's published CDFI PyPI portfolio.",
-    "version": "2026.7.6"
+    "version": "2026.8.0"
   },
   "plugins": [
     {
@@ -14,7 +14,7 @@
       "displayName": "CDFI Superpowers",
       "source": "./",
       "description": "AI skills for NMTC eligibility, bank-CDFI peer benchmarking, and HMDA descriptive analysis, backed by audited PyPI packages — reports errors and N/A instead of fabricating tract eligibility or peer metrics.",
-      "version": "2026.7.6",
+      "version": "2026.8.0",
       "author": {
         "name": "Jay Patel"
       },

@@ -2,6 +2,98 @@
 
 All notable changes to `cdfi-superpowers`. Versioning is CalVer (`YYYY.M.MINOR`).
 
+## 2026.8.0
+
+**CalVer discontinuity, noted deliberately.** `2026.7.3` through `2026.7.6` all
+shipped in **August** (Aug 1, 5, 7 and 9) while keeping the `7` minor, so the
+month segment had drifted a full month out of true. This release resets it to the
+actual month rather than continuing the drift: `2026.7.6` → **`2026.8.0`**. Nothing
+pins a `2026.7.x` string outside this repo — the plugin is not listed in any
+external directory (see below) — so the jump breaks no installed pin.
+
+### Added
+- **The three skills are now installable by any spec-conformant agent, not just
+  Claude Code.** The skills moved from `skills/` to **`.agents/skills/`**, the
+  agent-neutral path in the Agent Skills spec. GitHub Copilot discovers skills
+  from `.agents/skills/` (project) and `~/.copilot/skills/` (personal) and never
+  scanned a bare `skills/`, which is why a Copilot user could not install this
+  repo at all. Moved with `git mv` so history follows; **no SKILL.md was copied** —
+  there is exactly one on-disk copy of each, as before.
+- **A `compatibility:` frontmatter field on all three skills** (spec-defined,
+  ≤500 chars), naming the real runtime requirement per skill: Python, pip, PyPI,
+  and the specific federal endpoints that skill actually calls, sourced from
+  `references/data-source-map.md`. This is the only edit made to any skill body.
+- **README: a runtime-requirement block above the platform list.** These skills
+  `pip install` and execute Python against public federal endpoints; in a
+  locked-down enterprise that is what decides whether they can work at all, and
+  the README never said so.
+
+### Changed
+- **README install section rewritten with real per-platform paths.** Section (c)
+  previously read "Point any assistant at the raw Markdown," which is the shrug
+  that the Copilot user hit. Now: (a) Claude Code/Cowork marketplace, (b)
+  claude.ai `.skill` upload, (c) **GitHub Copilot** — project scope, personal
+  scope, and a verified `gh skill install` form, (d) Cursor and other
+  spec-conformant agents via `.agents/skills/`, (e) `llms.txt` labelled honestly
+  as a crawler index rather than an install method.
+- **`scripts/make_skills.sh`, `llms.txt` and `plugin.json` re-pointed** to
+  `.agents/skills/`. The `.skill` archives are unaffected in shape — each is still
+  a zip with `SKILL.md` at its root, because the script `cd`s into the skill
+  directory before zipping and the source path is never recorded in the archive.
+- **`hmda-analyzer`'s Python floor corrected in README and
+  `references/package-index.md`.** Both said the pin implied **Python >=3.11**.
+  That was true of `0.6.0` alone; **`0.6.1` (2026-08-07) relaxed `requires_python`
+  back to `>=3.9`** while keeping the refusal. Verified this session: `pip install
+  "hmda-analyzer>=0.6.0"` resolves to `0.6.1`, whose `__all__` is still 33 and
+  still exports `GeographyVintageError`, `UnreachableFlagError`,
+  `EmptyUniverseError` and the three basis maps. **The `>=0.6.0` floor is
+  therefore kept, not bumped** — `0.6.1` changed nothing the skill layer depends
+  on, and the pin already resolves to it everywhere. The bare-install hazard the
+  floor guards against is unchanged and still documented.
+- **`llms.txt`: the PyPI user corrected from `Jaypatel1511` to
+  `thejaypatel1511`.** `Jaypatel1511` is the **GitHub** handle; the PyPI account
+  is `thejaypatel1511`, confirmed against the Maintainers panel of a published
+  project page. The README was already correct. Both handles are now named
+  explicitly so the two namespaces stop being conflated.
+
+### Verified — the plugin loader reads the dot-prefixed path
+Tested from the working tree before the other two skills were moved, then again
+with all three moved (`claude plugin install` + `claude plugin details`):
+
+- All three skills load from `.agents/skills/` and are invocable. **No mirror, no
+  symlink, no `.github/skills` fallback was needed.**
+- **The `skills` array in `plugin.json` is *not* the only thing binding skill
+  locations.** With the array emptied entirely, the two skills still sitting in
+  `skills/` continued to load, while the one in `.agents/skills/` did not. The
+  loader globs the conventional `skills/` directory *in addition to* the explicit
+  array; the array is what makes a **non-conventional** path load. Moving the
+  directories is therefore necessary **and** sufficient only because the array was
+  repointed with them — and leaving any copy behind in `skills/` would have
+  double-loaded it. `skills/` is now removed outright.
+
+### Known — noticed, not changed
+- **`llms.txt` still pins `cdfi-benchmark 0.2.0`** against `>=0.2.1` everywhere
+  else. Unchanged for the same reason as the last three releases: it belongs to
+  the cdfi-peer-benchmark sync, and correcting it here would assert a verification
+  that has not happened. (Recorded here for the **fourth** time.)
+- **`gh skill install` requires `--allow-hidden-dirs` against this layout.**
+  `gh skill` classifies `.agents/skills/` as a hidden directory and, without the
+  flag, reports "no standard skills found, but 3 skill(s) exist in hidden
+  directories" and installs nothing. This is a real cost of the move: the plain
+  `gh skill install <repo> <skill>` form worked against the old `skills/` layout
+  and now needs one extra flag. The README prints the flag. Not worked around,
+  because the Copilot discovery paths are the point of the move.
+- **Two `SKILL.md` files exceed the 500-line guideline** — `hmda-analysis` (730)
+  and `nmtc-eligibility` (561). Both **pass** `agentskills validate`; the limit is
+  a guideline the reference validator does not enforce. Left alone rather than
+  cut, since trimming correct, executed content to hit a soft target is not a
+  change this release is scoped to make.
+- **`cdfi-superpowers` is not listed in `anthropics/claude-plugins-community`.**
+  Checked this session against that repo's `marketplace.json` (2,281 plugins):
+  zero occurrences of `cdfi`, `nmtc`, `hmda` or `Jaypatel1511`. The 2026-07-19
+  submission never landed. No stale SHA pins the old layout — which is the only
+  reason this release's path move carries no external breakage.
+
 ## 2026.7.6
 
 ### Changed

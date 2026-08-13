@@ -8,6 +8,12 @@ description: >-
   status, or wants a first-pass NMTC deal feasibility score. Backed by the
   audited PyPI packages nmtc-mapper and nmtc-screener — never estimate
   eligibility from general knowledge.
+compatibility: >-
+  Requires Python >=3.9, pip, and network access to pypi.org plus
+  geocoding.geo.census.gov (Census geocoder) and www.cdfifund.gov (CDFI Fund
+  eligibility workbook). The CDFI Fund relocates that workbook periodically, so a
+  lookup can fail even on an open network — the skill reports the error rather
+  than estimating eligibility.
 ---
 
 # NMTC Eligibility
