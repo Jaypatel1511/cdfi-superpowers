@@ -35,10 +35,10 @@ binds the geocoder vintage to the eligibility table's 2020 tract basis, and
 `hmda-analyzer >=0.6.0` is where the geography-vintage refusal exists at all.
 
 `hmda-analyzer 0.6.0` alone required **Python >=3.11**; **0.6.1 relaxed that back
-to >=3.9** while keeping the refusal (verified this session: `>=0.6.0` resolves to
-0.6.1, whose `__all__` still exports `GeographyVintageError` and the three basis
-maps). The pinned floor stays `>=0.6.0` because 0.6.1 changed nothing the skill
-layer depends on.
+to >=3.9** while keeping the refusal (verified 2026-08-13 against the `>=0.6.0`
+floor, which resolved to 0.6.1 at the time; its `__all__` still exports
+`GeographyVintageError` and the three basis maps). The pinned floor stays
+`>=0.6.0` because 0.6.1 changed nothing the skill layer depends on.
 
 ### What these skills refuse to do
 
@@ -81,7 +81,7 @@ into a project's `.agents/skills/` does nothing in Claude Code, silently.
 > from PyPI and executes Python**, and each calls a public federal data endpoint
 > at run time. They need:
 >
-> - **Python >=3.9** and **pip** (>=3.11 recommended)
+> - **Python >=3.9** and **pip**
 > - **Network access to `pypi.org`**, plus the endpoints the skill you use hits:
 >   `geocoding.geo.census.gov` and `www.cdfifund.gov` (nmtc-eligibility),
 >   `banks.data.fdic.gov` (cdfi-peer-benchmark), `ffiec.cfpb.gov` (hmda-analysis)
