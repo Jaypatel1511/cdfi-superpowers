@@ -45,8 +45,10 @@ tract up in the CDFI Fund's NMTC Low-Income Community (LIC) eligibility table.
 pip install "nmtc-mapper>=0.4.2" nmtc-screener
 ```
 
-Verified this session (PyPI): **nmtc-mapper 0.4.2**, **nmtc-screener 0.1.0**
-(`nmtc-calc 0.2.1` is pulled in as a dependency). The `>=0.4.2` floor is not
+Verified 2026-08-13 (PyPI) against **`nmtc-mapper>=0.4.2`** (resolved 0.4.3 at
+the time) and **nmtc-screener 0.1.0** (`nmtc-calc 0.2.1` is pulled in as a
+dependency). Quote the floor, not the resolved point version — the point version
+moves on every release and this line does not. The `>=0.4.2` floor is not
 cosmetic — 0.4.0 is where `nmtc_eligible` became tri-state (see below), 0.4.1
 binds the geocoder vintage to the eligibility table's 2020 tract basis (see Data
 dependencies & fragility), and **0.4.2 is the release that stopped reporting 168

@@ -4,9 +4,10 @@ All notable changes to `cdfi-superpowers`. Versioning is CalVer (`YYYY.M.MINOR`)
 
 ## 2026.8.0
 
-**CalVer discontinuity, noted deliberately.** `2026.7.3` through `2026.7.6` all
-shipped in **August** (Aug 1, 5, 7 and 9) while keeping the `7` minor, so the
-month segment had drifted a full month out of true. This release resets it to the
+**CalVer discontinuity, noted deliberately.** `2026.7.3` shipped **Jul 31**, but
+`2026.7.4` through `2026.7.6` all shipped in **August** (Aug 1, 5 and 7) while
+keeping the `7` minor, so the month segment had drifted out of true. (The Aug 9
+commit `4705124` changed no version and was not a release.) This release resets it to the
 actual month rather than continuing the drift: `2026.7.6` → **`2026.8.0`**. Nothing
 pins a `2026.7.x` string outside this repo — the plugin is not listed in any
 external directory (see below) — so the jump breaks no installed pin.
@@ -22,7 +23,10 @@ external directory (see below) — so the jump breaks no installed pin.
 - **A `compatibility:` frontmatter field on all three skills** (spec-defined,
   ≤500 chars), naming the real runtime requirement per skill: Python, pip, PyPI,
   and the specific federal endpoints that skill actually calls, sourced from
-  `references/data-source-map.md`. This is the only edit made to any skill body.
+  `references/data-source-map.md`. Beyond this, the only skill-body edits in this
+  release are the two corrections recorded below: the retired bare-install claim
+  and the provenance-line pattern. No worked example was touched, and none was
+  re-executed.
 - **README: a runtime-requirement block above the platform list.** These skills
   `pip install` and execute Python against public federal endpoints; in a
   locked-down enterprise that is what decides whether they can work at all, and
@@ -48,13 +52,62 @@ external directory (see below) — so the jump breaks no installed pin.
   still exports `GeographyVintageError`, `UnreachableFlagError`,
   `EmptyUniverseError` and the three basis maps. **The `>=0.6.0` floor is
   therefore kept, not bumped** — `0.6.1` changed nothing the skill layer depends
-  on, and the pin already resolves to it everywhere. The bare-install hazard the
-  floor guards against is unchanged and still documented.
+  on, and the pin already resolves to it everywhere.
+- **The bare-install hazard was retired by `0.6.1`, and the claim has been
+  deleted rather than kept.** Every `hmda-analyzer` release except `0.6.0`
+  declares `requires_python >=3.9`; below 3.9 nothing installs at all, and at
+  3.9+ bare resolution wins `0.6.1`. **There is no interpreter on which `pip
+  install hmda-analyzer` yields `0.5.0`** — verified on Python 3.10 in a clean
+  venv with a cold cache, where the bare install and the `>=0.6.0` pin both
+  resolve to `0.6.1` (`__all__` = 33, `GeographyVintageError` and the three basis
+  maps present). The claim is removed from `README.md`, the `hmda-analysis`
+  `compatibility:` frontmatter, and the skill body in both places it appeared.
+  The `>=0.6.0` floor stays, for the reason that is still true and that the
+  surrounding text already gave: `0.6.0` is where the geography-vintage refusal
+  first exists.
 - **`llms.txt`: the PyPI user corrected from `Jaypatel1511` to
   `thejaypatel1511`.** `Jaypatel1511` is the **GitHub** handle; the PyPI account
   is `thejaypatel1511`, confirmed against the Maintainers panel of a published
   project page. The README was already correct. Both handles are now named
   explicitly so the two namespaces stop being conflated.
+- **README: the `.agents/skills/` discovery claim corrected — Claude Code does
+  not read that path.** The install intro said Claude Code, GitHub Copilot "and
+  other spec-conformant agents all read" `.agents/skills/`. Claude Code does not:
+  it scans `.claude/skills/`, and it loads these three skills only because
+  `.claude-plugin/plugin.json` enumerates the paths. Verified on Claude Code
+  **2.1.232**: a decoy skill in a project's `.claude/skills/` loaded while a
+  decoy in the same project's `.agents/skills/` did not, and the string
+  `.agents/skills` does not occur in the binary. The accurate sharer list is
+  GitHub Copilot, Cursor, Codex, Gemini CLI, Antigravity, Amp, Cline, OpenCode
+  and Warp — the list `gh skill install --help` gives (gh 2.92.0). Section (d),
+  which is addressed to those agents, now says plainly that it is **not** for
+  Claude Code; a Claude Code user who followed it got nothing, with no error.
+- **README section (d)'s `cp -R` fixed — it failed as printed.** A fresh project
+  has no `.agents/skills/`, so `cp -R` exited 1 with `No such file or directory`
+  for exactly its intended audience. Section (c) already printed the equivalent
+  `mkdir -p`; (d) now does too.
+- **README: an upgrade path, which the file did not document at all.** `install`
+  accepts the bare plugin name but `update` does not — `claude plugin update
+  cdfi-superpowers` fails with `Plugin "cdfi-superpowers" not found`, while
+  `cdfi-superpowers@cdfi-superpowers` succeeds. Both forms were run. The
+  marketplace refresh that has to precede it is documented alongside.
+- **Provenance lines now name the floor and the date, not the resolved point
+  version.** `hmda-analysis` said "Verified this session: 0.6.0" and "both report
+  v0.6.0"; `nmtc-eligibility` said "Verified this session (PyPI): nmtc-mapper
+  0.4.2". Neither was wrong about what was verified, and both went stale the
+  moment the packages released — `>=0.6.0` now resolves to `0.6.1` and `>=0.4.2`
+  to `0.4.3`. This is a drift generator, not two typos, so the pattern changed:
+  floor + verification date, with the resolved version marked as of that date.
+  The `must read 0.6.0 or later` gate is untouched. (`nmtc-mapper` 0.4.3 changes
+  no behaviour — wheel-diffed against 0.4.2, its sole change is a comment block
+  in `data/schema.py`; every constant is byte-identical.)
+- **`llms.txt`: `cdfi-benchmark` corrected from `0.2.0` to `0.2.1`.** It was the
+  last stale version string in the repo — README, `references/package-index.md`
+  and the skill body all already said `0.2.1`, and PyPI's latest is `0.2.1`
+  (uploaded 2026-07-10). It is an index entry, not a floor.
+- **`references/package-index.md`: the `hmda-analyzer` Python note made precise.**
+  `>=0.6.0 (py>=3.9)` was true of the pin's resolution but not of `0.6.0` itself,
+  which is `py>=3.11`. The cell now says which is which.
 
 ### Verified — the plugin loader reads the dot-prefixed path
 Tested from the working tree before the other two skills were moved, then again

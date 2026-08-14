@@ -38,8 +38,7 @@ binds the geocoder vintage to the eligibility table's 2020 tract basis, and
 to >=3.9** while keeping the refusal (verified this session: `>=0.6.0` resolves to
 0.6.1, whose `__all__` still exports `GeographyVintageError` and the three basis
 maps). The pinned floor stays `>=0.6.0` because 0.6.1 changed nothing the skill
-layer depends on — but pin the floor rather than installing bare, since a bare
-`pip install hmda-analyzer` is what silently resolves backwards to 0.5.0.
+layer depends on.
 
 ### What these skills refuse to do
 
@@ -65,8 +64,16 @@ the table above. See `CHANGELOG.md` for what changed under each release.
 ## Install
 
 The skills live in **`.agents/skills/`** — the agent-neutral location defined by
-the [Agent Skills spec](https://github.com/agentskills/agentskills), which Claude
-Code, GitHub Copilot, and other spec-conformant agents all read.
+the [Agent Skills spec](https://github.com/agentskills/agentskills). At project
+scope that directory is shared by GitHub Copilot, Cursor, Codex, Gemini CLI,
+Antigravity, Amp, Cline, OpenCode and Warp, which is the list `gh skill install
+--help` names as resolving to it.
+
+**Claude Code is not in that list and does not scan `.agents/skills/`** — it
+scans `.claude/skills/`. It reaches these three skills through the plugin
+manifest instead: `.claude-plugin/plugin.json` enumerates the three paths
+explicitly, which is what makes install method (a) work. Dropping a skill folder
+into a project's `.agents/skills/` does nothing in Claude Code, silently.
 
 > ### Runtime requirement — read this first
 >
@@ -90,6 +97,16 @@ Code, GitHub Copilot, and other spec-conformant agents all read.
 ```
 /plugin marketplace add Jaypatel1511/cdfi-superpowers
 /plugin install cdfi-superpowers
+```
+
+**To upgrade**, refresh the marketplace, then update the plugin by its
+**marketplace-qualified** name. `update` rejects the bare name that `install`
+accepts — `claude plugin update cdfi-superpowers` fails with `Plugin
+"cdfi-superpowers" not found`. A restart is required to apply:
+
+```
+claude plugin marketplace update cdfi-superpowers
+claude plugin update cdfi-superpowers@cdfi-superpowers
 ```
 
 ### (b) claude.ai — upload a `.skill`
@@ -141,11 +158,21 @@ skill name is also required when running non-interactively. Repeat for
 `cdfi-peer-benchmark` and `hmda-analysis`, or drop `--scope user` to install into
 the current repository instead.
 
-### (d) Cursor and any other spec-conformant agent
+### (d) Cursor, Codex, Warp and the other agents that read `.agents/skills/`
 
-Copy the skill folder(s) you want into your project's `.agents/skills/`:
+**Who this is for:** Cursor, Codex, Gemini CLI, Antigravity, Amp, Cline,
+OpenCode, Warp and GitHub Copilot — the agents that share the project-scope
+`.agents/skills/` directory.
+
+**Who this is not for: Claude Code.** It does not scan `.agents/skills/`, so
+copying a folder there gets you nothing and reports no error. Use (a) instead.
+
+Copy the skill folder(s) you want into your project's `.agents/skills/`,
+creating that directory first — it does not exist in a fresh project, and
+`cp -R` fails with `No such file or directory` if you skip this:
 
 ```
+mkdir -p /path/to/your-project/.agents/skills
 cp -R .agents/skills/nmtc-eligibility /path/to/your-project/.agents/skills/
 ```
 
