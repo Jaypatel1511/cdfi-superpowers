@@ -7,6 +7,11 @@ description: >-
   records", "mortgage lending data for [county/state/lender]", or "multi-year
   HMDA". DESCRIPTIVE ONLY — this skill does not do disparity, disparate-impact,
   or fair-lending analysis. Backed by the audited PyPI package hmda-analyzer.
+compatibility: >-
+  Requires Python >=3.9, pip, and network access to pypi.org plus ffiec.cfpb.gov
+  (CFPB HMDA API for LAR records). Pin `hmda-analyzer>=0.6.0`: 0.6.0 is where the
+  geography-vintage refusal first exists, and nothing below it has one.
+  Full-state and multi-year pulls transfer large volumes of records.
 ---
 
 # HMDA Analysis (descriptive)
@@ -74,13 +79,12 @@ stratifier. Verified against 0.6.0's 33 exports — the firewall list is complet
 pip install "hmda-analyzer>=0.6.0"
 ```
 
-**Pin the floor, and check the interpreter first — this is the most important
-line in this section.** 0.6.0 requires **Python >=3.11** (0.5.0 required
-`>=3.9`). On Python 3.10 or older, a bare `pip install hmda-analyzer` does not
-fail: pip resolves *backwards* to the newest release the interpreter satisfies
-and silently installs **0.5.0** — the version whose defects 0.6.0 fixes, and the
-version with no geography-vintage refusal at all. Verify before quoting any
-number:
+**Pin the floor — this is the most important line in this section.** The
+geography-vintage refusal does not exist below **0.6.0**: 0.5.0 has no such
+refusal at all, and that is what the floor guards against. (0.6.0 alone required
+**Python >=3.11**; **0.6.1 relaxed `requires_python` back to `>=3.9`** while
+keeping the refusal, so the pin installs on any interpreter this skill supports.)
+Verify before quoting any number:
 
 ```python
 import hmdaanalyzer as h
@@ -88,13 +92,14 @@ print(h.__version__)          # must read 0.6.0 or later
 ```
 
 If it reads 0.5.0, say so and stop; do not present results from it as 0.6.0
-results. Verified from the installed wheel this session: `Requires-Python:
->=3.11` (0.6.0) versus `>=3.9` (0.5.0).
+results.
 
-Verified this session: **hmda-analyzer 0.6.0** (PyPI).
+Verified 2026-08-13 against `hmda-analyzer>=0.6.0` (PyPI; resolved 0.6.1 at the
+time). Quote the floor, not the resolved point version — the point version moves
+on every release and this line does not.
 
-**Dual import aliases** — both resolve to the same package (verified this
-session, both report v0.6.0):
+**Dual import aliases** — both resolve to the same package and report the same
+`__version__` (verified 2026-08-13 against `hmda-analyzer>=0.6.0`):
 
 ```python
 import hmda_analyzer as h     # underscore alias
@@ -689,8 +694,9 @@ which is why you must not write one around any call in this skill.
 - **Truncated pull** → not an error at all, and that is the hazard.
   `limit_truncated=True` rides on every row; check it (per year under
   `load_range`) and disclose it beside any number you quote.
-- **Python 3.10 or older** → `pip install hmda-analyzer` silently resolves to
-  0.5.0. Check `h.__version__` before quoting anything.
+- **A pre-0.6.0 install** — an old pin, a stale environment, a vendored wheel →
+  no geography-vintage refusal at all. Check `h.__version__` before quoting
+  anything.
 - **User asks for disparity / fair lending / CRA performance** → decline per the
   FIREWALL.
 - **CFPB API down** → `CFPBAPIError`; report it.

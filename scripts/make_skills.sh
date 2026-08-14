@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-SKILLS_DIR="$ROOT/skills"
+SKILLS_DIR="$ROOT/.agents/skills"
 DIST_DIR="$ROOT/dist"
 
 mkdir -p "$DIST_DIR"

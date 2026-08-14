@@ -7,6 +7,11 @@ description: >-
   "peer comparison", or asks "how does this bank CDFI compare". Bank CDFIs only
   (FDIC-insured) — no credit unions, no unregulated loan funds. Backed by the
   audited PyPI package cdfi-benchmark; import name is `cdfibenchmark`.
+compatibility: >-
+  Requires Python >=3.9, pip, and network access to pypi.org plus
+  banks.data.fdic.gov (FDIC BankFind — institutions and call reports). That
+  source covers FDIC-insured institutions only, which is why the skill benchmarks
+  bank CDFIs and refuses credit unions and unregulated loan funds.
 ---
 
 # CDFI Peer Benchmark
