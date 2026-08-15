@@ -24,14 +24,17 @@ correctly, with the methodology caveats those tools ship with.
 
 | Skill | What it does | Backed by |
 |---|---|---|
-| **nmtc-eligibility** | Is this address/tract NMTC eligible? Distress tier? Project feasibility? | nmtc-mapper >=0.4.2, nmtc-screener 0.1.0 |
+| **nmtc-eligibility** | Is this address/tract NMTC eligible? Distress tier? Project feasibility? | nmtc-mapper >=0.5.0, nmtc-screener 0.1.0 |
 | **cdfi-peer-benchmark** | Benchmark a **bank** CDFI against FDIC peers (NIM, ROAA, capital, …) | cdfi-benchmark 0.2.1 |
 | **hmda-analysis** | Pull HMDA LAR data and produce **descriptive** cuts + a CRA-**proxy** distribution | hmda-analyzer >=0.6.0 |
 
 Versions were verified against live PyPI at time of writing; every code example
 in each skill was actually executed and shows real output. Where a floor is shown
-as `>=`, it is **load-bearing** and the skill says why: `nmtc-mapper >=0.4.2`
-binds the geocoder vintage to the eligibility table's 2020 tract basis, and
+as `>=`, it is **load-bearing** and the skill says why: `nmtc-mapper >=0.5.0` is
+where `is_opportunity_zone` stops returning a confident `False` — below it the
+package answers "not an Opportunity Zone" about 78,039 tracts it cannot
+distinguish from a 2010/2020 vintage miss, and carries an
+`is_nmtc_native_area` field that can only ever say "I don't know"; and
 `hmda-analyzer >=0.6.0` is where the geography-vintage refusal exists at all.
 
 `hmda-analyzer 0.6.0` alone required **Python >=3.11**; **0.6.1 relaxed that back
@@ -55,7 +58,7 @@ See `references/caveats-and-limits.md` for the full boundary list.
 
 ## Version
 
-**cdfi-superpowers 2026.8.0** (CalVer, `YYYY.M.MINOR`). This is the plugin
+**cdfi-superpowers 2026.8.1** (CalVer, `YYYY.M.MINOR`). This is the plugin
 version carried by `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json`;
 the three manifests and this line move together. It versions the *skills*, not
 the wrapped PyPI packages — those are independently versioned and are listed in
