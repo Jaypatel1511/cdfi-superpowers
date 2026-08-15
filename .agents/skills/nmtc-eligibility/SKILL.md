@@ -42,17 +42,19 @@ tract up in the CDFI Fund's NMTC Low-Income Community (LIC) eligibility table.
 ## Install
 
 ```
-pip install "nmtc-mapper>=0.4.2" nmtc-screener
+pip install "nmtc-mapper>=0.5.0" nmtc-screener
 ```
 
-Verified 2026-08-13 (PyPI) against **`nmtc-mapper>=0.4.2`** (resolved 0.4.3 at
+Verified 2026-08-14 (PyPI) against **`nmtc-mapper>=0.5.0`** (resolved 0.5.0 at
 the time) and **nmtc-screener 0.1.0** (`nmtc-calc 0.2.1` is pulled in as a
 dependency). Quote the floor, not the resolved point version — the point version
-moves on every release and this line does not. The `>=0.4.2` floor is not
+moves on every release and this line does not. The `>=0.5.0` floor is not
 cosmetic — 0.4.0 is where `nmtc_eligible` became tri-state (see below), 0.4.1
 binds the geocoder vintage to the eligibility table's 2020 tract basis (see Data
-dependencies & fragility), and **0.4.2 is the release that stopped reporting 168
-statutorily-eligible tracts as ineligible.** A reader on 0.3.x following this
+dependencies & fragility), **0.4.2 is the release that stopped reporting 168
+statutorily-eligible tracts as ineligible**, and **0.5.0 is the release that
+stopped returning a confident `False` for every unconfirmed Opportunity Zone and
+for every field of a tract it never read.** A reader on 0.3.x following this
 skill's third-state guidance would never see `None`, because 0.3.x collapses
 "could not determine" into `False`.
 
@@ -73,9 +75,12 @@ both the ≥20%-poverty and ≤80%-AMI prongs** — all non-metro, all in the
 (80%, 85%] MFI band, so §45D(e)(5) is the only route by which they qualify.
 Those 168 were reported ineligible by a package that was, in the same object,
 reporting the evidence of their eligibility. 0.4.2 reads the verdict as **C or
-N**. That is why the floor is `>=0.4.2` and not a version-hygiene preference: it
-is the line below which this skill's central rule is violated by its own
-dependency.
+N**. That is why no floor below 0.4.2 is defensible and none of this is
+version-hygiene preference: 0.4.2 is the line below which this skill's central
+rule is violated by its own dependency. (All four figures re-derived against the
+live table on 0.5.0 this session, not carried forward: 1,422 HMR tracts, 168
+failing both prongs, all non-metro, all in the (80%, 85%] band, and all 168 now
+`nmtc_eligible=True`.)
 
 **On the current workbook a pre-0.4.2 install does not answer at all.** The Fund
 moved the C/N boundary in **July 2026**, folding the high-migration-rural route
@@ -83,8 +88,24 @@ into column C and renaming that column's header. 0.4.1 pins column C's exact
 header string, so against the workbook the loader downloads today it raises
 `EligibilitySchemaError` and loads nothing (executed this session). The 168-tract
 divergence was real against the pre-July-2026 edition; today the same defect
-presents as a hard load failure. Either way `>=0.4.2` is the floor — 0.4.2 reads
+presents as a hard load failure. Either way 0.4.2 is the release that reads
 `C or N` and is therefore correct on both sides of the boundary move.
+
+**The fourth reason is the same defect one field over, and it is why the floor
+is now `>=0.5.0`.** Through 0.4.3 `is_opportunity_zone` was a plain `bool`, so
+the package answered "not an Opportunity Zone" about tracts it had no basis to
+answer for: **78,039 of the 85,395 tracts received a confident `False`** (every
+row in the table that is not in the 8,764-tract designation set), and the
+geocode-no-match branch hardcoded `is_opportunity_zone=False` for an address it
+never resolved to a tract at all. The designations are 2010-tract-based and this
+package's table and geocoder are 2020-basis, so a vintage miss and a genuine
+non-designation are the same observation — a distinction the package cannot
+make and therefore must not assert. **0.5.0 makes the field `Optional[bool]`,
+never `False`, and adds `opportunity_zone_status` to say which of the three
+states it is in.** Below 0.5.0 this skill has to correct its own dependency in
+prose on every OZ answer, which is exactly the posture the third-state rule
+exists to make unnecessary. 0.5.0 also drops `is_nmtc_native_area`, a field that
+could only ever say "I don't know" (see the note under the field list).
 
 Import names (dist name ≠ import name):
 
@@ -121,6 +142,46 @@ verified-eligible  |  verified-ineligible  |  not-found  |  geocode-failed
 prints indeterminate results as `❓ UNKNOWN — … (indeterminate, NOT ineligible)`
 on the eligibility line itself — that inline qualifier is defined in
 `nmtcmapper/eligibility/checker.py::EligibilityResult.summary`, not a footer.
+
+### 0.5.0 extends the tri-state contract to every field that can be unobtainable
+
+Through 0.4.3 only the verdict was tri-state, and its **neighbours fabricated
+inside the very branches written to protect it**: the two indeterminate branches
+set every supporting boolean to a confident `False` about a tract no row was
+ever read for. **Six fields are `Optional[bool]` in 0.5.0:**
+
+| field | `None` when |
+|---|---|
+| `nmtc_eligible` | either indeterminate branch (0.4.0) |
+| `is_non_metro` | either indeterminate branch (0.5.0) |
+| `is_high_migration_rural` | either indeterminate branch (0.5.0) |
+| `severe_distress` | either indeterminate branch (0.5.0) |
+| `deep_distress` | either indeterminate branch (0.5.0) |
+| `is_opportunity_zone` | **on every path** — `True` or `None`, never `False` (0.5.0) |
+
+**The rule that ties them together: when `eligibility_status` is `not-found` or
+`geocode-failed`, every tract-derived field is `None`, because nothing was
+read.** For a tract that *was* found, a `False` on the four supporting booleans
+is unchanged and fully supportable — it is the Fund's published `NO`, present as
+a strict YES/NO on all 85,395 rows. `is_opportunity_zone` is the exception in
+both directions: it is keyed on designation-set membership rather than on
+`tract_found`, so a retired 2010 GEOID that is designated still returns a
+correct `True` alongside `tract_found=False`, and it is never `False` at all.
+
+Two consequences worth stating because they bite silently:
+
+- **`None` is falsy.** `if result.severe_distress:` and `'Yes' if x else 'No'`
+  keep running after the type change and start meaning something else. Switch on
+  `eligibility_status` / `opportunity_zone_status`, or test `is True` / `is None`
+  explicitly. `summary()` does this — every line is a three-branch switch.
+- **`poverty_rate`, `ami_ratio` and `unemployment_rate` have *two* kinds of
+  missing, and they are different answers.** `None` means no row was read (the
+  indeterminate branches); `NaN` means a **found** tract whose metric the Fund
+  published as `NA` — 1,583 rows for poverty and 2,358 for AMI — which still
+  carry a real published verdict. So `r.poverty_rate is None` is not a
+  missing-value test on this field; use `pd.isna()` for "no number either way"
+  and `eligibility_status` to tell which kind. `summary()` prints two different
+  sentences for the two states (0.5.0).
 
 ## The hard failure rule (non-negotiable)
 
@@ -218,9 +279,11 @@ result.summary()          # prints a formatted block; returns None
 print(result.eligibility_status)   # -> 'verified-eligible'
 ```
 
-Actual output this session (nmtc-mapper 0.4.2, clean-venv PyPI install, cold
-cache, isolated `HOME`). The block below re-executed **unchanged** from the
-revision of this file that recorded it on 0.4.1 — no figure moved:
+Actual output this session (nmtc-mapper **0.5.0**, clean-venv PyPI install, cold
+cache, isolated `HOME`, live CDFI Fund + Census downloads — 85,395 tracts and
+8,764 OZ tracts loaded). Every demographic and eligibility figure re-executed
+**unchanged** from the revision of this file that recorded it on 0.4.2; **the
+`Opportunity Zone` line is the one line that moved**, and that is the release:
 
 ```
 NMTC Eligibility Result
@@ -235,31 +298,40 @@ NMTC Eligibility Result
   AMI Ratio:        53.2%
   Unemployment:     10.7%
   Non-Metro:        No
-  Opportunity Zone: No
+  Opportunity Zone: ❓ NOT CONFIRMED — not on the 2018 designation list, which is
+                    2010-tract-based (indeterminate, NOT "not an Opportunity Zone")
   High Migration:   No
 ```
 
 `eligibility_status` is `verified-eligible`. Tract `36005023702` verified
 **present** in the live 2016–2020 table this session.
 
-**Do not repeat the `Opportunity Zone: No` line as fact.** Verified this session,
-`36005023702` is genuinely absent from the loaded OZ list (`is_opportunity_zone
-is False`) — which, under the OZ rule below, is exactly the ambiguous negative.
-Narrate it as **"not confirmed as an Opportunity Zone,"** never "not an
-Opportunity Zone." The `summary()` block prints a bare `No`; the skill's job is
-to re-narrate that `No`, not echo it — a `False` here cannot distinguish
-not-designated from a 2010/2020 tract-vintage miss.
+**The `Opportunity Zone` line may now be reported as printed — that is the point
+of 0.5.0.** Through 0.4.3 `summary()` printed a bare `Opportunity Zone: No` here
+and this skill's job was to *re-narrate* it, because `is_opportunity_zone` was a
+plain `bool` and a `False` could not distinguish not-designated from a 2010/2020
+vintage miss. The package now carries the qualifier itself: executed this
+session on 0.5.0, `36005023702` returns `is_opportunity_zone is None` and
+`opportunity_zone_status == 'not-confirmed'`. **Report it as "not confirmed as
+an Opportunity Zone"** — which is what the line says. Still never write "not an
+Opportunity Zone": the underlying ambiguity has not gone away, it has been made
+visible. The qualifier is printed **inline on the same line**, so quoting the
+line alone carries it; do not strip the second line when copying.
 
 The `EligibilityResult` fields (read these, don't re-derive): `address`,
 `tract_id`, `nmtc_eligible` (**`Optional[bool]` — True / False / None**),
 `distress_level` (str: `'deep'`, `'severe'`, `'lic'`, `'ineligible'`,
-`'unknown'`), `poverty_rate`, `ami_ratio`, `unemployment_rate`, `is_non_metro`,
-`is_high_migration_rural`, `is_nmtc_native_area` (**always `False` — see note**),
-`severe_distress`, `deep_distress`, `geocode_success`, `is_opportunity_zone`,
-**`tract_found`** (bool, 0.4.0 — `False` when the tract is absent from the
+`'unknown'`), `poverty_rate`, `ami_ratio`, `unemployment_rate` (each
+`Optional[float]` with **two** kinds of missing — see the tri-state section),
+`is_non_metro`, `is_high_migration_rural`, `severe_distress`, `deep_distress`
+(**all four `Optional[bool]` as of 0.5.0**), `geocode_success` (plain `bool`),
+`is_opportunity_zone` (**`Optional[bool]` — `True` or `None`, never `False`**),
+and **`tract_found`** (bool, 0.4.0 — `False` when the tract is absent from the
 table). Properties: `distress_description` (plain-English line, e.g. *"Severe
-Distress — qualifies for 85% investment commitment"*) and
-**`eligibility_status`** (the four-way string above).
+Distress — qualifies for 85% investment commitment"*), **`eligibility_status`**
+(the four-way string above) and **`opportunity_zone_status`** (0.5.0 — the
+three-way string `designated` / `not-confirmed` / `no-tract`; see the OZ rule
+below).
 
 **`is_high_migration_rural` is the field that exposes a stale install.** It is
 one of the three routes to LIC status (§45D(e)(5)), and pre-0.4.2 the package
@@ -269,15 +341,53 @@ verdict is wrong or absent**: against the current workbook the loader raises
 `EligibilitySchemaError` and returns nothing; against a cached pre-July-2026
 workbook it returns `is_high_migration_rural=True` alongside
 `nmtc_eligible=False` — a result contradicting itself. The remedy for both is
-the same: **upgrade to `>=0.4.2`.** Check it with tract **`01013953500`**, the
-first of the 168 — on 0.4.2 it returns `nmtc_eligible=True`,
-`is_high_migration_rural=True`, `distress_level='lic'` (verified this session).
+the same: **upgrade to the `>=0.5.0` floor.** Check it with tract
+**`01013953500`**, the first of the 168 — on 0.5.0 it returns
+`nmtc_eligible=True`, `is_high_migration_rural=True`, `distress_level='lic'`
+(re-executed this session). The pre-0.4.2 load failure was re-executed too: a
+0.4.1 install against the workbook the Fund serves today raises
+`EligibilitySchemaError` naming column index 2's renamed header, and loads
+nothing.
 
-**`is_nmtc_native_area` is always `False` in this package** — no column in the
-live `.xlsb` populates it (re-verified this session on 0.4.2: `False` for all
-85,395 tracts, `True` count 0; nmtc-mapper 0.4.2 Known Issues). It is
-hardcoded/defaulted, so a `False` here means **"not determined," not "not a
-Native Area."** Do not report it as a fact about a tract.
+**`is_nmtc_native_area` was REMOVED in 0.5.0 — and Native Area status cannot be
+determined from this package at all.** Through 0.4.3 the field existed and was
+`False` for all 85,395 tracts (`True` count 0), because nothing in the `.xlsb`
+ever populated it; reading it now raises `AttributeError` on a result and
+`KeyError` on an enriched frame, which is deliberate — a field that can only
+ever say "I don't know" invites a reader to treat the absence of `True` as
+meaningful, and failing loud is safer than failing silent.
+
+**State the absence; do not fill it.** If a user asks whether a tract is in an
+NMTC Native Area, the honest answer is that **this lookup cannot tell them** —
+not "no," and not an inference from the tract's location or name:
+
+- **The CDFI Fund publishes no tract-keyed NMTC Native Areas resource.** Its
+  April 2025 *NMTC Compliance & Monitoring FAQs* Q31 enumerates the eleven
+  resources it links for determining Area-of-Higher-Distress status, and Native
+  Areas is not among them. The Fund's CIMS map service does carry tract-level
+  native-area *qualification* layers — but for Native Initiatives and the Bank
+  Enterprise Award, not for NMTC; the NMTC layer family has no native-area
+  member. So this is narrower than "no source exists": the Fund has published a
+  tract-keyed native-area determination **for two other programs and not for
+  this one.**
+- **The criterion is live, so "unknown" is not the same as "irrelevant."** The
+  same FAQ's **Q32** names *"NMTC Native Areas: Federal Indian Reservations,
+  Off-Reservation Trust Lands, Hawaiian Home Lands, and Alaska Native Village
+  Statistical Areas"* as one of the **Areas of Deep Distress** criteria added in
+  the CY 2024–2025 Application. A deal may genuinely qualify on it; this package
+  simply cannot say so.
+- **It is a spatial determination, not a join.** Those four classes are Census
+  **AIANNH** legal geographies. Their GEOIDs are four-digit AIANNH codes with
+  **no state or county component** (e.g. `2430`, Navajo Nation, which itself
+  spans three states), while a tract GEOID is `SSCCCTTTTTT`. An identifier that
+  carries no state cannot nest into the state→county→tract chain, so the answer
+  requires a polygon intersection of TIGER/Line AIANNH shapefiles against tract
+  shapefiles — plus a coverage rule (any overlap? centroid? majority land?) that
+  **the Fund has not published for NMTC.** Any answer this package gave would be
+  inventing that rule.
+
+Route the user to the CDFI Fund's **CIMS** and to the Application/Compliance FAQ
+for the criterion, and say plainly that the mapper does not carry it.
 
 Note `.summary` is a **method** — call `result.summary()`. `result.summary`
 alone returns the bound method object, not the text.
@@ -305,7 +415,7 @@ print(r.nmtc_eligible, r.distress_level, r.poverty_rate, r.ami_ratio)
 print(r.eligibility_status, "| tract_found:", r.tract_found)
 ```
 
-Actual output this session:
+Actual output this session (0.5.0):
 
 ```
 False ineligible nan nan
@@ -314,7 +424,20 @@ verified-ineligible | tract_found: True
 
 `poverty_rate` and `ami_ratio` came back **NaN** — the Fund does not publish an
 income or poverty estimate for this tract (see the FAQ Q2 reasons above) —
-render them "not available," never invent a number.
+render them "not available," never invent a number. **As of 0.5.0 `summary()`
+does this for you**, and says which kind of missing it is; the same call on this
+tract prints (executed this session):
+
+```
+  Poverty Rate:     not available — the CDFI Fund published no value for this tract
+  AMI Ratio:        not available — the CDFI Fund published no value for this tract
+```
+
+Through 0.4.3 those two lines rendered as `nan%` for all 1,583 poverty / 2,358
+AMI tracts in this state. Note the wording is deliberately **different** from
+the `❓ UNKNOWN — tract not read` that the indeterminate branches print: this
+tract *was* read and the Fund *did* publish a verdict for it, and only the
+metric is absent. Do not collapse the two into one word.
 `nmtc_eligible=False` / `eligibility_status='verified-ineligible'` /
 `tract_found=True` is a **real NO from the table** — the answer *is*
 ineligible. This is NOT the third state; contrast the next example, where the
@@ -335,7 +458,7 @@ print(r.nmtc_eligible, r.distress_level, r.eligibility_status, r.tract_found)
 r.summary()
 ```
 
-Actual output this session:
+Actual output this session (0.5.0):
 
 ```
 None unknown not-found False
@@ -349,10 +472,22 @@ NMTC Eligibility Result
   NMTC Eligible:    ❓ UNKNOWN — tract not in eligibility table (indeterminate, NOT ineligible)
   Distress Level:   UNKNOWN
   Description:      Indeterminate — eligibility not verified (no match / tract absent)
-  Non-Metro:        No
-  Opportunity Zone: No
-  High Migration:   No
+
+  Poverty Rate:     ❓ UNKNOWN — tract not read
+  AMI Ratio:        ❓ UNKNOWN — tract not read
+  Unemployment:     ❓ UNKNOWN — tract not read
+  Non-Metro:        ❓ UNKNOWN — tract not read
+  Opportunity Zone: ❓ NOT CONFIRMED — not on the 2018 designation list, which is
+                    2010-tract-based (indeterminate, NOT "not an Opportunity Zone")
+  High Migration:   ❓ UNKNOWN — tract not read
 ```
+
+**This block is why the floor moved to `>=0.5.0`.** On 0.4.3 the same call
+printed `Non-Metro: No`, `Opportunity Zone: No` and `High Migration: No`, and
+omitted the three demographic lines entirely — three fabricated negatives and
+three silent omissions sitting directly underneath a correct `❓ UNKNOWN`
+verdict, in the skill's own teaching case for the third state. Every one of
+those lines now qualifies itself inline, so the block can be pasted whole.
 
 Report this as: *"NMTC eligibility could not be determined for tract
 36061980000 — it is absent from the 2016–2020 eligibility universe."* Do **not**
@@ -378,7 +513,12 @@ The same third state reaches you from `check_address` when an address does not
 geocode: `nmtc_eligible=None`, `distress_level="unknown"`,
 `eligibility_status="geocode-failed"`, and `summary()` prints *"❓ UNKNOWN —
 address could not be geocoded (indeterminate, NOT ineligible)."* (executed this
-session against a deliberately unresolvable address).
+session on 0.5.0 against a deliberately unresolvable address). On that branch
+0.5.0 also returns `opportunity_zone_status == 'no-tract'` and prints
+*"Opportunity Zone: ❓ UNKNOWN — no census tract resolved"* — through 0.4.3 this
+branch hardcoded `is_opportunity_zone=False`, asserting a non-designation about
+an address that never resolved to a tract. It is the third of the three OZ
+states and the only one that is *not* "not-confirmed."
 
 ## Worked example — project feasibility screen (executed)
 
@@ -436,27 +576,62 @@ is only as honest as this input.
   not be determined" answer.
 - State the **eligibility table vintage** (below) so the user knows what the
   answer is current as of.
-- Render NaN/None demographic fields as "not available," never as a number.
+- Render NaN/None demographic fields as "not available," never as a number —
+  and keep the two apart: **`NaN` on a found tract** is "the CDFI Fund published
+  no value for this tract" (the verdict is still real), while **`None`** is
+  "tract not read" (no verdict at all). 0.5.0's `summary()` prints those two
+  sentences for you; quote what it printed rather than flattening both to
+  "N/A".
 - Report a `None`/`"unknown"` eligibility verdict as "could not be determined,"
   never as "not eligible." (See the third-state rule.)
 - Distinguish the mapper's *tract-eligibility lookup* (authoritative table
   lookup) from the screener's *feasibility score* (a heuristic first pass).
-- **OZ status is asymmetric — treat a `No` like the third state.** NMTC
-  eligibility and OZ status are independent, so report OZ separately either way.
-  An OZ **"Yes" (`is_opportunity_zone is True`) may be reported as fact.** An OZ
-  **"No" must NOT be reported as "not an Opportunity Zone"** — report it as
-  **"not confirmed as an Opportunity Zone (this package cannot distinguish
-  not-designated from a 2010/2020 tract-vintage miss; ~16% of designations are
-  unreachable)."** `is_opportunity_zone` is a plain `bool`, so a `False` means
-  EITHER not-designated OR a vintage miss: OZs were designated in 2018 on 2010
-  tracts, the geocoder now returns 2020 tracts, and the ~16% that
-  split/merged/renumbered can never match — a confident `False` for 1,408 of the
-  8,764 designated OZs (16.1%). Same posture as the third-state rule — an
-  unknowable negative is not a negative. (nmtc-mapper 0.4.2 Known Issues; the fix
-  to `Optional[bool]` is slated for 0.5.0. Both figures re-derived directly this
-  session on 0.4.2, not carried forward on trust: the OZ load is 8,764 tracts,
-  and 1,408 of them — 16.1% — are absent from the 85,395-row 2020-basis
-  eligibility table and so can never match.)
+- **OZ status is asymmetric, and as of 0.5.0 the package says so itself — read
+  `opportunity_zone_status`, not the boolean.** NMTC eligibility and OZ status
+  are independent, so report OZ separately either way. The property is a
+  three-way string and each value has exactly one honest rendering:
+
+  | `opportunity_zone_status` | `is_opportunity_zone` | report it as |
+  |---|---|---|
+  | `designated` | `True` | **"a designated Opportunity Zone"** — may be stated as fact |
+  | `not-confirmed` | `None` | **"not confirmed as an Opportunity Zone"** — never "not an Opportunity Zone" |
+  | `no-tract` | `None` | **"unknown — no census tract was resolved"** (the address did not geocode) |
+
+  **`is_opportunity_zone` is `Optional[bool]` and a `False` is never
+  returnable** — so the caveat is now carried by the type and by `summary()`'s
+  printed line, and **you must no longer add it by hand.** Report the line as
+  printed. Two traps follow from that. First, **`None` is falsy**, so an
+  `if r.is_opportunity_zone: … else: …` written against 0.4.3 still runs, but its
+  else-branch quietly stops meaning "not designated" and starts meaning "not
+  designated **or** unknown" — switch on `opportunity_zone_status` instead.
+  Second, `not-confirmed` must not be re-narrated as a soft "no": *"probably not
+  an OZ"* is the same fabrication the type change removed, re-added in prose.
+
+  **Why the package refuses a `False`** (the reason still matters even though
+  the skill no longer has to enforce it): OZs were designated in Dec 2018 on
+  **2010** census tracts, while this table and the geocoder are **2020**-basis,
+  so a genuine non-designation and a vintage miss are *the same observation*
+  without a crosswalk. Re-derived directly against the live 0.5.0 load this
+  session, not carried forward from the 0.4.2 session: the OZ file is **8,764
+  designated tracts**, of which **7,356 have a row in the 85,395-row 2020-basis
+  table and 1,408 (16.1%) do not.**
+
+  **What the 1,408 counts has changed, and the old sentence around it is
+  retired.** On 0.4.3 it was quoted as the size of a harm — designations the
+  package would answer "No" about. It never was that: through 0.4.3 the confident
+  `False` fell on **78,039 tracts** (every row in the table outside the
+  designation set) plus every unresolved address, while the 1,408 measured
+  something different — **how much of the designation list is unreachable from a
+  2020 GEOID at all.** That is the number that still means something at 0.5.0,
+  and it now sizes the **not-confirmed** population rather than a fabricated
+  negative: it is why a `not-confirmed` cannot be read as a "no." Of the 1,408,
+  **75 are Island Area tracts** (AS 16, GU 25, MP 20, VI 14) that are outside
+  this table by scope rather than by vintage — see the Island Areas paragraph in
+  the vintage-scope rule — and the remaining **1,333 are 2010→2020 vintage
+  misses.** So `not-confirmed` has three possible causes the package cannot
+  separate: genuinely not designated, a vintage miss, or an Island Area outside
+  this table. Same posture as the third-state rule — an unknowable negative is
+  not a negative.
 
 ## Data dependencies & fragility (must document)
 
@@ -476,10 +651,14 @@ is only as honest as this input.
   "sample"`; its 12 synthetic tracts are NEVER valid for a real answer.)
 - **Tract vintage in force (verified this session):** the cached table is
   `NMTC_LIC_Eligibility_2016_2020.xlsb`, **85,395 census tracts**, sourced from
-  the CDFI Fund's Aug-2025b Severe/Deep Distress release. Normalized columns
-  include `nmtc_eligible`, `distress_level`, `poverty_rate`, `ami_ratio`,
+  the CDFI Fund's Aug-2025b Severe/Deep Distress release. As of 0.5.0 the
+  loaded frame is indexed on `tract_id` and carries **exactly nine** normalized
+  columns — `nmtc_eligible`, `distress_level`, `poverty_rate`, `ami_ratio`,
   `unemployment_rate`, `is_non_metro`, `is_high_migration_rural`,
-  `is_nmtc_native_area`, `severe_distress`, `deep_distress`. This is a
+  `severe_distress`, `deep_distress` (verified this session against the live
+  load). A tenth, `is_nmtc_native_area`, was carried through 0.4.3 and **was
+  dropped in 0.5.0**; it never held a `True` and no column of the `.xlsb` ever
+  populated it — see the note under the field list. This is a
   2016–2020 ACS-based vintage. Per the CDFI Fund's transition rules this vintage
   became **usable as of Sept 1, 2023** and is **mandatory for QLICIs closing
   on/after Sept 1, 2024** (primary: CDFI Fund, *2016-2020 ACS Data FAQ*, updated
@@ -493,7 +672,15 @@ is only as honest as this input.
   against the vintage in force at its QLICI close date. 0.4.0 validates this
   structure at load
   (`EligibilitySchemaError` / `EligibilityValueError`) before trusting any row,
-  because the loader binds columns positionally.
+  because the loader binds columns positionally. **0.5.0 adds a second guard the
+  first one structurally cannot provide:** the header check pins header
+  *strings*, so a re-publish that leaves every header byte-identical and rewrites
+  a *cell value* passes it completely — and the `== "YES"` tests would then map
+  the unrecognized value to `False`, a fabricated negative on the LIC verdict and
+  on both distress flags. Each categorical cell is now checked against a per-column
+  value allowlist and raises `EligibilitySchemaError` instead. Nothing about this
+  changes what you report; it changes what the package will do rather than answer
+  from a layout it does not recognize.
 - **Geocoder vintage is bound to the table (0.4.1).** 0.4.1 pins the Census
   geocoder to the eligibility table's 2020 tract basis (`schema.TRACT_VINTAGE`).
   0.4.0 and earlier geocoded at `Current_Current`, which since the 2022 ACS
@@ -505,7 +692,8 @@ is only as honest as this input.
 
 **Geocoder (0.4.0 splits the old single `None` return into four distinct
 outcomes).** `geocode_address` / `check_address` now behave as follows. All
-four executed this session against the installed 0.4.2 wheel: the no-match and
+four re-executed this session against the installed **0.5.0** wheel and are
+unchanged from 0.4.2: the no-match and
 agree branches ran against the live Census endpoint; the transport failure was
 **induced** by pointing the geocoder URL at a closed local port, which raised
 `GeocoderTransportError` (`connection/DNS`, `isinstance NMTCMapperError ==
@@ -535,8 +723,11 @@ True`), message naming the failure kind and the address; the disagree branch was
 **Tract absent from the table** (`check_tract` on a GEOID not in the ~85k
 universe): **not a failure** — it is the third state. Returns
 `nmtc_eligible=None`, `distress_level="unknown"`, `tract_found=False`,
-`eligibility_status="not-found"`. Report "could not be determined," never
-"ineligible." (See the third-state rule and its worked example.)
+`eligibility_status="not-found"`, and **as of 0.5.0 every other tract-derived
+field is `None` too** — `is_non_metro`, `is_high_migration_rural`,
+`severe_distress`, `deep_distress`, and the three demographic rates. Report
+"could not be determined," never "ineligible." (See the third-state rule and its
+worked example.)
 
 **CDFI Fund file download fails / 404** (URL moved): raises
 `EligibilityDownloadError` / `EligibilityParseError`. Report the error and that

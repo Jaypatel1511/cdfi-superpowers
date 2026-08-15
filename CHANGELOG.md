@@ -2,6 +2,200 @@
 
 All notable changes to `cdfi-superpowers`. Versioning is CalVer (`YYYY.M.MINOR`).
 
+## 2026.8.1
+
+**`nmtc-eligibility` named a field the dependency had removed, and asserted a
+type the dependency had changed.** Both defects entered the repo the moment
+`nmtc-mapper 0.5.0` published, and 2026.8.0 could not have caught them: **0.5.0
+went to PyPI at 2026-08-13 20:46:38 CDT and the 2026.8.0 merge (`fc9d900`)
+landed at 21:02:01 — fifteen minutes and twenty-three seconds later**, verified
+against 0.4.3. Nothing was done wrong; the release arrived mid-cycle. This entry
+records it because the *shape* of the miss is the useful part: 2026.8.0's own
+provenance-line change was written to survive exactly this, and it did — the
+line it produced, `SKILL.md:48`, read
+
+> "Verified 2026-08-13 (PyPI) against **`nmtc-mapper>=0.4.2`** (resolved 0.4.3 at
+> the time)"
+
+which was true when written and is the evidence that located the drift. The
+floor + date + as-of pattern works. What it cannot do is bump the floor for you.
+
+Both defects are the same class the skill exists to prevent — **an unknowable
+negative reported as a negative** — arriving through the dependency rather than
+through the prose. Re-verified in clean venvs on Python 3.14 before any edit:
+`is_nmtc_native_area` PRESENT on 0.4.2 and 0.4.3, **GONE on 0.5.0**;
+`is_opportunity_zone` a plain `bool` on 0.4.2/0.4.3, **`Optional[bool]` on
+0.5.0 with `False` unreachable.**
+
+### Changed
+- **Install floor raised `>=0.4.2` → `>=0.5.0`, at six line-sites across five
+  files** — `.agents/skills/nmtc-eligibility/SKILL.md` (45 and the provenance
+  line at 48), `README.md` (27 and the load-bearing-floor note at 33),
+  `llms.txt:16`, and **`references/package-index.md:13`**. The last was not on
+  the sync brief's list and was found by grep; a floor that lives in five files
+  has to be swept, not enumerated from memory.
+- **The floor's justification changes with it, and is stated from the skill's own
+  rule.** `>=0.4.2` was load-bearing because 0.4.2 stopped reporting 168
+  statutorily-eligible tracts as ineligible. **`>=0.5.0` is load-bearing because
+  below it `is_opportunity_zone` returns a confident `False` for 78,039 of the
+  85,395 tracts** — every row outside the 8,764-tract designation set — plus a
+  hardcoded `False` on the geocode-no-match branch, for an address that never
+  resolved to a tract. The skill already calls an unknowable negative reported as
+  a negative the thing that "kills a deal that may genuinely qualify."
+- **The OZ output-presentation rule rewritten: the compensation goes, the posture
+  stays.** `SKILL.md:450` asserted *"`is_opportunity_zone` is a plain `bool`, so
+  a `False` means EITHER not-designated OR a vintage miss"* — false at 0.5.0 —
+  and `:456` said *"the fix to `Optional[bool]` is slated for 0.5.0"*, describing
+  a released change as future. The rule now teaches the **`opportunity_zone_status`
+  property** (0.5.0: `designated` / `not-confirmed` / `no-tract`) with one honest
+  rendering per value, and says explicitly that an AI must **no longer add the
+  caveat by hand, because the type and the printed line now carry it**. This is
+  the same inversion `hmda-analysis` went through at 2026.7.5: what was an
+  instruction the AI had to remember is now enforced by the package.
+- **The 1,408 / 16.1% figure re-derived on 0.5.0 and re-stated — it was never
+  what the old sentence said it was.** Re-executed against the live load: the OZ
+  file is **8,764** designated tracts, **7,356** have a row in the 85,395-row
+  2020-basis table and **1,408 (16.1%) do not**. The figures are identical to the
+  0.4.2 session; **the sentence attached to them was wrong then and is retired.**
+  It was quoted as the size of the confident-`False` harm; the harm was 78,039
+  tracts, and 1,408 measured something else — how much of the designation list is
+  unreachable from a 2020 GEOID at all. That is the quantity that still means
+  something at 0.5.0, where it sizes the **not-confirmed** population rather than
+  a fabricated negative. Newly derived and added: **75 of the 1,408 are Island
+  Area tracts** (GU 25, MP 20, AS 16, VI 14) — a scope hole, not a vintage miss,
+  cross-referenced to the Island Areas paragraph — and the remaining **1,333 are
+  2010→2020 vintage misses.** `not-confirmed` therefore has three inseparable
+  causes, which is why it cannot be read as a "no."
+- **`is_nmtc_native_area` removed from five sites in `SKILL.md` (257, 276, 278,
+  280, 482) and replaced rather than deleted.** A skill that exists to stop an AI
+  fabricating an answer has to state the absence, not leave a gap. The new note
+  says: the field was dropped in 0.5.0 and reading it now raises; **the CDFI Fund
+  publishes no tract-keyed NMTC Native Areas resource** (April 2025 NMTC
+  Compliance & Monitoring FAQs **Q31** enumerates eleven and this is not among
+  them, while the Fund's CIMS service does carry tract-level native-area
+  qualification layers **for Native Initiatives and the BEA, not for NMTC**);
+  **the criterion is nonetheless live** — the same FAQ's **Q32** names "NMTC
+  Native Areas" as one of the *Areas of Deep Distress* criteria added in the CY
+  2024–2025 Application, so "unknown" here is not "irrelevant"; and the
+  determination is a **polygon intersection** against Census **AIANNH**
+  geographies, whose GEOIDs are four-digit codes with no state or county
+  component and therefore cannot nest into `SSCCCTTTTTT`. An AI asked about
+  Native Area status must say it cannot be determined from this package, and
+  route to CIMS.
+- **`SKILL.md:479-482`'s field-set sentence rewritten, not just shortened.** It read
+  "Normalized columns include …" with the dropped field inside a list presented
+  as a coherent set. Deleting a name from a list does not make the surrounding
+  sentence true, so the sentence now states the exact shape verified against the
+  live 0.5.0 load: indexed on `tract_id`, **exactly nine** normalized columns,
+  with the tenth named as dropped.
+- **The tri-state section extended to the contract 0.5.0 actually ships.** 0.4.0
+  made the verdict tri-state and left its neighbours fabricating **inside the very
+  branches written to protect it**. Six fields are now `Optional[bool]`
+  (`nmtc_eligible`, `is_non_metro`, `is_high_migration_rural`, `severe_distress`,
+  `deep_distress`, `is_opportunity_zone`), and the section states the rule that
+  ties them: when `eligibility_status` is `not-found` or `geocode-failed`, every
+  tract-derived field is `None`. Added with it: `None` is falsy, so
+  `if r.severe_distress:` silently keeps meaning the wrong thing; and the three
+  demographic rates now have **two** kinds of missing — `None` ("tract not read")
+  versus `NaN` ("the Fund published no value", 1,583 poverty / 2,358 AMI rows,
+  re-derived this session), which `summary()` prints as two different sentences.
+- **Every worked example re-executed on a clean-venv 0.5.0 install** (cold cache,
+  isolated `HOME`, live CDFI Fund and Census downloads), and the actual output
+  pasted. No output was hand-edited.
+  - **`36005023702` (Bronx)**: every demographic and eligibility figure identical
+    to the 0.4.2 run; the `Opportunity Zone` line is the one line that moved, from
+    `No` to `❓ NOT CONFIRMED — not on the 2018 designation list, which is
+    2010-tract-based (indeterminate, NOT "not an Opportunity Zone")`. The skill's
+    warning at `:245` — "Do not repeat the `Opportunity Zone: No` line as fact" —
+    **became a description**: the line may now be reported as printed, which is
+    the point of the release. Executed values: `is_opportunity_zone is None`,
+    `opportunity_zone_status == 'not-confirmed'`.
+  - **`36061980000` (absent tract)** — the skill's teaching case for the third
+    state — **changed most.** On 0.4.3 it printed `Non-Metro: No`, `Opportunity
+    Zone: No` and `High Migration: No`, and omitted the three demographic lines
+    entirely: three fabricated negatives and three silent omissions sitting
+    directly under a correct `❓ UNKNOWN` verdict. All six lines now print and
+    qualify themselves inline.
+  - **`11001980000` (verified-ineligible, null demographics)**: the printed
+    values are unchanged (`False ineligible nan nan`), but `summary()` now renders
+    the two null rates as "not available — the CDFI Fund published no value for
+    this tract" where 0.4.3 rendered `nan%`. Added to the example, with the point
+    that this wording is deliberately **different** from "tract not read" — the
+    tract was read and its `NO` is real.
+  - **All four geocoder branches re-executed on 0.5.0** and unchanged from 0.4.2
+    (no-match and agree live; transport failure induced against a closed local
+    port; ambiguity induced with two matches on different tracts). The provenance
+    line now names 0.5.0 rather than "the installed 0.4.2 wheel".
+  - **The pre-0.4.2 hard load failure re-executed**: a 0.4.1 install against the
+    workbook the Fund serves today raises `EligibilitySchemaError` naming column
+    index 2's renamed header, and loads nothing.
+  - **nmtc-screener 0.1.0's example re-executed** — `HIGH 95` and all four
+    reasons byte-identical.
+- **A second 0.5.0 loader guard documented** under Data dependencies & fragility.
+  The header check pins header *strings*, so a re-publish that leaves every header
+  byte-identical and rewrites a *cell value* passes it — and the `== "YES"` tests
+  would map the unrecognized value to `False`, a fabricated negative on the LIC
+  verdict and both distress flags. 0.5.0 checks each categorical cell against a
+  per-column value allowlist and raises instead.
+
+### Not changed — verified, and recorded so the next cycle does not re-open them
+- **No eligibility number moved.** Re-derived on 0.5.0 against the live table and
+  identical to 0.4.3: **85,395** rows, `nmtc_eligible True` **35,335**, distress
+  `{ineligible 50060, lic 14153, severe 13121, deep 8061}`,
+  `is_high_migration_rural True` **1,422**, and the **168** HMR tracts failing
+  both the ≥20%-poverty and ≤80%-AMI prongs — all non-metro, all in the
+  (80%, 85%] MFI band, first-sorted `01013953500`, all now eligible.
+- **…even though 0.5.0 corrected three structural defects in
+  `_compute_eligibility`** (a missing `LIC AND` conjunction on severe/deep,
+  `is_non_metro` standing in for the high-migration-rural 85% band, and `>=` vs
+  `>` on the distress poverty prongs). **The mechanism prose is unaffected**, and
+  the reason is worth writing down: that function **backs `load_sample_table()`
+  only** — the twelve synthetic demo tracts. The official `.xlsb` path reads the
+  Fund's own published columns C/N/O/P and never calls it. The skill documents
+  the `.xlsb` path and correctly describes the C-or-N verdict, so no sentence
+  about *how* eligibility is computed was left wrong behind a right number.
+- **`SKILL.md:496`'s "the loader binds columns positionally" is CORRECT and was
+  not touched.** It matches the package's own source comment and the
+  `EligibilitySchemaError` message the 0.4.1 re-execution printed verbatim. A
+  prior cycle nearly swept this word because a *different* sentence, about
+  validation, was wrong; the restraint is recorded again because a justification
+  must be scoped as tightly as the edit it justifies.
+- **No Native Areas distress-tier correction exists to make in this repo.**
+  `nmtc-mapper`'s own methodology document withdrew a claim that this skill
+  called Native Areas an *Areas of Higher Distress* criterion. Re-verified at
+  `fc9d900`: `"higher distress"`, case-insensitive, across all tracked files
+  returns **zero** matches. The skill never made a tier claim at all. A grep that
+  finds nothing here is the expected result, not a search to widen.
+- **`hmda-analysis` and `cdfi-peer-benchmark` untouched**, and the CHANGELOG's
+  historical entries for released versions left as written — including
+  `CHANGELOG.md:182` and `:358-359`, which name `is_nmtc_native_area`. They are
+  correct as history of 0.4.1/0.4.2 and are not defects.
+- **`llms.txt`'s `cdfi-benchmark` pin needed no restraint after all** — 2026.8.0
+  already corrected it to `0.2.1`, matching `README.md:28` and
+  `references/package-index.md:15`. There is no `0.2.0` left in the repo.
+- **`nmtc-screener` stays unpinned at `0.1.0`** and `nmtc-calc 0.2.1` remains the
+  transitive dependency; neither released.
+
+### Version
+`2026.8.0` → **`2026.8.1`**, continuing 2026.8.0's deliberate CalVer correction
+rather than reopening it: the month segment is in true (this release is August
+2026) and this is a patch on the same month. Bumped at `README.md:58`,
+`.claude-plugin/plugin.json` and both `.claude-plugin/marketplace.json` entries.
+
+### Known limits of this sync
+- **`NMTCMapper.eligible_count()` changed incompatibly in 0.5.0** — `pct_eligible`
+  is removed (`KeyError`) in favour of `pct_eligible_of_determined`, whose
+  denominator is `determined` rather than `total`, alongside new `determined` /
+  `indeterminate` / `ineligible` keys. **No edit was made**, because no file in
+  this repo documents `eligible_count()` or `enrich()`; there is no stale text to
+  fix. Recorded so a future cycle that adds batch coverage starts from the 0.5.0
+  contract — including that `~df["severe_distress"]` now raises `TypeError` on a
+  frame with indeterminate rows and must be written `!= True`.
+- **`is_opportunity_zone` is still absent from `enrich()`'s columns** — batch
+  callers get no OZ answer, single-address callers do. 0.5.0 declines to close
+  that gap deliberately. The skill documents only the single-address path, so
+  nothing here is wrong; it is a gap in coverage, not a defect.
+
 ## 2026.8.0
 
 **CalVer discontinuity, noted deliberately.** `2026.7.3` shipped **Jul 31**, but
