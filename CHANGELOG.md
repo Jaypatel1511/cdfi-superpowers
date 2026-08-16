@@ -2,6 +2,106 @@
 
 All notable changes to `cdfi-superpowers`. Versioning is CalVer (`YYYY.M.MINOR`).
 
+## 2026.8.2
+
+**This is a missing rule, not a retraction. Nothing 2026.8.1 asserted was
+false.** `nmtc-eligibility` never said a CDE meets the 85% or 20% commitment, and
+never divided anything to produce a share. What it never said was that it
+*cannot* — and it carried one When-to-use example inviting a reader to try.
+
+The gap was located by a defect one repo over. `nmtc-application-builder` 1.2.1
+(shipped 2026-08-16, `3e436dc`) closed a bug whose root is a distinction this
+repo defines correctly in `references/cdfi-industry-primer.md` and applied
+nowhere: the flagship bucketed and divided **QEI** and rendered the quotient
+under a label asserting the Fund's 85%/20% bars. Same shape as the
+`benchmark_thresholds.py` defect — **the correct fact was in the repo and the
+wrong one was on the page.** This skill had the same latent invitation and no
+rule standing against it.
+
+**Primary source, downloaded and quoted this session, not relayed.** The CY
+2024-2025 Allocation Application, **Q25(a)**, asks whether the Applicant commits
+to *"providing at least 85% of its QLICIs **(in terms of aggregate dollar
+amounts)**"* in the qualifying areas; **Q25(b)(i)** asks for *"the percentage of
+its QLICIs (in terms of aggregate dollar amounts)"* in the 20% tier. The
+review-process document (`CY_2024_25_NMTC_Program_Review_Process.pdf`, §C.1)
+states both on **QLICIs**. The parenthetical is the load-bearing half and no
+relayed version of this quote carried it.
+
+### Added
+- **The commitment-basis rule (non-negotiable)** in
+  `.agents/skills/nmtc-eligibility/SKILL.md`, placed as the fourth rule block
+  after the vintage-scope rule and immediately above the worked example whose
+  `summary()` output prints *"qualifies for 85% investment commitment"*. It
+  states: the denominator is a CDE's **QLICI dollars** (not QEI, not project
+  count, not tract count); these packages **never see a QLICI amount**, so they
+  answer *"would a QLICI made here count?"* and cannot answer *"what share of
+  this CDE's QLICIs qualifies?"*; and no output of this layer may support a claim
+  that a CDE meets, clears, is on track for, or fails either commitment.
+- **The routes the flags do not cover, enumerated from the Application rather
+  than assumed.** Q25(a)'s numerator is **≥1 of items 1–5 or ≥2 of items 6–12**.
+  Severe Distress is item 1; this package returns exactly two of the twelve
+  (`severe_distress` and `is_non_metro`, item 4) and computes **no** multi-indicia
+  measure. Q25(b)'s 20% is **any one of four** — Deep Distress, NMTC Native
+  Areas, High Migration Rural Counties, U.S. Island Areas — so `deep_distress`
+  is one route of four, not the tier. Two of the unreachable routes are ones the
+  skill already declines: Native Areas and Island Areas.
+- **Three counts derived against the live 85,395-row table this session**, on a
+  fresh `nmtc-mapper` 0.5.0 install with an isolated `HOME` and a cold cache
+  (downloaded workbook SHA-256 `3a6f5851…72d49`): `deep_distress` is a **strict
+  subset** of `severe_distress` — **8,061 / 0 / 13,121** against **21,182**
+  severe-flagged. Also derived and stated in the rule: **10,532 tracts non-metro
+  and not severe** (3,754 of them LIC), **1,185 high-migration-rural and not
+  deep**. The nesting itself is stated the Fund's way — *"A QLICI that meets this
+  commitment will also automatically meet the commitment made in Question
+  25(a)"* — because the flag subset is a fact about two columns, not the reason
+  the commitments nest.
+- Two cross-references so the rule is reachable from the sections an AI skims:
+  one output-presentation bullet (never render a distress flag as a share) and
+  one caveat bullet.
+
+### Changed
+- **`SKILL.md:30`, the one line that was mis-framed rather than merely silent.**
+  It read *"Does this tract qualify for severe distress / the 85% investment
+  commitment?"* — a category error: a tract carries a flag, a **CDE** makes a
+  commitment, and the example presented both as one lookup this skill performs.
+  Split into the question the tool answers (*"Is tract 36005023702 flagged severe
+  distress — or deep distress — in the CDFI Fund's eligibility table?"*) and a
+  commitment-flavoured example answered **by pointing at the rule** (*"Does my
+  pipeline meet the 85% investment commitment?"*) rather than by returning a
+  number. No factual claim changed; a routing invitation did.
+- **The two verbatim quotations of `nmtcmapper.data.schema.DISTRESS_LEVELS` are
+  untouched, and qualified on the adjacent line instead.** `:295` (inside
+  executed `summary()` output) and the `distress_description` example in the
+  field list are quotations of a package constant; paraphrasing one into skill
+  text is the banned pattern that produces exactly this class of defect. Both now
+  carry an adjacent note in the skill's own voice.
+- `SKILL.md`'s screener caveat — *"not underwriting or a commitment"* — is a
+  different sense of the word, is correct, and was **deliberately not swept**.
+
+### Reported, not fixed (upstream)
+- **`nmtc-mapper`'s `DISTRESS_LEVELS` strings are the upstream defect**, and the
+  skill cannot repair them without breaking the verbatim rule. Both are house
+  claims wearing a Fund label: `"severe"` names the 85% commitment with no QLICI
+  denominator and no *"and/or multiple indicia"* route; `"deep"` asserts
+  *"strongest NMTC application score"* with no citation — directionally true
+  against the real Q25(b) commitment and still unsourced. Replacement strings
+  proposed for a 0.5.1; no branch opened.
+
+### Verified, no change needed
+- **The two pins recorded as stale in the prior cycle are not stale.**
+  `README.md:27`, `llms.txt:16` and `references/package-index.md:13` all carry
+  `nmtc-mapper >=0.5.0`, and `llms.txt` carries `cdfi-benchmark 0.2.1` — 2026.8.1
+  swept all of them. The standing note is retired.
+- `cdfi-peer-benchmark` and `hmda-analysis` **read** (not grepped) end-to-end
+  through their When-to-use and scope sections: neither mentions QLICI, QEI, or
+  NMTC, and neither would route a commitment question inward. Their guardrails
+  (FDIC-insured banks only; descriptive-only firewall) hold independently.
+
+### Version
+`2026.8.1` → **`2026.8.2`**, at four sites — `.claude-plugin/marketplace.json`
+(two), `.claude-plugin/plugin.json`, `README.md:61` — swept and re-grepped, not
+enumerated from memory.
+
 ## 2026.8.1
 
 **`nmtc-eligibility` named a field the dependency had removed, and asserted a

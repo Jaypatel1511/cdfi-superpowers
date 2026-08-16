@@ -58,7 +58,7 @@ See `references/caveats-and-limits.md` for the full boundary list.
 
 ## Version
 
-**cdfi-superpowers 2026.8.1** (CalVer, `YYYY.M.MINOR`). This is the plugin
+**cdfi-superpowers 2026.8.2** (CalVer, `YYYY.M.MINOR`). This is the plugin
 version carried by `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json`;
 the three manifests and this line move together. It versions the *skills*, not
 the wrapped PyPI packages — those are independently versioned and are listed in
