@@ -2,6 +2,125 @@
 
 All notable changes to `cdfi-superpowers`. Versioning is CalVer (`YYYY.M.MINOR`).
 
+## 2026.8.3
+
+**An addition and a sharpening — not a retraction. Nothing 2026.8.2 asserted was
+false.** The commitment-basis rule it shipped was already careful: the
+When-to-use line answering *"Does my pipeline meet the 85% investment
+commitment?"* already said **"answered by pointing at that rule, never by
+returning a number,"** and the worked example already said **"a tract does not
+'qualify for' a commitment — a CDE makes one, over its own QLICI dollars."**
+Both stand unchanged.
+
+**What the skill did not say is the SHAPE of the Question 25 fields** — and
+without that, a reader could still infer that a CDE files a computed 85% figure
+somewhere. It does not. That inference is the harm this entry closes.
+
+**Primary source, retrieved and hash-verified this session, not relayed.** The CY
+2024-2025 NMTC Program Allocation Application — 142 pp., 1,525,626 bytes, SHA-256
+`0280c6bc…12834f`, downloaded from `cdfifund.gov/system/files/2024-11/` and
+text-extracted locally with `pypdf`. The hash and byte count match the pin
+`nmtc-application-builder` carries at `nmtcapp/renderers/_question_25.py:52`, so
+both repos read the same instrument. Every Q25 quotation below was read off this
+download; none is carried forward.
+
+### Added
+- **A field-shape block inside the commitment-basis rule** in
+  `.agents/skills/nmtc-eligibility/SKILL.md`, placed immediately after the
+  review-process citation and before the QLICI-denominator paragraph. It carries
+  a table of every Question 25 field with its printed page, Response column and
+  **Field Type**, read verbatim from the instrument:
+  - **Q25(a) is a `Dropdown Menu`, `☐ Yes` / `☐ No`** (printed p. 38). The 85% is
+    the threshold printed in the question text, not a figure the Applicant
+    supplies. **There is no percentage field for Q25(a) anywhere in Question 25.**
+  - **Q25(b)(i) is a `Dropdown Menu`** — `0 / 5 / 10 / 15 / 20` (printed p. 41).
+    Only selecting 20 reaches a free numeric field, and that field is
+    **25(b)(ii)**, a *separate* question of Field Type `Numerical – Percentage`
+    admitting *"any percentage amount starting from 20% and up to 100%."* It is
+    the only free-entry percentage in the whole of Question 25.
+  - **Items 1–12 under Q25(a) and items 1–4 under Q25(b) are themselves Yes/No
+    dropdowns** — so the Applicant declares *which area types it will serve*,
+    again without supplying a share.
+  - **Both commitments bind forward**, quoted verbatim with its page — Q25(a)
+    Question Notes, printed p. 38: *"If the Applicant receives an NMTC
+    Allocation, it will be required to meet the percentage figure identified, and
+    such requirement will be a term of its Allocation Agreement."*
+  - **The pipeline is not the deployment**, quoted verbatim with pages — the NOTE
+    immediately above Q25 (printed p. 38): *"NOTE: The CDFI Fund does not expect
+    that each and every investment will be in an area identified in Question
+    25."*; Table A5 at printed p. 23: *"It is not expected that the Applicant will
+    invest in all of the listed projects"*, those transactions being
+    *"representative of the types of projects that will be undertaken with an
+    NMTC Allocation"*; and Q25(b)(i)'s notes at printed p. 41: *"Applicants will
+    not be held to the individual commitments to any of the areas listed below."*
+- **The operational consequence, stated as plainly as the rest of the rule:** a
+  CDE asking *"what is my Q25(a) percentage"* is asking for something the
+  Application does not collect — answer what the commitment means and what
+  evidence bears on it, **never a computed share, and never a recommendation to
+  answer No because a current pipeline falls short.**
+- **The harm case, named.** A CDE at 60% pipeline told *"your Q25(a) share is
+  60%"* checks **No** and forfeits points **it was entitled to claim**, because
+  the commitment governs future QLICIs. Understating an Applicant to a federal
+  agency is the mirror of the fabricated negative the third-state rule exists to
+  stop — pointed at the Applicant instead of the tract.
+- **A field-shape clause in the Caveats list**, so a reader who skims to the
+  bottom still learns that Q25(a) collects no percentage.
+- **The symmetric harm, closed in the same paragraph.** Stating the field shape
+  removes the *filed* number; it does not remove the *decision*. A reader told
+  only "it's a Yes/No" can overcorrect into "so check Yes" — and the same
+  Question Notes make Yes binding, *"a term of its Allocation Agreement"*,
+  enforceable against an Allocatee that misses it. The rule now refuses **both**
+  directions and says what the layer can honestly supply instead: **evidence per
+  prospective QLICI** — which Q25 route each project's tract can be shown to
+  satisfy, which it cannot, and which this package cannot see at all (**two of
+  twelve** items under 25(a), **two of four** under 25(b), no multi-indicia
+  measure) — with the tri-state carried through, a `None` being a third column
+  and never a "does not qualify."
+
+### Changed
+- **`DISTRESS_LEVELS["severe"]` gloss — "85% numerator" retired.** The claim was
+  true and the noun was wrong: *numerator* implies a computed quotient the
+  Applicant files. Was: *"a QLICI made in tract `36005023702` **would count
+  toward a CDE's 85% numerator**, on item 1 of the Q25 area list."* Now: *"a
+  QLICI made in tract `36005023702` **would satisfy item 1 of the Q25(a) area
+  list**"* — one of the five single-item routes — plus *"whether to commit to the
+  85% is a **Yes/No the CDE answers for itself**, and no percentage is filed for
+  it."* The verbatim-quotation rule for `DISTRESS_LEVELS` and the *"a tract does
+  not 'qualify for' a commitment"* sentence are untouched.
+- **The same noun, one paragraph earlier.** *"Q25(a)'s numerator is a QLICI in an
+  area characterized by…"* asserted that Q25(a) *has* a numerator; it now reads
+  *"A QLICI counts toward the Q25(a) commitment when it is made in an area
+  characterized by…"* The item lists are unchanged and were re-verified against
+  the instrument this session (items 1–12 confirmed, including item 10 as MUA
+  **or geographic HPSA** and item 12 as LILA-to-supermarkets).
+- **Q25(b)(i) described as a selection, not a request.** The rule's opening
+  paragraph said the Application *"asks … for the percentage"*; the instrument
+  says *"**select** the percentage."* Now reads *"a figure it selects, not one it
+  enters."*
+- **The nesting quotation now carries its page** — Q25(b)(i) Question Notes,
+  printed p. 41, verified verbatim this session.
+
+### Unchanged after review
+- **The When-to-use line on the 85% (`SKILL.md` "When to use")** — *"answered by
+  pointing at that rule, never by returning a number: these packages never see a
+  QLICI amount."* Correct as written; the rule it points at now says more.
+- **`A severe_distress=False is therefore not a "does not count toward the 85%"`**
+  — correct as written and kept. Only the sentence *following* it carried the
+  numerator defect.
+- **"Never render a distress flag as a share of anything"** (output-presentation
+  rules) and the `severe`/`deep` string critiques in the field list — all correct
+  as written.
+- **`hmda-analysis` and `cdfi-peer-benchmark`** — spot-checked again this cycle
+  for `85%`/`20%`/`QLICI`/`QEI`/`distress`/`NMTC`: **zero hits in either.** Still
+  clean, not rewritten.
+
+### Known, not fixed
+- **`nmtc-mapper` 0.5.0's `DISTRESS_LEVELS["severe"]` still reads *"Severe
+  Distress — qualifies for 85% investment commitment."*** The skill quotes
+  package constants verbatim by rule, so it cannot fix this upstream string — it
+  can only frame it, which the worked-example gloss now does more precisely. **A
+  GitHub issue against `nmtc-mapper` is owed.**
+
 ## 2026.8.2
 
 **This is a missing rule, not a retraction. Nothing 2026.8.1 asserted was
