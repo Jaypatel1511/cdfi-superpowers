@@ -353,6 +353,20 @@ a number the agency never asked it for. A fabricated share here is the same clas
 of failure as a fabricated negative on eligibility (third-state rule), pointed at
 the Applicant instead of the tract.
 
+**And do not overcorrect into "it's only a Yes/No, so check Yes."** The same
+Question Notes make the answer binding — *"it will be required to meet the
+percentage figure identified, and such requirement will be a term of its
+Allocation Agreement"* — so **Yes** is a consequential answer too, enforceable
+against an Allocatee that misses it. Neither direction is this layer's call to
+make. What you can honestly give a CDE is **evidence, per prospective QLICI**:
+which Q25 route each project's tract can be shown to satisfy, which it cannot,
+and which this package cannot see at all (it reaches **two of the twelve** items
+under 25(a) and **two of the four** under 25(b), and computes no multi-indicia
+measure). The CDE aggregates that evidence over its own QLICI dollars and owns
+the commitment. Carry the tri-state through: a `None` on any flag is **"not
+determined for this tract,"** a third column in that evidence — never a "does not
+qualify."
+
 **The denominator is the CDE's own QLICI dollars — not QEI, not project count,
 not tract count.** A QEI is what a tax-credit investor puts *into* a CDE; a QLICI
 is what the CDE puts *out* into QALICBs (`references/cdfi-industry-primer.md`).

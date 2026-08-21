@@ -65,6 +65,17 @@ download; none is carried forward.
   stop — pointed at the Applicant instead of the tract.
 - **A field-shape clause in the Caveats list**, so a reader who skims to the
   bottom still learns that Q25(a) collects no percentage.
+- **The symmetric harm, closed in the same paragraph.** Stating the field shape
+  removes the *filed* number; it does not remove the *decision*. A reader told
+  only "it's a Yes/No" can overcorrect into "so check Yes" — and the same
+  Question Notes make Yes binding, *"a term of its Allocation Agreement"*,
+  enforceable against an Allocatee that misses it. The rule now refuses **both**
+  directions and says what the layer can honestly supply instead: **evidence per
+  prospective QLICI** — which Q25 route each project's tract can be shown to
+  satisfy, which it cannot, and which this package cannot see at all (**two of
+  twelve** items under 25(a), **two of four** under 25(b), no multi-indicia
+  measure) — with the tri-state carried through, a `None` being a third column
+  and never a "does not qualify."
 
 ### Changed
 - **`DISTRESS_LEVELS["severe"]` gloss — "85% numerator" retired.** The claim was
