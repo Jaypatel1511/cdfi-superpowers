@@ -9,9 +9,10 @@ description: >-
   audited PyPI package cdfi-benchmark; import name is `cdfibenchmark`.
 compatibility: >-
   Requires Python >=3.9, pip, and network access to pypi.org plus
-  banks.data.fdic.gov (FDIC BankFind — institutions and call reports). That
-  source covers FDIC-insured institutions only, which is why the skill benchmarks
-  bank CDFIs and refuses credit unions and unregulated loan funds.
+  api.fdic.gov/banks (FDIC BankFind — institutions and call reports; the former
+  banks.data.fdic.gov host now 301-redirects there). That source covers
+  FDIC-insured institutions only, which is why the skill benchmarks bank CDFIs
+  and refuses credit unions and unregulated loan funds.
 ---
 
 # CDFI Peer Benchmark
@@ -38,6 +39,41 @@ below.
 - **CDFI Fund program data** (awards, certification) — that is `cdfi-fund-tracker`
   / `cdfi-data`, not this.
 - Portfolio stress testing (`cdfi-stress-tester`) or valuation (`cdfi-val`).
+
+### Which `cdfibenchmark` functions this skill uses, by name
+
+The refusals above are about *packages*. This section is about *functions*, so a
+request maps to a call rather than to a guess. `cdfibenchmark.__all__` has **19**
+names in 0.3.1 (counted this session); the ones that decide what a user is shown
+are named here. This is not a design pass over all 19 — a name absent below is
+unruled, not endorsed.
+
+**Endorsed — reach for these:**
+
+| function | reach for it when |
+|---|---|
+| `generate_report` | **"give me the benchmark report."** The full Markdown report, and the only surface that renders the caveats, bases, threshold provenance and peer-group disclosures. Default to this. |
+| `summary_table` | a DataFrame is genuinely wanted. Carries `basis` and `threshold_source` but **none** of the report's caveats — you then owe the user those yourself. |
+| `get_financials` | pull one institution's call-report profile by CERT. |
+| `search_institutions` | find a CERT by name/state/asset size. |
+| `build_peer_group` | the real peer group, live from FDIC. |
+| `build_sample_peer_group` | a deterministic **synthetic** demo group. Label any output built on it as illustrative. |
+| `benchmark_institution` | the per-metric `BenchmarkResult` objects behind the table. |
+| `rank_institution` | a percentile on one metric — and read its `reason` when `rank` is `None`. |
+
+**Refused — do not reach for these to answer a benchmarking question:**
+
+| function / attribute | why not |
+|---|---|
+| `compute_peer_metrics` | returns raw per-peer metrics with **no basis awareness**. Taking a median or a percentile off it yourself reproduces the mixed-basis defect the package records as unfixed, without the caveat the report carries. Use `benchmark_institution` / `generate_report`. |
+| `get_peer_financials` | the raw peer fetch. It applies **no** dedupe, no period pinning and no nearest-by-assets selection — `build_peer_group` is what turns it into a peer group. Calling it directly rebuilds the 0.2.x defect by hand. |
+| `get_institution` | returns a **raw FDIC dict**, not an `InstitutionProfile`, and carries none of the parse-layer discipline (no NaN-vs-zero rule, no plausibility bound, no `implausible_fields`). Fine for identity lookup; never a source of metrics. |
+| `BENCHMARKS`, `ASSET_BUCKETS` / `HOUSE_ASSET_BUCKETS` | read them to **quote** a threshold or a band boundary with its `source`. Never restate a number from them without its HOUSE attribution, and never mutate them. |
+| `InstitutionProfile(...)` built by hand | legitimate for a demo, but a hand-built profile has no `reported_*` values, so every earnings metric falls to the computed proxy — see the basis rule. Do not present one as a real institution. |
+
+**Never fabricate the inputs.** If FDIC is unreachable or a CERT does not resolve,
+report that. Do not hand-build an `InstitutionProfile` from remembered or
+estimated financials and present the resulting grades as a benchmark.
 
 ## Install
 
@@ -393,19 +429,47 @@ median. NIM is meaning (2) — the value **is 3.08%** and must be reported with 
 basis. Rendering all three as "not available" would suppress a real measurement;
 filling any of the three would fabricate one.
 
-## Live FDIC path (verified working)
+## Live FDIC path
 
-- `c.search_institutions(state="RI", limit=5)` → DataFrame of FDIC banks
-  (verified this session).
-- `c.get_financials(cert)` → an `InstitutionProfile` populated from FDIC call
-  reports (`get_financials(cert, report_date=None, limit=4)`).
-- `c.build_peer_group(inst, same_state=False, asset_tolerance=0.5, min_peers=10,
-  max_peers=50)` → live peer `InstitutionProfile` list.
+Signatures below were read from the installed 0.3.1 wheel with
+`inspect.signature` this session.
+
+- `c.search_institutions(name=None, state=None, min_assets=None, max_assets=None,
+  limit=20)` → DataFrame of FDIC banks.
+- `c.get_financials(cert, report_date=None, limit=4)` → an `InstitutionProfile`
+  populated from FDIC call reports, including FDIC's published `NIMY` / `ROA` /
+  `ROE` / `EEFFR`.
+- `c.build_peer_group(institution, same_state=False, asset_tolerance=0.5,
+  min_peers=10, max_peers=50, report_date=None)` → a `PeerGroup`.
+  **`report_date` is new in 0.3.0** and defaults to the institution's own — never
+  left unset, because an unpinned peer query returned one row per
+  institution-quarter across the whole history. The three numeric defaults come
+  from `HOUSE_ASSET_TOLERANCE` / `HOUSE_MIN_PEERS` / `HOUSE_MAX_PEERS` in
+  `cdfibenchmark.peers.selector` — house constants, not a supervisory
+  definition.
+- `c.generate_report(institution, peers, title=None)` → the full Markdown report.
+- `c.rank_institution(institution, peers, metric)` → dict.
 - `c.get_institution(cert)` returns a **raw FDIC dict** (not an
   `InstitutionProfile`); a nonexistent cert returns **`None`**, not an error.
 
-Data source: `banks.data.fdic.gov` (FDIC BankFind API) — no cloud WAF; verified
-reachable this session.
+**`PeerGroup` is not exported.** `from cdfibenchmark import PeerGroup` raises
+`ImportError` (verified this session; `__all__` has 19 names and `PeerGroup` is
+not among them). It is reachable only as
+`cdfibenchmark.peers.selector.PeerGroup`. You rarely need the class — the
+instance returned by `build_peer_group` carries `.caveats`, `.selection_basis`,
+`.report_dates`, `.is_single_period`, `.below_min_peers` and `.asset_percentile`
+directly, and it subclasses `list`, so `len()` and iteration work unchanged.
+
+Data source: **`https://api.fdic.gov/banks`** (FDIC BankFind API). The historical
+host `banks.data.fdic.gov/api` now answers HTTP 301 to it; 0.3.0 moved to the
+canonical host and keeps the old one only as `FDIC_API_BASE_LEGACY` so a gate can
+assert it is not used again. Both constants read from the installed wheel this
+session.
+
+> **Not verified here.** FDIC's endpoints were **blocked by the egress allowlist
+> of the session that last updated this skill**, so no live call was made. The
+> hosts, fields and signatures above are read from package source and from the
+> installed wheel. Reachability from your own environment is yours to check.
 
 ## Typed errors — report, don't smooth over
 
@@ -414,13 +478,26 @@ The package raises **typed** exceptions; surface them, don't swallow them:
 | exception | subclass of | fires on |
 |---|---|---|
 | `FDICAPIError` | `CDFIBenchmarkError` | FDIC API transport/HTTP failure |
-| `FDICResponseError` | `CDFIBenchmarkError` | malformed/unexpected FDIC response |
+| `FDICResponseError` | `CDFIBenchmarkError` | a malformed or wrong-shape FDIC response — **and one non-API case, below** |
 | `CDFIBenchmarkError` | `Exception` | package base error |
 
-Hierarchy verified this session (`FDICAPIError.__mro__` and
-`FDICResponseError.__mro__` both include `CDFIBenchmarkError`). When one is
-raised, report the error type and message; do not fall back to fabricated
-numbers or a cached guess.
+Hierarchy verified this session against the installed 0.3.1 wheel:
+`FDICAPIError.__mro__` and `FDICResponseError.__mro__` are both
+`(<self>, CDFIBenchmarkError, Exception, BaseException)`. When one is raised,
+report the error type and message; do not fall back to fabricated numbers or a
+cached guess.
+
+**`FDICResponseError` does not always mean FDIC misbehaved.**
+`build_peer_group` raises it when the *institution's* `total_assets` is unknown,
+because the asset window is then undefined. The FDIC response can be perfectly
+well-formed. Reproduced this session:
+
+```
+FDICResponseError: cannot select peers for an institution with unknown assets: CERT 34352
+```
+
+Read the message before diagnosing. Reporting that as "FDIC returned a malformed
+response" sends the user to look at the wrong thing.
 
 ```python
 from cdfibenchmark import FDICAPIError, FDICResponseError
@@ -430,6 +507,108 @@ except (FDICAPIError, FDICResponseError) as e:
     # report: type(e).__name__ and str(e). Do NOT fabricate metrics.
     ...
 ```
+
+## What 0.3.0 discloses that you must carry
+
+0.3.0 spent a release making the report state its own warrant. Each item below
+renders on `generate_report`'s face. **Do not paraphrase these — the package's
+wording is the guardrail, and restating it in your own words is how a house rule
+becomes a regulatory one in the retelling.** Where a string is quoted below it was
+taken from real output generated this session.
+
+### Threshold provenance — seven of the eight thresholds are HOUSE
+
+Derived this session from `cdfibenchmark.BENCHMARKS`: **7 of 8** entries carry
+`source == "HOUSE"` (`nim`, `efficiency_ratio`, `roaa`, `roae`,
+`loans_to_deposits`, `npl_ratio`, `reserve_coverage`). **`tier1_ratio` is the
+only cited one.** The report renders the distinction on every metric:
+
+```
+**Benchmark:** Strong >= 3.5% | Adequate >= 2.5% — **this tool's own threshold (HOUSE)**, not a regulatory or supervisory standard
+**Benchmark:** Strong >= 8% | Adequate >= 5% — 12 CFR 324.12 (CBLR qualifying, lowered 9%->8% eff. 2026-07-01); 12 CFR 324.403(b)(1) (PCA well-capitalized leverage minimum)
+```
+
+Silence here is the failure 0.3.0 spent a release closing: an unattributed house
+rule of thumb sitting in the same column as a CFR citation reads as a standard.
+The package's own note on why the seven are uncited, and why inventing a citation
+would be the defect (`data/schema.py:95-100`): bank capital has published
+regulatory levels; earnings, efficiency, funding and reserve-coverage ratios do
+not.
+
+### `PeerGroup.caveats` — render them BEFORE any number
+
+`generate_report` prints a `> **Peer group caveats**` block above the summary
+table. An empty list means the group is exactly what was asked for. The group
+raises a caveat for a dropped same-state constraint, a group below `min_peers`,
+**n = 0** (which is not a peer comparison at all), mixed peer periods, a subject
+sitting at the 10th percentile or below / 90th or above of its own peer group by
+assets, a peer whose FDIC value the tool refused, and a truncated asset window.
+Real output, this session:
+
+```
+> - Peer group has 1 institutions, below the requested minimum of 10. Percentiles over so few peers are not a reliable benchmark.
+> - The subject is at the 0th percentile of its own peer group by assets: nearly every peer is LARGER than the institution. Comparisons against this group's median carry a size bias.
+> - FDIC published a value for RBC1AAJ on 1 peer that fell outside this tool's plausibility bound for a percentage and was refused. Those peers are excluded from that metric's median and percentiles. A refusal is this tool's judgement, not FDIC's: the published values were real filings.
+```
+
+That is the list of caveat conditions read from `PeerGroup.caveats`
+(`peers/selector.py:183-269`), not a claim that no other caveat can ever appear.
+
+### Status does NOT consult the peer columns
+
+`BenchmarkResult.status` compares the institution's value to the fixed thresholds
+and **never reads the peer median or percentiles printed beside it**. A metric can
+grade STRONG while sitting below the peer median. The report says so directly,
+beneath the summary table — carry this sentence whenever you show a Status column
+next to peer columns:
+
+> **How to read Status:** Status grades the **Institution** column against the
+> fixed thresholds shown on each metric's **Benchmark** line below. It does
+> **not** consult the Peer Median, 25th or 75th percentile columns. A metric can
+> grade STRONG while sitting below the peer median, and ADEQUATE while sitting
+> outside the peer range entirely. Read the grade and the peer columns as two
+> separate questions — this report answers both and combines neither.
+
+### `loans_to_deposits` is a BAND, and is deliberately not ranked
+
+It is graded two-sided: WEAK below the HOUSE floor of 50 (under-deployed) as well
+as above 95 (funding strain). All three boundaries are house numbers; there is no
+regulatory loans-to-deposits level. Executed at 0.3.1 this session: `20 -> WEAK`,
+`55 -> STRONG`, `80 -> STRONG`, `95 -> ADEQUATE`, `130 -> WEAK`, `200 -> WEAK`.
+
+Because a band has no monotone better-direction, **`rank_institution` refuses to
+rank it**:
+
+```
+{'rank': None, 'percentile': None, 'peer_count': 20,
+ 'reason': 'loans_to_deposits is graded as a band, so there is no monotone better-direction to rank on'}
+```
+
+Report the `reason`. Do not invent a percentile for this metric, and do not treat
+`rank=None` as an error.
+
+### `tier1_ratio` has THREE states, not two
+
+Published, unreported, and **refused**. The package made refusal a distinct basis
+precisely so it could not be conflated with absent. A refused value renders its
+own line — real output, this session:
+
+```
+**Not shown:** FDIC published a value for this metric that falls outside this tool's plausibility bound for a percentage, so it was refused as a wrong-field-class signal rather than graded. The bound is this tool's own heuristic, not FDIC's — the published value was a real filing. See `cdfibenchmark.data.fdic` for the bound and how it was derived.
+```
+
+Never report a refusal as "FDIC published nothing."
+
+### Peer selection: nearest by asset distance, and the window usually does not bind
+
+`build_peer_group` fetches the whole asset window in one query and keeps the
+`max_peers` banks **NEAREST the subject by `|assets - subject|`**, ties broken on
+CERT. This is not the 0.2.1 behaviour and not a supervisory peer group. The group
+renders its own `selection_basis`, which leads with the realized span rather than
+the window, because the ±50% window is inert for most subjects and the real
+breadth is set by the 50-bank cap. `PeerGroup.selection_basis` is generated text —
+**read it off the object and quote it**, rather than describing the selection from
+this paragraph.
 
 ## Rendering — prefer `generate_report`, and never fill an N/A
 
@@ -514,8 +693,11 @@ If you print a rounded difference, **compute it from the rounded operands** —
 
 - Metrics are computed from **FDIC call-report data**; they reflect the reported
   `report_date` and FDIC's data quality, not an independent audit.
-- Peer groups are **heuristic** (asset-band / state filters); a "peer" is a
-  comparable-size FDIC bank, not a certified CDFI-only cohort.
+- Peer groups are **heuristic**: 0.3.0 keeps the `max_peers` banks NEAREST the
+  subject by asset distance out of a ±50% candidate window, pinned to one report
+  date. A "peer" is a comparable-size FDIC bank, not a certified CDFI-only cohort
+  and not a supervisory (UBPR) peer group. Quote `PeerGroup.selection_basis`
+  rather than describing the rule from memory.
 - `build_sample_peer_group` returns **synthetic** peers for demonstration; label
   any output built on it as illustrative, not a real peer comparison.
 - **Read `basis` before presenting any metric** — see the basis rule above. A
