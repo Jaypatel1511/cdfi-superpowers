@@ -206,11 +206,74 @@ all. Report that ruling. Do not form your own from the report date.
 **Read `BenchmarkResult.basis` — or the `basis` column of `summary_table` — and
 follow the branch it names.**
 
+**Scope of the two branches below.** They cover the four metrics whose basis
+varies with the filing — `nim`, `roaa`, `roae`, `efficiency_ratio` — which is
+where reading the basis changes what you do. Derived this session: the package
+defines **11** `BASIS_*` constants, **5** of them in `GRADEABLE_BASES`, over
+**8** shipped metrics. The other bases are fixed per metric rather than decided
+per filing: `loans_to_deposits`, `npl_ratio` and `reserve_coverage` are always
+`computed from period-end balances (period-neutral)` and always gradeable, and
+`tier1_ratio` has its own three states in its own section below. `BASIS_UNRULED`
+is unreachable for all eight shipped metrics — every one is claimed by a branch
+of `metric_basis()`. **So: two branches, not an exhaustive taxonomy of the
+eleven.** If you meet a basis string that is not below, quote it and say the
+skill does not rule on it rather than assuming which branch it belongs to.
+
 ### If `basis` is `FDIC published — annualized, average balances`
 
 The value **is annualized**, at 3/31 exactly as at 12/31. Present it as it
 stands. Do **not** discount it, do **not** call it un-annualized, and do **not**
 multiply it by anything. It is gradeable and the package grades it.
+
+**But this branch rules on PROVENANCE, not on plausibility — and the STRONG it
+can earn is a threshold comparison, nothing more.** `reported_is_trustworthy`
+decides only whether FDIC's published ratio is a *measurement* rather than a
+fill. It does not ask whether the measurement is meaningful, and the package
+says so on its face. Executed this session (0.3.1, python3.10), on a **hand-built**
+profile whose `reported_*` fields carry the values FDIC's published series would
+occupy — the same stand-in this skill uses above, since FDIC was not reachable
+here. The `-700` is not invented for the demo: it is a value the package records
+as really present in the population, cited below.
+
+```
+efficiency_ratio  -700.0   basis FDIC published — annualized, average balances   gradeable=True   status=STRONG
+roae               999.0   basis FDIC published — annualized, average balances   gradeable=True   status=STRONG
+```
+
+The package states this hole itself rather than leaving it to be discovered.
+Quote its words — `cdfibenchmark/data/schema.py:427`, `reported_is_trustworthy`,
+under the heading **"WHAT THIS RULE GETS WRONG, stated rather than discovered
+later"**:
+
+> **A non-zero sentinel passes.** Only an exact 0 is tested for contradiction.
+> If FDIC ever fills with -1 or 999 this trusts it.
+
+> But -700 does grade STRONG, and this rule does not stop it; that is recorded
+> as a known limitation, not fixed here.
+
+> **It says nothing about the DENOMINATOR.** A bank with negative equity
+> (CERT 12013, EQ -$23,485k) has a mathematically defined but meaningless ROE,
+> and this rule trusts it.
+
+**The remedy is NOT to doubt the number.** The same docstring records that the
+only negative efficiency ratios in the population (`-700`, `-5.615`, `-1.103`)
+are *"FDIC's OWN correct arithmetic over a negative noninterest expense —
+reproducible from the filed financials to 0.01"*, and *"so they are not
+sentinels today"*. The value is right; the **grade** is the artefact. Reinstating
+doubt about FDIC-published values is the defect this rule replaced. So:
+
+- **Report the value and the basis as they stand.** Do not discount them,
+  suppress them, restate them, or substitute a corrected figure — there is no
+  corrected figure to substitute.
+- **Do not let `STRONG` stand by itself** when the value is one no reader would
+  call strong: a negative efficiency ratio, a three-digit ROAE, any earnings
+  ratio on negative equity. Report the grade, then say Status is a threshold
+  comparison the package records it does **not** stop here, and quote the line
+  above.
+- **Say whose judgment each part is.** The value is FDIC's, the grade is the
+  package's threshold comparison, and the observation that a STRONG on a
+  negative efficiency ratio is not a statement about performance is **yours** —
+  attribute it to yourself, not to FDIC and not to the package's grade.
 
 ### If `basis` is outside `GRADEABLE_BASES`
 
@@ -460,6 +523,13 @@ instance returned by `build_peer_group` carries `.caveats`, `.selection_basis`,
 `.report_dates`, `.is_single_period`, `.below_min_peers` and `.asset_percentile`
 directly, and it subclasses `list`, so `len()` and iteration work unchanged.
 
+**That subclassing cuts both ways: keep the object, not a copy of its rows.**
+Every attribute above lives on the `PeerGroup`, not on the peers, so `list(pg)`,
+`pg[:20]`, a comprehension or a `sorted()` yields a plain `list` that has none of
+them — and `generate_report` reads three of its disclosures off those attributes
+with `getattr` and silently omits them. See *When the caveats silently vanish*
+under the caveats section.
+
 Data source: **`https://api.fdic.gov/banks`** (FDIC BankFind API). The historical
 host `banks.data.fdic.gov/api` now answers HTTP 301 to it; 0.3.0 moved to the
 canonical host and keeps the old one only as `FDIC_API_BASE_LEGACY` so a gate can
@@ -482,10 +552,10 @@ The package raises **typed** exceptions; surface them, don't swallow them:
 | `CDFIBenchmarkError` | `Exception` | package base error |
 
 Hierarchy verified this session against the installed 0.3.1 wheel:
-`FDICAPIError.__mro__` and `FDICResponseError.__mro__` are both
-`(<self>, CDFIBenchmarkError, Exception, BaseException)`. When one is raised,
-report the error type and message; do not fall back to fabricated numbers or a
-cached guess.
+`FDICAPIError.__mro__` and `FDICResponseError.__mro__` are both five elements,
+`(<self>, CDFIBenchmarkError, Exception, BaseException, object)`. Catching
+`CDFIBenchmarkError` catches both. When one is raised, report the error type and
+message; do not fall back to fabricated numbers or a cached guess.
 
 **`FDICResponseError` does not always mean FDIC misbehaved.**
 `build_peer_group` raises it when the *institution's* `total_assets` is unknown,
@@ -535,14 +605,39 @@ would be the defect (`data/schema.py:95-100`): bank capital has published
 regulatory levels; earnings, efficiency, funding and reserve-coverage ratios do
 not.
 
-### `PeerGroup.caveats` — render them BEFORE any number
+### `PeerGroup.caveats` — render them BEFORE any number, and only a `PeerGroup` carries them
 
 `generate_report` prints a `> **Peer group caveats**` block above the summary
-table. An empty list means the group is exactly what was asked for. The group
-raises a caveat for a dropped same-state constraint, a group below `min_peers`,
-**n = 0** (which is not a peer comparison at all), mixed peer periods, a subject
-sitting at the 10th percentile or below / 90th or above of its own peer group by
-assets, a peer whose FDIC value the tool refused, and a truncated asset window.
+table **when two conditions both hold**: `peers` is the `PeerGroup` object
+`build_peer_group` returned, **and** its `caveats` list is non-empty. An empty
+list means the group is exactly what was asked for. A plain `list` means the
+block is not printed at all, whatever the group's flaws — see *When the caveats
+silently vanish*, below.
+
+`PeerGroup.caveats` raises **eight** conditions. Count derived this session, not
+read off the prose (`peers/selector.py:183-269`):
+
+```
+awk '/def caveats/,/^def _dedupe_by_cert/' cdfibenchmark/peers/selector.py \
+  | grep -c 'out.append('
+8
+```
+
+1. a dropped same-state constraint;
+2. **n = 0** — not a peer comparison at all;
+3. a group below `min_peers`;
+4. peers **not** all at one reporting period;
+5. peers all at one period that is **not the institution's** — *"Peers are at
+   {date} but the institution is at {target}."* (`selector.py:223-228`). **This
+   is the case the deleted `report_date` rule used to cover**: a subject at 3/31
+   measured against peers at 12/31 is a YTD-flow mismatch across four quarters,
+   and 0.3.0 raises it here as a caveat on the group rather than leaving you to
+   infer it from two dates. Nothing else in this skill covers it, so render it;
+6. a subject at the 10th percentile or below / 90th or above of its own peer
+   group by assets;
+7. a peer whose FDIC value the tool refused;
+8. a truncated asset window.
+
 Real output, this session:
 
 ```
@@ -551,8 +646,68 @@ Real output, this session:
 > - FDIC published a value for RBC1AAJ on 1 peer that fell outside this tool's plausibility bound for a percentage and was refused. Those peers are excluded from that metric's median and percentiles. A refusal is this tool's judgement, not FDIC's: the published values were real filings.
 ```
 
-That is the list of caveat conditions read from `PeerGroup.caveats`
-(`peers/selector.py:183-269`), not a claim that no other caveat can ever appear.
+That is the enumeration read from `PeerGroup.caveats`
+(`peers/selector.py:183-269`), complete at eight branches for 0.3.1 by the count
+derived above — not a claim that a later version cannot add a ninth.
+
+#### When the caveats silently vanish
+
+`generate_report(institution, peers, title=None)` accepts **any** list. Three of
+its disclosures are read off the `PeerGroup` object with `getattr` and are simply
+skipped when the attribute is not there — `caveats` (`report/generator.py:182`),
+`asset_percentile` (`:308`) and `selection_basis` (`:324`). Those are the only
+three of the four `getattr(peers, …)` sites that lack a fallback; the fourth,
+`report_dates` (`:146`), recomputes from the peers themselves and survives.
+
+`PeerGroup` subclasses `list`, so **any** operation that returns a plain list
+strips all three. Executed this session, all four forms: `list(pg)`, `pg[:20]`,
+`[p for p in pg]` and `sorted(pg, key=…)` each render `> **Peer group caveats**`,
+`**Peer Selection Basis:**` and `**Institution's Position in the Peer Asset
+Range:**` as **absent**. There is no error and no warning — the report is just
+shorter, and reads as complete.
+
+Executed this session — the same institution and the same single peer, once as
+the `PeerGroup` and once as `list(pg)`, against a third case with an ordinary
+caveat-free group:
+
+```
+disclosure                                               A     B     C  summary_table
+> **Peer group caveats**                              True False False    False
+**How to read Status:**                               True  True  True    False
+**Benchmark:**                                        True  True  True    False
+**Not graded:**                                       True  True False    False
+**Not shown:**                                       False False False    False
+**Basis:**                                            True  True  True    False
+**Peer Selection Basis:**                             True False  True    False
+**Asset Bucket:**                                     True  True  True    False
+**Institution's Position in the Peer Asset Range:**   True False  True    False
+**Distinct Institutions:**                            True  True  True    False
+**Peer Report Date:**                                 True  True  True    False
+this tool's own threshold (HOUSE)                     True  True  True    False
+
+A = PeerGroup — 3 caveats, one ungraded metric (the group printed above)
+B = list(pg)  — same institution, same peer, same data
+C = PeerGroup from build_sample_peer_group — 0 caveats, every metric graded
+```
+
+**Column B is the trap.** The group in column A is the one whose three caveats
+are printed above — 1 peer, subject at the 0th percentile, one peer's `RBC1AAJ`
+refused. Handed over as `list(pg)`, that identical group renders **zero
+caveats** and no selection basis, and reads as a complete peer comparison.
+
+**So: pass the `PeerGroup` straight through to `generate_report`.** Narrow the
+group through `build_peer_group`'s own arguments — `same_state`,
+`asset_tolerance`, `min_peers`, `max_peers`, `report_date` — **before** it is
+built, never by filtering or slicing after. If you already hold a plain list, do
+**not** hand it to `generate_report`: rebuild the group, or render `pg.caveats`
+and `pg.selection_basis` from the original object yourself and state that the
+peer set was modified after selection.
+
+**Columns A and C differ too, and not by type.** `> **Peer group caveats**` and
+`**Not graded:**` are absent from C because that group has no caveats and that
+profile has no ungraded metric — those two lines are conditional on the *data*,
+where the three above are conditional on the *type*. Neither kind is a fixed
+feature of the report. Check for a line before you promise the user it is there.
 
 ### Status does NOT consult the peer columns
 
@@ -614,27 +769,25 @@ this paragraph.
 
 **Reach for `c.generate_report(institution, peers)` on any request for "the
 benchmark report".** It is the only surface that renders the package's own
-disclosures. `summary_table` returns ten columns and **none** of them. Checked
-this session by generating both from one profile and searching each for eleven
-disclosure strings:
+disclosures: `summary_table` returns ten columns and carries **none** of them, in
+every configuration tested — that half is unconditional and is the `summary_table`
+column of the matrix under *When the caveats silently vanish*.
 
-```
-disclosure                                           generate_report  summary_table
-  > **Peer group caveats**                           True             False
-  **How to read Status:**                            True             False
-  **Benchmark:**                                     True             False
-  **Not graded:**                                    True             False
-  **Basis:**                                         True             False
-  **Peer Selection Basis:**                          True             False
-  **Asset Bucket:**                                  True             False
-  **Institution's Position in the Peer Asset Range:** True             False
-  **Distinct Institutions:**                         True             False
-  **Peer Report Date:**                              True             False
-  this tool's own threshold (HOUSE)                  True             False
-```
+**The `generate_report` half is NOT unconditional, and the matrix is where to
+read it.** Of the twelve disclosure strings checked there, five are conditional:
+three on `peers` being the `PeerGroup` object rather than a plain list
+(`> **Peer group caveats**`, `**Peer Selection Basis:**`, `**Institution's
+Position in the Peer Asset Range:**`) and two on the data
+(`**Not graded:**` needs a present-but-ungraded metric, `**Not shown:**` needs a
+refused one — it was absent from all three cases run). The remaining seven
+rendered in every case.
 
-That list is the eleven strings checked, not a claim that it is every disclosure
-the report renders.
+**So do not promise a line before you have checked for it.** `generate_report`
+renders each disclosure *when its condition holds*; pass the `PeerGroup`
+unmodified so the type-conditional three can hold at all, then quote what the
+report actually printed rather than what this skill says it can print. That
+matrix is the twelve strings checked, not a claim that it is every disclosure the
+report renders.
 
 If you present `summary_table` instead, you are responsible for carrying the
 `basis` and `threshold_source` columns and the caveats yourself — and for the
@@ -673,7 +826,10 @@ If you print a rounded difference, **compute it from the rounded operands** —
 - **Say where a threshold comes from.** Seven of the eight are `HOUSE`. Never let
   a house rule of thumb read as a regulatory standard.
 - State the peer group basis (sample vs. live FDIC) and `peer_count`, and render
-  `PeerGroup.caveats` **before** any number, as the report does.
+  `PeerGroup.caveats` **before** any number, as the report does — **but only a
+  `PeerGroup` has them.** Pass `build_peer_group`'s object to `generate_report`
+  unmodified; a filtered or sliced plain `list` drops the caveats, the selection
+  basis and the subject's position in the peer asset range with no error.
 - If any typed FDIC error occurred, report it instead of a partial table.
 
 ## Failure modes
@@ -710,3 +866,12 @@ If you print a rounded difference, **compute it from the rounded operands** —
   median a fabricated statistic. Say so when you present one.
 - Seven of the eight thresholds are **HOUSE** rules of thumb, not standards; only
   `tier1_ratio` carries a citation.
+- **An FDIC-published basis is not a plausibility check.** A published ratio that
+  is absurd on its face — a negative efficiency ratio, a three-digit ROAE, an
+  earnings ratio on negative equity — is gradeable and grades `STRONG`. The
+  package records this as a known limitation it did not fix
+  (`data/schema.py:427`). Report the value; do not let the grade speak for it.
+- **`generate_report`'s disclosures are conditional, not guaranteed.** Three of
+  them require `peers` to be the `PeerGroup` object; two more require the data to
+  trigger them. A plain `list` of the same peers renders a shorter report that
+  reads as complete.

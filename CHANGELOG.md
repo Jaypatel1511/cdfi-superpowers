@@ -163,6 +163,80 @@ its reason. **This is deliberately not a ruling on all 19 exports** — the
 section says so, and says that a name absent from it is unruled rather than
 endorsed.
 
+### Fixed — unconditional claims about conditional behaviour (hostile-audit round)
+
+A fresh hostile audit returned DO NOT SHIP on two blockers of one shape: the new
+text asserted UNCONDITIONALLY what the package does CONDITIONALLY. Both were
+reproduced by execution against 0.3.1 on python3.10 before being fixed, and the
+same shape was then hunted for and found in three more places.
+
+- **The basis rule told the AI never to question an FDIC-published value; the
+  package documents that it grades absurd ones `STRONG`.** The `BASIS_FDIC`
+  branch said "Present it as it stands. Do **not** discount it… It is gradeable
+  and the package grades it," full stop. Reproduced: a profile carrying FDIC's
+  published ratios gives `efficiency_ratio -700.0` and `roae 999.0`, both
+  `gradeable=True`, both `status=STRONG`. The branch now states that it rules on
+  **provenance, not plausibility**, and carries `reported_is_trustworthy`'s own
+  "WHAT THIS RULE GETS WRONG" disclosures verbatim from
+  `cdfibenchmark/data/schema.py:427` — the non-zero sentinel hole, *"But -700
+  does grade STRONG, and this rule does not stop it"*, and the negative-equity
+  denominator hole. **The remedy is not renewed doubt about FDIC values** — that
+  is the defect this rule replaced, and the same docstring records the real
+  `-700` values as FDIC's own correct arithmetic. The value stands; the AI must
+  not let the grade speak for it, and must attribute that observation to itself.
+
+- **`generate_report` silently drops three disclosures when `peers` is a plain
+  list.** The skill asserted, unqualified, that it "prints a `> **Peer group
+  caveats**` block above the summary table". `generate_report` accepts any list
+  and reads `caveats` (`report/generator.py:182`), `asset_percentile` (`:308`)
+  and `selection_basis` (`:324`) with `getattr`, so all three vanish without an
+  error. Reproduced on the same institution and peer, once as `PeerGroup` and
+  once as `list(pg)` — and also for `pg[:20]`, a comprehension and `sorted()`.
+  **The audit found two dropped lines; execution found three** — the subject's
+  position in the peer asset range drops too. The group the skill pastes as its
+  own caveats example then renders with **zero caveats** and reads as a complete
+  peer comparison. The precondition is now stated, with an executed three-column
+  matrix, and the skill says to narrow through `build_peer_group`'s arguments
+  before the group is built rather than by filtering after.
+
+- **`PeerGroup.caveats` was enumerated 7-of-8.** The missing branch is
+  `selector.py:223-228` — *"Peers are at {date} but the institution is at
+  {target}."* — which is exactly the risk the deleted `report_date` rule used to
+  cover and which nothing else replaced. All eight are now listed, and the count
+  is derived rather than asserted: `awk '/def caveats/,/^def _dedupe_by_cert/'
+  … | grep -c 'out.append('` → `8`, with the command printed in the skill.
+
+- **The `__mro__` claim was short one element.** Presented as a literal verified
+  value, `(<self>, CDFIBenchmarkError, Exception, BaseException)`; the real tuple
+  has five entries and ends in `object`. Corrected.
+
+- **The eleven-string disclosure table was the same defect in a second place.**
+  It asserted `generate_report → True` for all eleven as a property of the
+  surface. Re-run across three configurations: five of the twelve strings now
+  checked are conditional — three on `peers` being a `PeerGroup`, two on the data
+  (`**Not graded:**` needs an ungraded metric; `**Not shown:**` needs a refused
+  one, and it was absent from all three cases). The `summary_table` half **is**
+  unconditional — none of the twelve appears in any configuration. The section
+  now says which half is which.
+
+- **The basis rule's two branches implied an exhaustive taxonomy.** Derived: 11
+  `BASIS_*` constants, 5 in `GRADEABLE_BASES`, 8 shipped metrics, and
+  `BASIS_UNRULED` unreachable for all eight. A scope statement now says the two
+  branches cover the four metrics whose basis varies with the filing, and that a
+  basis string not listed should be quoted rather than assigned to a branch.
+
+### Deferred — not fixed here
+
+- **Rules for `BASIS_STOCK`, `BASIS_FDIC_LEVERAGE` and `BASIS_COMPUTED_FY`.**
+  All three are gradeable and graded, and appear only inside pasted output or an
+  example footnote. Deferred to the next sync rather than half-built here: each
+  is **fixed per metric, not decided per filing** — `loans_to_deposits`,
+  `npl_ratio` and `reserve_coverage` are always `BASIS_STOCK`, and `tier1_ratio`
+  already has its own three-state section — so there is no read-the-basis-and-
+  branch decision for an AI to get wrong, and closing it is a documentation
+  design pass rather than a fix to a wrong number. The implied completeness claim
+  that made it look like a defect **was** removed, above.
+
 ### Not changed
 
 - **`nmtc-eligibility` and `hmda-analysis`.** Both were read (headings in full)
