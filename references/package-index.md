@@ -1,8 +1,14 @@
 # Package Index
 
 Jay Patel's published portfolio on PyPI (user `thejaypatel1511`). Every version
-below was verified against a live PyPI JSON check **this session**; every import
-name was read from the installed wheel's `top_level.txt` this session.
+below was verified against a live PyPI JSON check, and every import name read
+from the installed wheel's `top_level.txt`, **in the session that first wrote
+this table**.
+
+**Re-verified 2026-09-07: the `cdfi-benchmark` row only** (PyPI JSON + simple
+index; latest 0.3.1, five releases). The other 21 rows were not re-checked in
+that pass and carry their original verification date — treat them as
+hypotheses and re-check against PyPI before relying on one.
 
 **Naming is not uniform — dist (PyPI) ≠ repo (GitHub) ≠ import (Python).** The
 one mismatch between dist and repo is `cdfidata` (repo `cdfi-data`); the frequent
@@ -12,7 +18,7 @@ mismatch is dist vs. import (hyphen/underscore collapse). Do not assume.
 |---|---|---|---|---|
 | nmtc-mapper | nmtc-mapper | `nmtcmapper` | >=0.5.0 | Automated NMTC eligibility checker — geocode addresses and check Low-Income Community status using CDFI Fund + Census data. **(wrapped: nmtc-eligibility)** |
 | nmtc-screener | nmtc-screener | `nmtc_screener` | 0.1.0 | CLI tool for NMTC feasibility screening. **(wrapped: nmtc-eligibility)** |
-| cdfi-benchmark | cdfi-benchmark | `cdfibenchmark` | 0.2.1 | CDFI/MDI peer benchmarking from FDIC call-report data — NIM, efficiency ratio, ROAA, capital, and more. **(wrapped: cdfi-peer-benchmark)** |
+| cdfi-benchmark | cdfi-benchmark | `cdfibenchmark` | 0.3.1 | CDFI/MDI peer benchmarking from FDIC call-report data — NIM, efficiency ratio, ROAA, capital, and more. **(wrapped: cdfi-peer-benchmark)** |
 | hmda-analyzer | hmda-analyzer | `hmda_analyzer`, `hmdaanalyzer` | >=0.6.0 (pin resolves 0.6.1, py>=3.9; 0.6.0 itself is py>=3.11) | HMDA mortgage-lending analyzer — denial rates, disparities, lending deserts, lender benchmarking; carries the descriptive CRA-proxy transform and the geography-vintage refusal. **(wrapped: hmda-analysis, descriptive subset only)** |
 | nmtc-calc | nmtc-calc | `nmtccalc` | 0.2.1 | Calculator for NMTC leveraged transactions. |
 | nmtc-application-builder | nmtc-application-builder | `nmtcapp` | 1.1.4 | Flagship NMTC application intelligence platform — pipeline analysis, eligibility validation, readiness scoring, visualization for CDEs. |
@@ -33,7 +39,7 @@ mismatch is dist vs. import (hyphen/underscore collapse). Do not assume.
 | cra-scraper | cra-scraper | `crascraper` | 0.1.1 | CRA exam ratings scraper/analyzer — search FFIEC database, parse Performance Evaluations. **Residential-only (Cloudflare blocks all cloud/datacenter IPs — unfixable by headers); no skill wraps it.** |
 | h1b-tracker | h1b-tracker | `h1btracker` | 0.1.0 | Analyze DOL H1B LCA disclosure data — rank employers by filing volume, salary, and sponsorship reliability. |
 
-**22 packages** verified this session.
+**22 packages** — the count and every row were verified in the session that first wrote this table. Only the `cdfi-benchmark` row was re-verified on 2026-09-07.
 
 ## Note on the count
 

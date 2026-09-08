@@ -25,7 +25,7 @@ correctly, with the methodology caveats those tools ship with.
 | Skill | What it does | Backed by |
 |---|---|---|
 | **nmtc-eligibility** | Is this address/tract NMTC eligible? Distress tier? Project feasibility? | nmtc-mapper >=0.5.0, nmtc-screener 0.1.0 |
-| **cdfi-peer-benchmark** | Benchmark a **bank** CDFI against FDIC peers (NIM, ROAA, capital, …) | cdfi-benchmark 0.2.1 |
+| **cdfi-peer-benchmark** | Benchmark a **bank** CDFI against FDIC peers (NIM, ROAA, capital, …) | cdfi-benchmark >=0.3.0 |
 | **hmda-analysis** | Pull HMDA LAR data and produce **descriptive** cuts + a CRA-**proxy** distribution | hmda-analyzer >=0.6.0 |
 
 Versions were verified against live PyPI at time of writing; every code example
@@ -35,7 +35,13 @@ where `is_opportunity_zone` stops returning a confident `False` — below it the
 package answers "not an Opportunity Zone" about 78,039 tracts it cannot
 distinguish from a 2010/2020 vintage miss, and carries an
 `is_nmtc_native_area` field that can only ever say "I don't know"; and
-`hmda-analyzer >=0.6.0` is where the geography-vintage refusal exists at all.
+`hmda-analyzer >=0.6.0` is where the geography-vintage refusal exists at all;
+and `cdfi-benchmark >=0.3.0` is where `loans_to_deposits` stops being graded
+backwards — below it a bank lending 200% of its deposits grades STRONG and one
+at 55% grades WEAK, with `rank_institution`'s percentile inverted to match. The
+floor is deliberately not `>=0.3.1`: 0.3.1 changed no library code, and its
+package tree is byte-identical to the published 0.3.0 wheel, so `>=0.3.1` would
+be a floor with no runtime justification.
 
 `hmda-analyzer 0.6.0` alone required **Python >=3.11**; **0.6.1 relaxed that back
 to >=3.9** while keeping the refusal (verified 2026-08-13 against the `>=0.6.0`
@@ -58,9 +64,13 @@ See `references/caveats-and-limits.md` for the full boundary list.
 
 ## Version
 
-**cdfi-superpowers 2026.8.3** (CalVer, `YYYY.M.MINOR`). This is the plugin
-version carried by `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json`;
-the three manifests and this line move together. It versions the *skills*, not
+**cdfi-superpowers 2026.9.0** (CalVer, `YYYY.M.MINOR`; MINOR restarts at 0 when
+the month changes). The version lives at **five sites and they move together**:
+`.claude-plugin/plugin.json` (1), `.claude-plugin/marketplace.json` (2 — the
+marketplace `metadata` block and the plugin entry), this line, and the top
+heading of `CHANGELOG.md`. There are two manifest *files* carrying three version
+*fields*; an earlier version of this sentence said "three manifests" and did not
+count the changelog heading. It versions the *skills*, not
 the wrapped PyPI packages — those are independently versioned and are listed in
 the table above. See `CHANGELOG.md` for what changed under each release.
 
@@ -87,7 +97,7 @@ into a project's `.agents/skills/` does nothing in Claude Code, silently.
 > - **Python >=3.9** and **pip**
 > - **Network access to `pypi.org`**, plus the endpoints the skill you use hits:
 >   `geocoding.geo.census.gov` and `www.cdfifund.gov` (nmtc-eligibility),
->   `banks.data.fdic.gov` (cdfi-peer-benchmark), `ffiec.cfpb.gov` (hmda-analysis)
+>   `api.fdic.gov` (cdfi-peer-benchmark), `ffiec.cfpb.gov` (hmda-analysis)
 >
 > In a locked-down enterprise environment where PyPI or those hosts are blocked,
 > **these skills cannot work** — the agent will load the skill and then fail at the

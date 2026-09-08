@@ -2,6 +2,256 @@
 
 All notable changes to `cdfi-superpowers`. Versioning is CalVer (`YYYY.M.MINOR`).
 
+## 2026.9.0
+
+**Syncs `cdfi-peer-benchmark` to `cdfi-benchmark` 0.3.1.** The last sync was
+2026.7.3 and two package releases have shipped since: 0.3.0 (PyPI upload
+2026-09-06) and 0.3.1 (2026-09-07). 0.3.1 changed no library code — `git diff
+v0.3.0 v0.3.1 -- cdfibenchmark/` is empty, and the package tree at `v0.3.1` is
+byte-identical to the package inside the published 0.3.0 wheel (sha256
+`3f90077f…`, 11 `.py` files each side, recomputed this session by the method the
+package's own changelog publishes). So everything below is 0.3.0 drift.
+
+Shipped as two commits: the four defects that make an AI emit a **wrong number**,
+then staleness and the disclosures it was **silent** about.
+
+**Not verified live.** FDIC's endpoints (`api.fdic.gov`, `banks.data.fdic.gov`)
+were blocked by this session's egress allowlist. Every claim about the live path
+is established from package source, from the installed 0.3.1 wheel, or from the
+package's own recorded measurements, and each is labelled that way where it
+appears. Everything about package *behaviour* was executed against 0.3.1
+installed from PyPI on python3.10, and 0.2.1 was installed alongside it to
+reproduce the pre-0.3.0 defects.
+
+### Fixed — the fabrication class
+
+Each was reproduced before it was fixed.
+
+- **The period-basis rule told the AI to discredit a correct number.** It keyed
+  on `report_date` and said NIM/ROAA/ROAE "are not annualized at interim report
+  dates", that a 3/31 date reads "roughly 4× low", and that the AI should say so
+  "in the same breath as the number". 0.3.0 **prefers FDIC's published
+  `NIMY`/`ROA`/`ROE`/`EEFFR`**, which are already annualized over average
+  balances. Reproduced at `report_date="20260331"`: `nim` = 3.08, basis
+  `FDIC published — annualized, average balances`, gradeable, `status ADEQUATE`.
+  The rule would have pushed a user from a correct 3.08% toward **12.3%**.
+
+  **Both directions are now stated, because deleting the warning creates the
+  mirror defect.** Reproduced on the same profile with the `reported_*` fields
+  absent: `roaa`/`roae` fall to `computed from YTD flows through Q1 — NOT
+  annualized` and grade `N/A`; `nim` falls to `computed over TOTAL assets` and is
+  **ungradeable at every period, including 12/31** — a denominator defect, not a
+  period one, which the previous rule's "only 12/31 is correct as reported" got
+  wrong in the other direction; and `efficiency_ratio`'s fallback is
+  period-neutral, **gradeable**, and must NOT be annualized. The rule now
+  conditions on `basis`, names all four branches, and says whose call it is:
+  `metric_basis()` and `GRADEABLE_BASES` rule it and the AI reports that ruling
+  rather than forming its own from the date.
+
+  Two dependent claims in the same rule are also gone: that annualization
+  "lands in 0.3.0" (it shipped), and 0.2.1's known-issue block quoted as current.
+
+- **"Peers sharing a `report_date` share period scaling" is false under 0.3.0.**
+  Basis is decided per institution by `reported_is_trustworthy`, not by the date.
+  Reproduced: two peers both at `20260331`, one on `FDIC published`, one on the
+  computed proxy, median `2.9023687580025608` — a median across two bases. The
+  package records this as an unfixed limitation and calls such a median a
+  fabricated statistic; that wording is now quoted rather than softened.
+
+- **The dependency floor permitted an install that grades backwards.** The floor
+  was `>=0.2.1`. Executed against 0.2.1 installed from PyPI: `loans_to_deposits`
+  200% → **STRONG**, 55% → **WEAK**, and `rank_institution` inverted with it
+  (against a fixed 20-peer group, 200% ranked **1 of 21 at percentile 95.2**
+  while 55% ranked 19th at 9.5). Floor is now **`>=0.3.0`**, with the reason
+  written beside it as `README.md` requires. Deliberately **not** `>=0.3.1`,
+  which would be a floor with no runtime justification given the byte-identity
+  above.
+
+- **The worked example was in dollars where FDIC reports thousands, and 0.3.0
+  made it print.** Reproduced: `total_assets=250_000_000` yields
+  `total_assets_mm = 250000.0`, `asset_bucket = "mega"`, and the report face
+  renders `**Total Assets:** $250,000.0MM` / `**Asset Bucket:** Mega (over
+  $5,000MM)`. Never true; 0.3.0 only promoted it from invisible to rendered.
+  Corrected to thousands, with the unit stated where the profile is built.
+
+  Same example: `report_date="2024-12-31"` defeated `fiscal_quarter`, which
+  requires FDIC's 8-digit form, sending ROAA/ROAE to `period unknown` and `N/A`
+  **at a Q4 date** while the surrounding prose called that date the one basis
+  needing no annualization. Corrected to `"20241231"`, and the trap is now
+  stated.
+
+- **The N/A contract had acquired a second, opposite meaning.** 0.3.0 gives
+  `status` a second early return: a basis outside `GRADEABLE_BASES` grades `N/A`
+  **with the value fully present**. Reproduced: NIM = 3.08% with `status N/A`.
+  The unchanged contract therefore made the AI suppress a measured value. The
+  contract now names both meanings with opposite remedies — never fill an absent
+  one, never suppress a present one — plus the third state, a value FDIC
+  published that the tool **refused**. The original never-fill firewall is
+  intact and explicitly marked as unweakened.
+
+  Correction to an earlier reading: `status` was **already a property at
+  v0.2.1** (verified by `inspect.getattr_static`). What 0.3.0 added is the
+  second early return — 2 `return "N/A"` statements at 0.2.1, 3 at 0.3.1. This
+  is a quiet second meaning, not a loud break.
+
+- **`summary_table.vs_median` is the raw difference.** 0.3.0 fixed printed
+  arithmetic that did not add up — on its **report face only**, deliberately
+  leaving `vs_median` exact for programmatic consumers. The skill's only worked
+  examples printed `summary_table`, so an AI rounding it to 2dp reproduces the
+  defect the package fixed. Reproduced: `4.36 - 2.25 = 2.11`, but `vs_median`
+  rounds to `2.12`. Now stated, with the remedy.
+
+### Added — what the skill was silent about while the package was loud
+
+`summary_table` carries **none** of eleven checked disclosure strings;
+`generate_report` carries **all eleven** (measured this session by generating
+both from one profile and searching each). The skill named neither function and
+its examples used only `summary_table`, so it steered an AI to the surface that
+strips every disclosure 0.3.0 added. `generate_report` is now the default and a
+new section carries what it renders:
+
+- **Threshold provenance.** Derived from `BENCHMARKS`: **7 of 8** thresholds are
+  `source: "HOUSE"`; only `tier1_ratio` is cited. The report's own wording —
+  *"this tool's own threshold (HOUSE), not a regulatory or supervisory
+  standard"* — is quoted verbatim, not paraphrased.
+- **`PeerGroup.caveats`**, rendered before any number, with the caveat
+  conditions read off `peers/selector.py` and real output pasted.
+- **Status does not consult the peer columns** — the report's own "How to read
+  Status" paragraph, quoted.
+- **`loans_to_deposits` is a band** with a HOUSE floor, and `rank_institution`
+  therefore returns `rank=None, percentile=None` with a `reason`, which must be
+  reported rather than treated as an error.
+- **`tier1_ratio` has three states** — published, unreported, REFUSED — with the
+  report's `Not shown:` line quoted.
+- **Peer selection is nearest-by-asset-distance**, and `selection_basis` should
+  be read off the object rather than described from prose.
+
+### Fixed — staleness
+
+- **FDIC host.** `api.fdic.gov/banks` is canonical; `banks.data.fdic.gov/api`
+  now 301-redirects and 0.3.0 keeps it only as `FDIC_API_BASE_LEGACY` so a gate
+  can refuse it. Corrected in the skill's `compatibility` block and Live-FDIC
+  section, `references/data-source-map.md`, and `README.md`.
+- **Version pins** at `SKILL.md`, `llms.txt`, `README.md` and
+  `references/package-index.md`.
+- **Both "Actual output this session" blocks re-run** against 0.3.1 and replaced
+  with real output. Four status values, three metric labels and two columns had
+  moved.
+- **`build_peer_group`'s signature**, which was missing `report_date` (new in
+  0.3.0, defaulting to the institution's own) and did not say its three numeric
+  defaults are HOUSE constants. Every signature in that section was re-read from
+  the installed wheel with `inspect.signature`.
+- **The peer-group description in Caveats**, which still described the 0.2.1
+  selector.
+- **"Live FDIC path (verified working)"** no longer claims verification this
+  session, because none was possible.
+- **`FDICResponseError` is no longer described as only an FDIC-response
+  problem.** `build_peer_group` raises it when the *institution's* assets are
+  unknown, on a well-formed response. Reproduced.
+- **`PeerGroup` is not exported** — `from cdfibenchmark import PeerGroup` raises
+  `ImportError` (verified; `__all__` has 19 names). Stated, with the reachable
+  path.
+
+### Added — the function-level firewall
+
+`## When NOT to use` refused *packages* and named no `cdfibenchmark` function in
+either direction, so `generate_report` — the function an AI reaches for on "give
+me the benchmark report" — went unmentioned. It now names functions both ways,
+in the shape `references/caveats-and-limits.md` already uses for
+`hmda-analysis`'s seven disparity functions: 8 endorsed, 5 refused, each with
+its reason. **This is deliberately not a ruling on all 19 exports** — the
+section says so, and says that a name absent from it is unruled rather than
+endorsed.
+
+### Fixed — unconditional claims about conditional behaviour (hostile-audit round)
+
+A fresh hostile audit returned DO NOT SHIP on two blockers of one shape: the new
+text asserted UNCONDITIONALLY what the package does CONDITIONALLY. Both were
+reproduced by execution against 0.3.1 on python3.10 before being fixed, and the
+same shape was then hunted for and found in three more places.
+
+- **The basis rule told the AI never to question an FDIC-published value; the
+  package documents that it grades absurd ones `STRONG`.** The `BASIS_FDIC`
+  branch said "Present it as it stands. Do **not** discount it… It is gradeable
+  and the package grades it," full stop. Reproduced: a profile carrying FDIC's
+  published ratios gives `efficiency_ratio -700.0` and `roae 999.0`, both
+  `gradeable=True`, both `status=STRONG`. The branch now states that it rules on
+  **provenance, not plausibility**, and carries `reported_is_trustworthy`'s own
+  "WHAT THIS RULE GETS WRONG" disclosures verbatim from
+  `cdfibenchmark/data/schema.py:427` — the non-zero sentinel hole, *"But -700
+  does grade STRONG, and this rule does not stop it"*, and the negative-equity
+  denominator hole. **The remedy is not renewed doubt about FDIC values** — that
+  is the defect this rule replaced, and the same docstring records the real
+  `-700` values as FDIC's own correct arithmetic. The value stands; the AI must
+  not let the grade speak for it, and must attribute that observation to itself.
+
+- **`generate_report` silently drops three disclosures when `peers` is a plain
+  list.** The skill asserted, unqualified, that it "prints a `> **Peer group
+  caveats**` block above the summary table". `generate_report` accepts any list
+  and reads `caveats` (`report/generator.py:182`), `asset_percentile` (`:308`)
+  and `selection_basis` (`:324`) with `getattr`, so all three vanish without an
+  error. Reproduced on the same institution and peer, once as `PeerGroup` and
+  once as `list(pg)` — and also for `pg[:20]`, a comprehension and `sorted()`.
+  **The audit found two dropped lines; execution found three** — the subject's
+  position in the peer asset range drops too. The group the skill pastes as its
+  own caveats example then renders with **zero caveats** and reads as a complete
+  peer comparison. The precondition is now stated, with an executed three-column
+  matrix, and the skill says to narrow through `build_peer_group`'s arguments
+  before the group is built rather than by filtering after.
+
+- **`PeerGroup.caveats` was enumerated 7-of-8.** The missing branch is
+  `selector.py:223-228` — *"Peers are at {date} but the institution is at
+  {target}."* — which is exactly the risk the deleted `report_date` rule used to
+  cover and which nothing else replaced. All eight are now listed, and the count
+  is derived rather than asserted: `awk '/def caveats/,/^def _dedupe_by_cert/'
+  … | grep -c 'out.append('` → `8`, with the command printed in the skill.
+
+- **The `__mro__` claim was short one element.** Presented as a literal verified
+  value, `(<self>, CDFIBenchmarkError, Exception, BaseException)`; the real tuple
+  has five entries and ends in `object`. Corrected.
+
+- **The eleven-string disclosure table was the same defect in a second place.**
+  It asserted `generate_report → True` for all eleven as a property of the
+  surface. Re-run across three configurations: five of the twelve strings now
+  checked are conditional — three on `peers` being a `PeerGroup`, two on the data
+  (`**Not graded:**` needs an ungraded metric; `**Not shown:**` needs a refused
+  one, and it was absent from all three cases). The `summary_table` half **is**
+  unconditional — none of the twelve appears in any configuration. The section
+  now says which half is which.
+
+- **The basis rule's two branches implied an exhaustive taxonomy.** Derived: 11
+  `BASIS_*` constants, 5 in `GRADEABLE_BASES`, 8 shipped metrics, and
+  `BASIS_UNRULED` unreachable for all eight. A scope statement now says the two
+  branches cover the four metrics whose basis varies with the filing, and that a
+  basis string not listed should be quoted rather than assigned to a branch.
+
+### Deferred — not fixed here
+
+- **Rules for `BASIS_STOCK`, `BASIS_FDIC_LEVERAGE` and `BASIS_COMPUTED_FY`.**
+  All three are gradeable and graded, and appear only inside pasted output or an
+  example footnote. Deferred to the next sync rather than half-built here: each
+  is **fixed per metric, not decided per filing** — `loans_to_deposits`,
+  `npl_ratio` and `reserve_coverage` are always `BASIS_STOCK`, and `tier1_ratio`
+  already has its own three-state section — so there is no read-the-basis-and-
+  branch decision for an AI to get wrong, and closing it is a documentation
+  design pass rather than a fix to a wrong number. The implied completeness claim
+  that made it look like a defect **was** removed, above.
+
+### Not changed
+
+- **`nmtc-eligibility` and `hmda-analysis`.** Both were read (headings in full)
+  and grepped for `cdfi-benchmark|cdfibenchmark|fdic|peer|benchmark|banks.data|
+  annualiz|call.report`. `hmda-analysis`: zero matches. `nmtc-eligibility`: five,
+  all incidental (`on/after` matching the `n/a` pattern, and one unrelated "N/A"
+  rendering rule). Neither cross-references this skill or its package.
+
+### Version
+
+CalVer month rollover: 2026.8.3 → **2026.9.0**. The five version sites are now
+enumerated in `README.md`, which previously said "three manifests" — there are
+two manifest files carrying three version fields, plus the README line and this
+heading.
+
 ## 2026.8.3
 
 **An addition and a sharpening — not a retraction. Nothing 2026.8.2 asserted was

@@ -8,7 +8,7 @@ were read from the installed package source **this session**; reachability marke
 | Host | Backs | Used by | Cloud-reachable? |
 |---|---|---|---|
 | `ffiec.cfpb.gov` | CFPB HMDA API (LAR records) | hmda-analyzer | **Yes — verified** (2,000 RI records pulled) |
-| `banks.data.fdic.gov` | FDIC BankFind (institutions, call reports) | cdfi-benchmark | **Yes — verified** (search + get_financials) |
+| `api.fdic.gov/banks` | FDIC BankFind (institutions, call reports) | cdfi-benchmark | Not re-verified — blocked by the egress allowlist of the session that last updated this row. The former `banks.data.fdic.gov/api` host now answers HTTP 301 to this one; cdfi-benchmark 0.3.0 moved to the canonical host and keeps the old one only as `FDIC_API_BASE_LEGACY`. |
 | `geocoding.geo.census.gov` | Census geocoder (address → tract) | nmtc-mapper | **Yes — verified** (no cloud WAF) |
 | `www.cdfifund.gov` | CDFI Fund eligibility workbooks / award data | nmtc-mapper, cdfi-fund-tracker | Yes, but **URLs move** — a lookup can 404 when the Fund relocates a file |
 | `www.ffiec.gov` | FFIEC public CRA / census resources | cra-scraper | Partial — see cra-scraper note |
@@ -41,8 +41,11 @@ and (for cra-scraper) would not defeat the Cloudflare IP-level block anyway.
 
 ## Practical implications for an AI using these skills
 
-- The three wrapped skills (nmtc-eligibility, cdfi-peer-benchmark,
-  hmda-analysis) hit hosts that are cloud-reachable and verified this session.
+- nmtc-eligibility and hmda-analysis hit hosts that were cloud-reachable and
+  verified live when their rows above were written. **cdfi-peer-benchmark's host
+  was NOT re-verified in the 2026-09-07 pass** — `api.fdic.gov` was blocked by
+  that session's egress allowlist, which is a property of that session and not
+  evidence about the host. Check egress yourself before relying on it.
 - The **CDFI Fund** dependency (nmtc-mapper's eligibility table) is the fragile
   one: files move, so a download can fail. On failure, report it — never guess
   eligibility.
