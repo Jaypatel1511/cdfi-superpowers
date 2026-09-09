@@ -1,0 +1,904 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Sixteen open-source Python packages that turn CDFI Fund, FFIEC, FDIC and Census data into answers a community lender can act on — NMTC eligibility, fair-lending distributions, peer benchmarks, loan pricing and debt waterfalls.">
+  <meta name="author" content="Jay Patel">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A7%AD%3C/text%3E%3C/svg%3E">
+
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="CDFI Superpowers">
+  <meta property="og:description" content="Sixteen open-source Python packages that turn CDFI Fund, FFIEC, FDIC and Census data into answers a community lender can act on — NMTC eligibility, fair-lending distributions, peer benchmarks, loan pricing and debt waterfalls.">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="CDFI Superpowers">
+  <meta name="twitter:description" content="Sixteen open-source Python packages that turn CDFI Fund, FFIEC, FDIC and Census data into answers a community lender can act on — NMTC eligibility, fair-lending distributions, peer benchmarks, loan pricing and debt waterfalls.">
+
+  <style>
+    :root { color-scheme: light dark; }
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body { margin: 0; }
+    img { max-width: 100%; height: auto; }
+    [hidden] { display: none !important; }
+  </style>
+
+<title>CDFI Superpowers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+
+<style>
+  :root {
+    --ground: #F5F7F4;
+    --surface: #FFFFFF;
+    --surface-sunk: #ECEFEA;
+    --ink: #0D1F1E;
+    --body: #48544F;
+    --muted: #6E7A74;
+    --rule: #D9DFD8;
+    --rule-strong: #BFC8BE;
+    --accent: #0F6A6B;
+    --accent-soft: #E1EDEA;
+    --signal: #A8761A;
+    --signal-soft: #F3E9D4;
+
+    /* distress ramp — the sequential scale these tools map against */
+    --ramp-1: #B9CFC0;
+    --ramp-2: #7FAFA4;
+    --ramp-3: #C9A24A;
+    --ramp-4: #9A5B31;
+
+    --shadow: 0 1px 2px rgba(13,31,30,.05), 0 8px 24px -16px rgba(13,31,30,.28);
+
+    --measure: 63ch;
+    --page: 1120px;
+
+    --step--1: clamp(.78rem, .76rem + .1vw, .84rem);
+    --step-0: clamp(1rem, .97rem + .16vw, 1.09rem);
+    --step-1: clamp(1.2rem, 1.13rem + .34vw, 1.42rem);
+    --step-2: clamp(1.5rem, 1.36rem + .68vw, 1.95rem);
+    --step-3: clamp(2rem, 1.7rem + 1.5vw, 3.1rem);
+    --step-4: clamp(2.5rem, 1.95rem + 2.7vw, 4.4rem);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0B1413;
+      --surface: #121D1C;
+      --surface-sunk: #0F1918;
+      --ink: #E8EEEA;
+      --body: #AEBBB5;
+      --muted: #85938C;
+      --rule: #23322F;
+      --rule-strong: #33443F;
+      --accent: #58AFA9;
+      --accent-soft: #12302E;
+      --signal: #DCA945;
+      --signal-soft: #2C2415;
+      --ramp-1: #46655B;
+      --ramp-2: #5D9187;
+      --ramp-3: #A98A3E;
+      --ramp-4: #9C6440;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 28px -18px rgba(0,0,0,.9);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground: #0B1413;
+    --surface: #121D1C;
+    --surface-sunk: #0F1918;
+    --ink: #E8EEEA;
+    --body: #AEBBB5;
+    --muted: #85938C;
+    --rule: #23322F;
+    --rule-strong: #33443F;
+    --accent: #58AFA9;
+    --accent-soft: #12302E;
+    --signal: #DCA945;
+    --signal-soft: #2C2415;
+    --ramp-1: #46655B;
+    --ramp-2: #5D9187;
+    --ramp-3: #A98A3E;
+    --ramp-4: #9C6440;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 28px -18px rgba(0,0,0,.9);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--ground);
+    color: var(--body);
+    font-family: "Public Sans", ui-sans-serif, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: var(--step-0);
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3 {
+    font-family: Fraunces, "Iowan Old Style", Georgia, serif;
+    color: var(--ink);
+    text-wrap: balance;
+    font-weight: 600;
+    letter-spacing: -.012em;
+    margin: 0;
+    line-height: 1.14;
+  }
+
+  a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  a:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  code, .mono { font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+  .wrap { max-width: var(--page); margin-inline: auto; padding-inline: clamp(1.15rem, 4vw, 2.75rem); }
+
+  .eyebrow {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: var(--step--1);
+    text-transform: uppercase;
+    letter-spacing: .14em;
+    color: var(--muted);
+    margin: 0;
+  }
+
+  /* ---------- masthead ---------- */
+
+  header.masthead {
+    border-bottom: 1px solid var(--rule);
+    background: var(--surface);
+  }
+  .masthead-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .9rem 1.4rem;
+    padding-block: 1rem;
+  }
+  .wordmark {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-weight: 700;
+    font-size: var(--step--1);
+    letter-spacing: .04em;
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .wordmark .slash { color: var(--accent); }
+  .masthead-links {
+    margin-left: auto;
+    display: flex;
+    gap: 1.25rem;
+    font-size: var(--step--1);
+  }
+  .masthead-links a { color: var(--body); text-decoration: none; }
+  .masthead-links a:hover { color: var(--accent); text-decoration: underline; }
+
+  /* ---------- hero ---------- */
+
+  .hero {
+    position: relative;
+    border-bottom: 1px solid var(--rule);
+    overflow: hidden;
+    background: var(--surface);
+  }
+  #tractfield {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: .5;
+    pointer-events: none;
+  }
+  .hero-inner {
+    position: relative;
+    padding-block: clamp(3rem, 7vw, 5.5rem) clamp(2.5rem, 5vw, 4rem);
+    display: grid;
+    gap: clamp(2rem, 4vw, 3.5rem);
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 900px) {
+    .hero-inner { grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); align-items: end; }
+  }
+
+  .hero h1 {
+    font-size: var(--step-4);
+    font-weight: 600;
+    margin-block: .6rem .9rem;
+  }
+  .hero h1 em {
+    font-style: normal;
+    color: var(--accent);
+  }
+  .hero .lede {
+    max-width: var(--measure);
+    font-size: var(--step-1);
+    color: var(--body);
+    margin: 0;
+  }
+  .hero .lede strong { color: var(--ink); font-weight: 600; }
+
+  .install {
+    margin-top: 1.9rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .75rem;
+  }
+  .install-cmd {
+    display: inline-flex;
+    align-items: center;
+    gap: .7rem;
+    background: var(--surface-sunk);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    padding: .6rem .9rem;
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: var(--step--1);
+    color: var(--ink);
+  }
+  .install-cmd .prompt { color: var(--accent); user-select: none; }
+  .copy-btn {
+    font: inherit;
+    font-size: var(--step--1);
+    font-family: "Public Sans", sans-serif;
+    background: none;
+    border: 1px solid var(--rule-strong);
+    color: var(--body);
+    border-radius: 3px;
+    padding: .35rem .7rem;
+    cursor: pointer;
+  }
+  .copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* hero data panel */
+  .facts {
+    display: grid;
+    gap: 0;
+    border: 1px solid var(--rule);
+    background: var(--surface);
+    border-radius: 3px;
+    box-shadow: var(--shadow);
+  }
+  .fact {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: baseline;
+    gap: .1rem .9rem;
+    padding: .85rem 1.1rem;
+  }
+  .fact + .fact { border-top: 1px solid var(--rule); }
+  .fact-num {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    font-size: var(--step-1);
+    color: var(--ink);
+    line-height: 1.2;
+  }
+  .fact-label { color: var(--muted); font-size: var(--step--1); grid-column: 2; }
+
+  /* ---------- generic section ---------- */
+
+  section { padding-block: clamp(3rem, 6vw, 5rem); }
+  section + section { border-top: 1px solid var(--rule); }
+  .section-head { margin-bottom: 2.25rem; }
+  .section-head h2 { font-size: var(--step-2); margin-block: .55rem .7rem; }
+  .section-head p { max-width: var(--measure); margin: 0; }
+
+  /* ---------- questions ---------- */
+
+  .questions {
+    display: grid;
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  @media (min-width: 760px) { .questions { grid-template-columns: repeat(3, 1fr); } }
+  .q {
+    background: var(--surface);
+    padding: 1.5rem 1.4rem;
+    display: flex;
+    flex-direction: column;
+    gap: .7rem;
+  }
+  .q h3 {
+    font-family: "Public Sans", sans-serif;
+    font-size: var(--step-0);
+    font-weight: 600;
+    line-height: 1.4;
+    letter-spacing: 0;
+  }
+  .q p { margin: 0; font-size: var(--step--1); line-height: 1.6; }
+  .q .answered-by {
+    margin-top: auto;
+    padding-top: .8rem;
+    border-top: 1px dashed var(--rule);
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: var(--step--1);
+    color: var(--accent);
+  }
+
+  /* ---------- the index ---------- */
+
+  .family { margin-top: 2.75rem; }
+  .family:first-of-type { margin-top: 0; }
+
+  .family-head {
+    display: flex;
+    align-items: baseline;
+    gap: .9rem;
+    padding-bottom: .7rem;
+    border-bottom: 2px solid var(--ink);
+    margin-bottom: 0;
+  }
+  .family-swatch {
+    width: 11px; height: 11px;
+    border-radius: 2px;
+    flex: none;
+    transform: translateY(1px);
+  }
+  .family-head h3 {
+    font-family: "Public Sans", sans-serif;
+    font-size: var(--step-0);
+    font-weight: 700;
+    letter-spacing: .01em;
+    margin-right: auto;
+  }
+  .family-count {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: var(--step--1);
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .pkg {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: .3rem .5rem;
+    padding: 1.15rem .3rem 1.15rem 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  @media (min-width: 820px) {
+    .pkg {
+      grid-template-columns: minmax(15rem, 19rem) minmax(0, 1fr);
+      gap: .35rem 2.25rem;
+      align-items: baseline;
+    }
+  }
+  .pkg-id { display: flex; align-items: baseline; gap: .6rem; flex-wrap: wrap; }
+  .pkg-name {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-weight: 500;
+    font-size: var(--step-0);
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .pkg-name:hover { color: var(--accent); text-decoration: underline; }
+  .pkg-ver {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
+    font-size: var(--step--1);
+    color: var(--muted);
+  }
+  .pkg-desc { margin: 0; font-size: var(--step--1); line-height: 1.62; }
+  .pkg-note {
+    grid-column: 1 / -1;
+    font-size: var(--step--1);
+    color: var(--signal);
+    display: flex;
+    gap: .5rem;
+    align-items: baseline;
+    margin-top: .35rem;
+  }
+  @media (min-width: 820px) { .pkg-note { grid-column: 2; } }
+  .pkg-note::before {
+    content: "Scope";
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: .68em;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    background: var(--signal-soft);
+    color: var(--signal);
+    padding: .12em .5em;
+    border-radius: 2px;
+    flex: none;
+    transform: translateY(-1px);
+  }
+
+  /* ---------- plugin band ---------- */
+
+  .plugin {
+    display: grid;
+    gap: clamp(1.75rem, 4vw, 3rem);
+    align-items: start;
+  }
+  @media (min-width: 900px) { .plugin { grid-template-columns: minmax(0, 1fr) minmax(0, 22rem); } }
+
+  .skill-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+  }
+  .skill-list li { padding: .95rem 1.15rem; }
+  .skill-list li + li { border-top: 1px solid var(--rule); }
+  .skill-list .skill-name {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: var(--step--1);
+    color: var(--ink);
+    font-weight: 500;
+    display: block;
+    margin-bottom: .2rem;
+  }
+  .skill-list .skill-what { font-size: var(--step--1); color: var(--body); }
+
+  /* ---------- discipline ---------- */
+
+  .discipline {
+    display: grid;
+    gap: 1.5rem;
+    counter-reset: none;
+  }
+  @media (min-width: 780px) { .discipline { grid-template-columns: repeat(2, 1fr); gap: 1.5rem 3rem; } }
+  .rule-item { display: grid; gap: .4rem; align-content: start; }
+  .rule-item h3 {
+    font-family: "Public Sans", sans-serif;
+    font-size: var(--step-0);
+    font-weight: 600;
+    letter-spacing: 0;
+    padding-left: .85rem;
+    border-left: 2px solid var(--accent);
+  }
+  .rule-item p { margin: 0; padding-left: .85rem; font-size: var(--step--1); }
+
+  /* ---------- audience ---------- */
+
+  .audience { display: grid; gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 3px; overflow: hidden; }
+  @media (min-width: 780px) { .audience { grid-template-columns: repeat(3, 1fr); } }
+  .aud { background: var(--surface); padding: 1.4rem; }
+  .aud h3 { font-family: "Public Sans", sans-serif; font-size: var(--step--1); text-transform: uppercase; letter-spacing: .11em; font-weight: 700; color: var(--muted); margin-bottom: .55rem; }
+  .aud p { margin: 0; font-size: var(--step--1); }
+
+  /* ---------- colophon ---------- */
+
+  footer {
+    border-top: 1px solid var(--rule);
+    background: var(--surface);
+    padding-block: 2.5rem 3rem;
+  }
+  .colophon {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.25rem 2.5rem;
+    align-items: baseline;
+    font-size: var(--step--1);
+  }
+  .colophon p { margin: 0; max-width: 46ch; }
+  .colophon .links { margin-left: auto; display: flex; gap: 1.4rem; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<header class="masthead">
+  <div class="wrap masthead-inner">
+    <a class="wordmark" href="#top">cdfi<span class="slash">-</span>superpowers</a>
+    <nav class="masthead-links">
+      <a href="#index">Packages</a>
+      <a href="#plugin">Claude plugin</a>
+      <a href="#discipline">How it's built</a>
+      <a href="https://github.com/Jaypatel1511">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<div class="hero" id="top">
+  <canvas id="tractfield" aria-hidden="true"></canvas>
+  <div class="wrap hero-inner">
+    <div>
+      <p class="eyebrow">Open-source Python for community development finance</p>
+      <h1>The public data is already there. <em>Getting to it shouldn't take a data team.</em></h1>
+      <p class="lede">Sixteen packages that turn CDFI Fund, FFIEC, FDIC and Census data into answers a lender can act on — <strong>NMTC eligibility, fair-lending distributions, peer benchmarks, loan pricing, debt waterfalls</strong>. Built by a practitioner, for the CDFIs, MDIs and CDEs that don't have an analytics function.</p>
+
+      <div class="install">
+        <span class="install-cmd"><span class="prompt">$</span><span id="install-text">pip install nmtc-mapper hmda-analyzer cdfi-benchmark</span></span>
+        <button class="copy-btn" id="copy-btn" type="button">Copy</button>
+      </div>
+    </div>
+
+    <div class="facts">
+      <div class="fact">
+        <span class="fact-num">16</span>
+        <span class="fact-label">packages published on PyPI, MIT licensed</span>
+      </div>
+      <div class="fact">
+        <span class="fact-num">85,395</span>
+        <span class="fact-label">census tracts in the NMTC eligibility table, queryable in bulk</span>
+      </div>
+      <div class="fact">
+        <span class="fact-num">FY18–22</span>
+        <span class="fact-label">CDFI Fund Transaction Level Report years loaded by <code>cdfidata</code></span>
+      </div>
+      <div class="fact">
+        <span class="fact-num">$0</span>
+        <span class="fact-label">licensing, seats, or vendor contracts</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section id="questions">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">Start here</p>
+      <h2>Questions these answer before lunch</h2>
+      <p>Every one of these is a real question that normally costs a week of someone's time, a consultant, or a subscription. Each is one import away.</p>
+    </div>
+
+    <div class="questions">
+      <div class="q">
+        <h3>Is this address in a Low-Income Community, and how distressed is the tract?</h3>
+        <p>Geocode the address, resolve the 2020 tract, return LIC status and the tract median-family-income ratio straight from the CDFI Fund workbook — no ArcGIS, no manual lookup.</p>
+        <span class="answered-by">nmtc-mapper</span>
+      </div>
+      <div class="q">
+        <h3>How does our bank compare to its real peer group?</h3>
+        <p>Pull FDIC call-report metrics — NIM, ROAA, ROAE, efficiency ratio, Tier 1, loans-to-deposits, NPLs — for a bank CDFI or MDI and its peers, on the same basis.</p>
+        <span class="answered-by">cdfi-benchmark</span>
+      </div>
+      <div class="q">
+        <h3>What does mortgage lending actually look like in this county?</h3>
+        <p>Pull HMDA LAR records by county, state, lender LEI or multiple years, with FFIEC MSA median family income and tract income percentage attached to every record.</p>
+        <span class="answered-by">hmda-analyzer</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="index">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">The index</p>
+      <h2>Sixteen packages, four workflows</h2>
+      <p>Grouped by the job, not by the dataset. Versions shown are what's live on PyPI today. Every package installs with <code>pip</code> and works from a notebook, a script, or a CLI.</p>
+    </div>
+
+    <div class="family">
+      <div class="family-head">
+        <span class="family-swatch" style="background: var(--ramp-4)"></span>
+        <h3>New Markets &amp; Low-Income Housing Tax Credit</h3>
+        <span class="family-count">5 packages</span>
+      </div>
+
+      <div class="pkg">
+        <div class="pkg-id"><a class="pkg-name" href="https://pypi.org/project/nmtc-mapper/">nmtc-mapper</a><span class="pkg-ver">0.5.0</span></div>
+        <p class="pkg-desc">Automated NMTC eligibility checking — geocode an address or tract and return Low-Income Community status, distress criteria, and the tract MFI ratio. Bulk table access for portfolio-wide screening.</p>
+      </div>
+
+      <div class="pkg">
+        <div class="pkg-id"><a class="pkg-name" href="https://pypi.org/project/nmtc-screener/">nmtc-screener</a><span class="pkg-ver">0.1.0</span></div>
+        <p class="pkg-desc">First-pass feasibility screening for an NMTC deal from the command line — does the project clear the threshold questions before anyone builds a model.</p>
+      </div>
+
+      <div class="pkg">
+        <div class="pkg-id"><a class="pkg-name" href="https://pypi.org/project/nmtc-calc/">nmtc-calc</a><span class="pkg-ver">0.2.1</span></div>
+        <p class="pkg-desc">Leveraged NMTC transaction calculator — sources and uses, leverage loan, QEI sizing, and the credit stream for a standard leveraged structure.</p>
+      </div>
+
+      <div class="pkg">
+        <div class="pkg-id"><a class="pkg-name" href="https://pypi.org/project/nmtc-application-builder/">nmtc-application-builder</a><span class="pkg-ver">1.6.1</span></div>
+        <p class="pkg-desc">Open-source intelligence for competitive CDFI Fund NMTC allocation applications — pipeline scoring against the published criteria. 544 tests.</p>
+      </div>
+
+      <div class="pkg">
+        <div class="pkg-id"><a class="pkg-name" href="https://pypi.org/project/lihtc-calc/">lihtc-calc</a><span class="pkg-ver">0.1.0</span></div>
+        <p class="pkg-desc">LIHTC transaction calculator — qualified basis, applicable fraction, 4% and 9% credit, the 15-year compliance period, recapture exposure, and investor IRR.</p>
+      </div>
+    </div>
+
+    <div class="family">
+      <div class="family-head">
+        <span class="family-swatch" style="background: var(--ramp-3)"></span>
+        <h3>Fair lending &amp; CRA</h3>
+        <span class="family-count">3 packages</span>
+      </div>
+
+      <div class="pkg">
+        <div class="pkg-id"><a class="pkg-name" href="https://pypi.org/project/hmda-analyzer/">hmda-analyzer</a><span class="pkg-ver">0.6.1</span></div>
+        <p class="pkg-desc">Pull and describe HMDA LAR records by county, state, lender LEI, or across years, with FFIEC MSA median family income and tract income percentage on every record.</p>
+        <p class="pkg-note">Descriptive only. Borrower- and tract-income distributions, not disparity findings.</p>
+      </div>
+
+      <div class="pkg">
+        <div class="pkg-id"><a class="pkg-name" href="https://pypi.org/project/fair-lending-screener/">fair-lending-screener</a><span class="pkg-ver">0.2.2</span></div>
+        <p class="pkg-desc">Statistical disparate-impact screening on HMDA data using the logistic-regression methodology federal examiners apply, with MSA fixed effects and an explicit minimum sample size.</p>
+        <p class="pkg-note">A screening instrument for analysts who understand the methodology — deliberately not a one-click verdict, and not a substitute for a fair-lending review.</p>
+      </div>
+
+      <div class="pkg">
+        <div class="pkg-id"><a class="pkg-name" href="https://pypi.org/project/cra-scraper/">cra-scraper</a><span class="pkg-ver">0.1.1</span></div>
+        <p class="pkg-desc">Search the FFIEC CRA exam database and parse Performance Evaluations — ratings history, and banks whose CRA posture makes them plausible partners.</p>
+      </div>
+    </div>
+
+    <div class="family">
+      <div class="family-head">
+        <span class="family-swatch" style="background: var(--ramp-2)"></span>
+        <h3>Institution &amp; portfolio data</h3>
+        <span class="family-count">4 packages</span>
+      </div>
+
+      <div class="pkg">
+        <div class="pkg-id"><a class="pkg-name" href="https://pypi.org/project/cdfi-benchmark/">cdfi-benchmark</a><span class="pkg-ver">0.3.1</span></div>
+        <p class="pkg-desc">Peer benchmarking for bank CDFIs and MDIs on FDIC call-report metrics — NIM, ROAA, ROAE, efficiency ratio, Tier 1 capital, loans-to-deposits, NPL ratio, loan-loss coverage.</p>
+        <p class="pkg-note">FDIC-insured institutions only — no credit unions, no unregulated loan funds.</p>
+      </div>
+
+      <div class="pkg">
+        <div class="pkg-id"><a class="pkg-name" href="https://pypi.org/project/cdfidata/">cdfidata</a><span class="pkg-ver">0.4.0</span></div>
+        <p class="pkg-desc">ETL pipeline for Treasury CDFI Fund public datasets — a multi-year Transaction Level Report loader covering FY2018 through FY2022, plus CLR, ILR, NMTC and Awards data.</p>
+      </div>
+
+      <div class="pkg">
+        <div class="pkg-id"><a class="pkg-name" href="https://pypi.org/project/cdfi-fund-tracker/">cdfi-fund-tracker</a><span class="pkg-ver">0.2.0</span></div>
+        <p class="pkg-desc">Award analysis and compliance tracking across CDFI Program, BEA, NACA, Native American, RAPID, CMF and Bond Guarantee awards.</p>
+        <p class="pkg-note">Bring your own data — no CDFI Fund ingestion path is implemented; the bundled data is a sample.</p>
+      </div>
+
+      <div class="pkg">
+        <div class="pkg-id"><a class="pkg-name" href="https://pypi.org/project/impact-ledger/">impact-ledger</a><span class="pkg-ver">0.2.1</span></div>
+        <p class="pkg-desc">Portfolio tracker for impact investment, private debt and community development finance — positions, cash flows and impact metrics in one ledger.</p>
+      </div>
+    </div>
+
+    <div class="family">
+      <div class="family-head">
+        <span class="family-swatch" style="background: var(--ramp-1)"></span>
+        <h3>Credit, pricing &amp; structuring</h3>
+        <span class="family-count">4 packages</span>
+      </div>
+
+      <div class="pkg">
+        <div class="pkg-id"><a class="pkg-name" href="https://pypi.org/project/dscr-tools/">dscr-tools</a><span class="pkg-ver">0.2.0</span></div>
+        <p class="pkg-desc">Loan amortization, DSCR tracking, covenant monitoring and loan sizing — the arithmetic behind a credit memo, without the spreadsheet.</p>
+      </div>
+
+      <div class="pkg">
+        <div class="pkg-id"><a class="pkg-name" href="https://pypi.org/project/cdfi-loan-pricing/">cdfi-loan-pricing</a><span class="pkg-ver">0.2.0</span></div>
+        <p class="pkg-desc">Minimum viable loan rate from first principles — cost of capital, target ROAA, expected loss and administrative cost, so a concessionary rate is a decision rather than a guess.</p>
+      </div>
+
+      <div class="pkg">
+        <div class="pkg-id"><a class="pkg-name" href="https://pypi.org/project/waterfall-py/">waterfall-py</a><span class="pkg-ver">0.2.0</span></div>
+        <p class="pkg-desc">Period-by-period mechanical debt-waterfall engine for structured finance — cash applied through the priority of payments, one period at a time.</p>
+      </div>
+
+      <div class="pkg">
+        <div class="pkg-id"><a class="pkg-name" href="https://pypi.org/project/bond-issuer-screener/">bond-issuer-screener</a><span class="pkg-ver">0.1.0</span></div>
+        <p class="pkg-desc">CDFI Bond Guarantee Program eligibility screening — net asset, lending volume and portfolio quality thresholds, and whether an issuance is feasible at all.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="plugin">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">For people who don't write Python</p>
+      <h2>The same tools, asked in plain English</h2>
+      <p><strong>cdfi-superpowers</strong> is a Claude plugin that wraps the audited packages as skills. Ask the question the way you'd ask a colleague; the skill calls the package and reports what it actually returned — never an estimate from general knowledge.</p>
+    </div>
+
+    <div class="plugin">
+      <div>
+        <p style="max-width: var(--measure); margin-top: 0;">This is the part that matters for adoption. A loan officer at a $40M CDFI is not going to open a notebook, and shouldn't have to. The skills enforce the same scope limits the packages do — if a question falls outside what the data supports, the answer says so instead of filling the gap.</p>
+        <p style="max-width: var(--measure);">Install it from the plugin marketplace alongside <span class="mono">nmtc-underwriting</span>, or clone it from GitHub.</p>
+        <div class="install">
+          <span class="install-cmd"><span class="prompt">›</span><span>github.com/Jaypatel1511/cdfi-superpowers</span></span>
+        </div>
+      </div>
+
+      <ul class="skill-list">
+        <li>
+          <span class="skill-name">nmtc-eligibility</span>
+          <span class="skill-what">“Is 1420 Main St, Orangeburg SC in a Low-Income Community?”</span>
+        </li>
+        <li>
+          <span class="skill-name">cdfi-peer-benchmark</span>
+          <span class="skill-what">“How does this bank CDFI compare to its peers on efficiency ratio?”</span>
+        </li>
+        <li>
+          <span class="skill-name">hmda-analysis</span>
+          <span class="skill-what">“Pull three years of HMDA for Cook County and show the tract-income distribution.”</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="discipline">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">How it's built</p>
+      <h2>Rigor is the product</h2>
+      <p>Anyone can wrap a federal API. What makes a tool usable in an underwriting file is knowing exactly where it stops being right — so that boundary is documented, tested, and enforced in code.</p>
+    </div>
+
+    <div class="discipline">
+      <div class="rule-item">
+        <h3>Known limitations are published, not buried</h3>
+        <p>Every package documents what it gets wrong and why. A vintage mismatch between tract boundaries, an unreachable branch in a threshold test — disclosed in the release notes and excluded from any claim the tool makes.</p>
+      </div>
+      <div class="rule-item">
+        <h3>Hostile audit before release</h3>
+        <p>Each package is reviewed adversarially — the reviewer's job is to find the fabrication, the hardcoded sample passed off as real data, the confident answer the data can't support. Findings are triaged into named versions.</p>
+      </div>
+      <div class="rule-item">
+        <h3>Descriptive and inferential stay separated</h3>
+        <p>Tools that describe lending patterns do not draw disparity conclusions, and tools that run inferential tests say plainly what the test does and does not establish. The friction is intentional and legally defensive.</p>
+      </div>
+      <div class="rule-item">
+        <h3>Sample data is labeled as sample data</h3>
+        <p>Where a package ships bundled data for offline use, it says so at every surface — CLI output included. No package narrates a hardcoded profile as a real result.</p>
+      </div>
+      <div class="rule-item">
+        <h3>Real datasets, real scale</h3>
+        <p>Built against the actual files practitioners use — the CDFI Fund eligibility workbook, FFIEC HMDA, FDIC call reports, Treasury TLR extracts — not toy fixtures.</p>
+      </div>
+      <div class="rule-item">
+        <h3>MIT licensed, no strings</h3>
+        <p>Free to use, fork, embed in internal tooling, or cite in a filing. No seats, no vendor relationship, no data leaving your machine except to the public APIs you're already entitled to query.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="audience">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">Who this is for</p>
+      <h2>Built for the organizations without a data team</h2>
+    </div>
+    <div class="audience">
+      <div class="aud">
+        <h3>CDFIs, MDIs and CDEs</h3>
+        <p>Loan officers, portfolio managers and compliance staff who need a defensible answer today and don't have an analyst to assign it to.</p>
+      </div>
+      <div class="aud">
+        <h3>Researchers and journalists</h3>
+        <p>Reproducible access to HMDA, CRA and CDFI Fund data with the methodology visible — every number traceable to a public source.</p>
+      </div>
+      <div class="aud">
+        <h3>Consultants and advisors</h3>
+        <p>Screening, sizing and benchmarking that would otherwise mean a subscription or a bespoke build for every engagement.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap colophon">
+    <p>Built and maintained by <strong style="color: var(--ink)">Jay Patel</strong> — Impact Investing &amp; Community Development Finance Professional, Chicago. Seven years in NMTC, CDFI lending and structured finance.</p>
+    <div class="links">
+      <a href="https://github.com/Jaypatel1511">GitHub</a>
+      <a href="#index">All sixteen packages</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var btn = document.getElementById('copy-btn');
+  if (btn) {
+    btn.addEventListener('click', function () {
+      var text = document.getElementById('install-text').textContent;
+      var done = function () {
+        btn.textContent = 'Copied';
+        setTimeout(function () { btn.textContent = 'Copy'; }, 1600);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done, function () { btn.textContent = 'Press ⌘C'; });
+      } else {
+        btn.textContent = 'Press ⌘C';
+      }
+    });
+  }
+
+  // Ambient tract field: irregular census-tract-like cells shaded on the distress ramp.
+  var canvas = document.getElementById('tractfield');
+  if (!canvas || !canvas.getContext) return;
+  var ctx = canvas.getContext('2d');
+
+  function mulberry(a) {
+    return function () {
+      a |= 0; a = (a + 0x6D2B79F5) | 0;
+      var t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function ramp() {
+    var cs = getComputedStyle(document.documentElement);
+    return ['--ramp-1', '--ramp-2', '--ramp-3', '--ramp-4'].map(function (v) {
+      return cs.getPropertyValue(v).trim() || '#7FAFA4';
+    });
+  }
+
+  function draw() {
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var w = canvas.clientWidth, h = canvas.clientHeight;
+    if (!w || !h) return;
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, w, h);
+
+    var colors = ramp();
+    var cell = 46;
+    var cols = Math.ceil(w / cell) + 1;
+    var rows = Math.ceil(h / cell) + 1;
+    var rnd = mulberry(20240909);
+
+    // jittered lattice -> irregular quads, the way tract boundaries actually look
+    var pts = [];
+    for (var r = 0; r <= rows; r++) {
+      pts[r] = [];
+      for (var c = 0; c <= cols; c++) {
+        pts[r][c] = {
+          x: c * cell + (rnd() - 0.5) * cell * 0.55,
+          y: r * cell + (rnd() - 0.5) * cell * 0.55
+        };
+      }
+    }
+
+    for (var r2 = 0; r2 < rows; r2++) {
+      for (var c2 = 0; c2 < cols; c2++) {
+        var a = pts[r2][c2], b = pts[r2][c2 + 1],
+            d = pts[r2 + 1][c2 + 1], e = pts[r2 + 1][c2];
+        // denser shading toward the left edge, thinning to the right
+        var bias = 1 - (c2 / cols);
+        var v = rnd() * 0.65 + bias * 0.45;
+        var idx = v > 0.85 ? 3 : v > 0.62 ? 2 : v > 0.38 ? 1 : 0;
+        ctx.beginPath();
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(b.x, b.y);
+        ctx.lineTo(d.x, d.y);
+        ctx.lineTo(e.x, e.y);
+        ctx.closePath();
+        ctx.globalAlpha = 0.05 + bias * 0.11;
+        ctx.fillStyle = colors[idx];
+        ctx.fill();
+        ctx.globalAlpha = 0.10 + bias * 0.10;
+        ctx.strokeStyle = colors[3];
+        ctx.lineWidth = 0.6;
+        ctx.stroke();
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  draw();
+  var t;
+  window.addEventListener('resize', function () {
+    clearTimeout(t);
+    t = setTimeout(draw, 180);
+  });
+  if (window.matchMedia) {
+    var mq = window.matchMedia('(prefers-color-scheme: dark)');
+    if (mq.addEventListener) mq.addEventListener('change', draw);
+  }
+})();
+</script>
+</body>
+</html>
