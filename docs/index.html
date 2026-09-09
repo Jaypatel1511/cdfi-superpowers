@@ -173,6 +173,34 @@
   .masthead-links a { color: var(--body); text-decoration: none; }
   .masthead-links a:hover { color: var(--accent); text-decoration: underline; }
 
+  .theme-toggle {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: var(--step--1);
+    letter-spacing: .04em;
+    background: none;
+    border: 1px solid var(--rule-strong);
+    color: var(--body);
+    border-radius: 3px;
+    padding: .26rem .62rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: .48rem;
+    line-height: 1.5;
+  }
+  .theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
+  .theme-toggle .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex: none;
+    border: 1px solid var(--accent);
+  }
+  .theme-toggle[data-mode="light"] .dot { background: var(--accent); }
+  .theme-toggle[data-mode="dark"] .dot { background: var(--ink); border-color: var(--ink); }
+  .theme-toggle[data-mode="auto"] .dot {
+    background: linear-gradient(to right, var(--accent) 0 50%, transparent 50% 100%);
+  }
+
   /* ---------- hero ---------- */
 
   .hero {
@@ -491,6 +519,18 @@
     * { animation: none !important; transition: none !important; }
   }
 </style>
+
+<script>
+  // Applied before first paint so a saved choice never flashes the other theme.
+  (function () {
+    try {
+      var saved = localStorage.getItem('cdfi-theme');
+      if (saved === 'light' || saved === 'dark') {
+        document.documentElement.setAttribute('data-theme', saved);
+      }
+    } catch (e) { /* private mode, blocked storage — fall back to the OS setting */ }
+  })();
+</script>
 </head>
 <body>
 <header class="masthead">
@@ -501,6 +541,9 @@
       <a href="#plugin">Claude plugin</a>
       <a href="#discipline">How it's built</a>
       <a href="https://github.com/Jaypatel1511">GitHub</a>
+      <button class="theme-toggle" id="theme-toggle" type="button" data-mode="auto">
+        <span class="dot" aria-hidden="true"></span><span id="theme-label">Auto</span>
+      </button>
     </nav>
   </div>
 </header>
@@ -982,6 +1025,7 @@ lending_desert_score(df)     # low volume AND high denial rate — both required
   }
 
   draw();
+  window.__redrawTractField = draw;
   var t;
   window.addEventListener('resize', function () {
     clearTimeout(t);
@@ -991,6 +1035,48 @@ lending_desert_score(df)     # low volume AND high denial rate — both required
     var mq = window.matchMedia('(prefers-color-scheme: dark)');
     if (mq.addEventListener) mq.addEventListener('change', draw);
   }
+})();
+
+// Theme control: Auto follows the operating system; Light and Dark override it.
+(function () {
+  var root = document.documentElement;
+  var btn = document.getElementById('theme-toggle');
+  var label = document.getElementById('theme-label');
+  if (!btn) return;
+
+  var MODES = ['auto', 'light', 'dark'];
+  var NAMES = { auto: 'Auto', light: 'Light', dark: 'Dark' };
+
+  function read() {
+    try { return localStorage.getItem('cdfi-theme'); } catch (e) { return null; }
+  }
+  function write(v) {
+    try { localStorage.setItem('cdfi-theme', v); } catch (e) { /* storage blocked */ }
+  }
+
+  var saved = read();
+  var mode = MODES.indexOf(saved) > -1 ? saved : 'auto';
+
+  function apply() {
+    if (mode === 'auto') root.removeAttribute('data-theme');
+    else root.setAttribute('data-theme', mode);
+
+    btn.setAttribute('data-mode', mode);
+    label.textContent = NAMES[mode];
+    btn.setAttribute('title', 'Theme: ' + NAMES[mode] + (mode === 'auto' ? ' (follows your system)' : ''));
+    btn.setAttribute('aria-label', 'Colour theme: ' + NAMES[mode] + '. Activate to change.');
+
+    // The hero mosaic samples its colours from the CSS tokens, so it must repaint.
+    if (window.__redrawTractField) window.__redrawTractField();
+  }
+
+  apply();
+
+  btn.addEventListener('click', function () {
+    mode = MODES[(MODES.indexOf(mode) + 1) % MODES.length];
+    write(mode);
+    apply();
+  });
 })();
 </script>
 </body>
