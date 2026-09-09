@@ -45,6 +45,7 @@
     --ramp-2: #7FAFA4;
     --ramp-3: #C9A24A;
     --ramp-4: #9A5B31;
+    --field-boost: 1;
 
     --shadow: 0 1px 2px rgba(13,31,30,.05), 0 8px 24px -16px rgba(13,31,30,.28);
 
@@ -77,6 +78,7 @@
       --ramp-2: #5D9187;
       --ramp-3: #A98A3E;
       --ramp-4: #9C6440;
+      --field-boost: 1.35;
       --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 28px -18px rgba(0,0,0,.9);
     }
   }
@@ -98,6 +100,7 @@
     --ramp-2: #5D9187;
     --ramp-3: #A98A3E;
     --ramp-4: #9C6440;
+    --field-boost: 1.35;
     --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 28px -18px rgba(0,0,0,.9);
   }
 
@@ -214,7 +217,7 @@
     inset: 0;
     width: 100%;
     height: 100%;
-    opacity: .5;
+    opacity: 1;
     pointer-events: none;
   }
   .hero-inner {
@@ -971,6 +974,12 @@ lending_desert_score(df)     # low volume AND high denial rate — both required
     });
   }
 
+  // Dark grounds swallow low-alpha fills, so each theme carries its own multiplier.
+  function boost() {
+    var cs = getComputedStyle(document.documentElement);
+    return parseFloat(cs.getPropertyValue('--field-boost')) || 1;
+  }
+
   function draw() {
     var dpr = Math.min(window.devicePixelRatio || 1, 2);
     var w = canvas.clientWidth, h = canvas.clientHeight;
@@ -981,7 +990,8 @@ lending_desert_score(df)     # low volume AND high denial rate — both required
     ctx.clearRect(0, 0, w, h);
 
     var colors = ramp();
-    var cell = 46;
+    var mul = boost();
+    var cell = 44;
     var cols = Math.ceil(w / cell) + 1;
     var rows = Math.ceil(h / cell) + 1;
     var rnd = mulberry(20240909);
@@ -1002,8 +1012,8 @@ lending_desert_score(df)     # low volume AND high denial rate — both required
       for (var c2 = 0; c2 < cols; c2++) {
         var a = pts[r2][c2], b = pts[r2][c2 + 1],
             d = pts[r2 + 1][c2 + 1], e = pts[r2 + 1][c2];
-        // denser shading toward the left edge, thinning to the right
-        var bias = 1 - (c2 / cols);
+        // Densest on the right, easing off behind the headline so type stays first.
+        var bias = Math.pow(c2 / cols, 0.85);
         var v = rnd() * 0.65 + bias * 0.45;
         var idx = v > 0.85 ? 3 : v > 0.62 ? 2 : v > 0.38 ? 1 : 0;
         ctx.beginPath();
@@ -1012,12 +1022,12 @@ lending_desert_score(df)     # low volume AND high denial rate — both required
         ctx.lineTo(d.x, d.y);
         ctx.lineTo(e.x, e.y);
         ctx.closePath();
-        ctx.globalAlpha = 0.05 + bias * 0.11;
+        ctx.globalAlpha = Math.min(0.5, (0.09 + bias * 0.26) * mul);
         ctx.fillStyle = colors[idx];
         ctx.fill();
-        ctx.globalAlpha = 0.10 + bias * 0.10;
+        ctx.globalAlpha = Math.min(0.55, (0.20 + bias * 0.24) * mul);
         ctx.strokeStyle = colors[3];
-        ctx.lineWidth = 0.6;
+        ctx.lineWidth = 0.8;
         ctx.stroke();
       }
     }
