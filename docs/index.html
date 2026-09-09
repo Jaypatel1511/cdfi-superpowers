@@ -78,7 +78,7 @@
       --ramp-2: #5D9187;
       --ramp-3: #A98A3E;
       --ramp-4: #9C6440;
-      --field-boost: 1.35;
+      --field-boost: 1.25;
       --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 28px -18px rgba(0,0,0,.9);
     }
   }
@@ -100,7 +100,7 @@
     --ramp-2: #5D9187;
     --ramp-3: #A98A3E;
     --ramp-4: #9C6440;
-    --field-boost: 1.35;
+    --field-boost: 1.25;
     --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 28px -18px rgba(0,0,0,.9);
   }
 
@@ -1022,12 +1022,12 @@ lending_desert_score(df)     # low volume AND high denial rate — both required
         ctx.lineTo(d.x, d.y);
         ctx.lineTo(e.x, e.y);
         ctx.closePath();
-        ctx.globalAlpha = Math.min(0.5, (0.09 + bias * 0.26) * mul);
+        ctx.globalAlpha = Math.min(0.20, (0.045 + bias * 0.11) * mul);
         ctx.fillStyle = colors[idx];
         ctx.fill();
-        ctx.globalAlpha = Math.min(0.55, (0.20 + bias * 0.24) * mul);
+        ctx.globalAlpha = Math.min(0.24, (0.08 + bias * 0.10) * mul);
         ctx.strokeStyle = colors[3];
-        ctx.lineWidth = 0.8;
+        ctx.lineWidth = 0.7;
         ctx.stroke();
       }
     }
