@@ -3,17 +3,15 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Sixteen open-source Python packages that turn CDFI Fund, FFIEC, FDIC and Census data into answers a community lender can act on — NMTC eligibility, fair-lending distributions, peer benchmarks, loan pricing and debt waterfalls.">
+  <meta name="description" content="Twenty-one open-source Python packages that turn CDFI Fund, FFIEC, FDIC and Census data into answers a community lender can act on — NMTC eligibility, fair-lending distributions, peer benchmarks, loan pricing and debt waterfalls.">
   <meta name="author" content="Jay Patel">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A7%AD%3C/text%3E%3C/svg%3E">
-
   <meta property="og:type" content="website">
   <meta property="og:title" content="CDFI Superpowers">
-  <meta property="og:description" content="Sixteen open-source Python packages that turn CDFI Fund, FFIEC, FDIC and Census data into answers a community lender can act on — NMTC eligibility, fair-lending distributions, peer benchmarks, loan pricing and debt waterfalls.">
+  <meta property="og:description" content="Twenty-one open-source Python packages that turn CDFI Fund, FFIEC, FDIC and Census data into answers a community lender can act on — NMTC eligibility, fair-lending distributions, peer benchmarks, loan pricing and debt waterfalls.">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="CDFI Superpowers">
-  <meta name="twitter:description" content="Sixteen open-source Python packages that turn CDFI Fund, FFIEC, FDIC and Census data into answers a community lender can act on — NMTC eligibility, fair-lending distributions, peer benchmarks, loan pricing and debt waterfalls.">
-
+  <meta name="twitter:description" content="Twenty-one open-source Python packages that turn CDFI Fund, FFIEC, FDIC and Census data into answers a community lender can act on — NMTC eligibility, fair-lending distributions, peer benchmarks, loan pricing and debt waterfalls.">
   <style>
     :root { color-scheme: light dark; }
     * { box-sizing: border-box; }
@@ -22,7 +20,6 @@
     img { max-width: 100%; height: auto; }
     [hidden] { display: none !important; }
   </style>
-
 <title>CDFI Superpowers</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -288,40 +285,46 @@
   .section-head h2 { font-size: var(--step-2); margin-block: .55rem .7rem; }
   .section-head p { max-width: var(--measure); margin: 0; }
 
-  /* ---------- questions ---------- */
+  /* ---------- demos ---------- */
 
-  .questions {
-    display: grid;
-    gap: 1px;
-    background: var(--rule);
-    border: 1px solid var(--rule);
-    border-radius: 3px;
-    overflow: hidden;
+  .demos { display: grid; gap: clamp(2.25rem, 4vw, 3.25rem); }
+  .demo { display: grid; gap: 1rem; }
+  @media (min-width: 960px) {
+    .demo {
+      grid-template-columns: minmax(0, 19rem) minmax(0, 1fr);
+      gap: 2.75rem;
+      align-items: start;
+    }
   }
-  @media (min-width: 760px) { .questions { grid-template-columns: repeat(3, 1fr); } }
-  .q {
-    background: var(--surface);
-    padding: 1.5rem 1.4rem;
-    display: flex;
-    flex-direction: column;
-    gap: .7rem;
-  }
-  .q h3 {
+  .demo-q h3 {
     font-family: "Public Sans", sans-serif;
     font-size: var(--step-0);
     font-weight: 600;
-    line-height: 1.4;
     letter-spacing: 0;
+    line-height: 1.4;
   }
-  .q p { margin: 0; font-size: var(--step--1); line-height: 1.6; }
-  .q .answered-by {
-    margin-top: auto;
-    padding-top: .8rem;
-    border-top: 1px dashed var(--rule);
+  .demo-q p { margin: .55rem 0 0; font-size: var(--step--1); }
+  .demo-q .answered-by {
+    display: inline-block;
+    margin-top: .8rem;
     font-family: "JetBrains Mono", ui-monospace, monospace;
     font-size: var(--step--1);
     color: var(--accent);
   }
+  pre.code {
+    margin: 0;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-left: 2px solid var(--accent);
+    border-radius: 3px;
+    padding: 1.15rem 1.3rem;
+    overflow-x: auto;
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: .8rem;
+    line-height: 1.75;
+    color: var(--ink);
+  }
+  pre.code .c { color: var(--muted); }
 
   /* ---------- the index ---------- */
 
@@ -508,7 +511,7 @@
     <div>
       <p class="eyebrow">Open-source Python for community development finance</p>
       <h1>The public data is already there. <em>Getting to it shouldn't take a data team.</em></h1>
-      <p class="lede">Sixteen packages that turn CDFI Fund, FFIEC, FDIC and Census data into answers a lender can act on — <strong>NMTC eligibility, fair-lending distributions, peer benchmarks, loan pricing, debt waterfalls</strong>. Built by a practitioner, for the CDFIs, MDIs and CDEs that don't have an analytics function.</p>
+      <p class="lede">Twenty-one packages that turn CDFI Fund, FFIEC, FDIC and Census data into answers a lender can act on — <strong>NMTC eligibility, fair-lending distributions, peer benchmarks, loan pricing, debt waterfalls</strong>. Built by a practitioner, for the CDFIs, MDIs and CDEs that don't have an analytics function.</p>
 
       <div class="install">
         <span class="install-cmd"><span class="prompt">$</span><span id="install-text">pip install nmtc-mapper hmda-analyzer cdfi-benchmark</span></span>
@@ -518,7 +521,7 @@
 
     <div class="facts">
       <div class="fact">
-        <span class="fact-num">16</span>
+        <span class="fact-num">21</span>
         <span class="fact-label">packages published on PyPI, MIT licensed</span>
       </div>
       <div class="fact">
@@ -542,24 +545,67 @@
     <div class="section-head">
       <p class="eyebrow">Start here</p>
       <h2>Questions these answer before lunch</h2>
-      <p>Every one of these is a real question that normally costs a week of someone's time, a consultant, or a subscription. Each is one import away.</p>
+      <p>Three real questions that normally cost a week of someone's time, a consultant, or a subscription. Each is one import away. Note what every API returns alongside the answer: how it was derived, and what would make it wrong.</p>
     </div>
 
-    <div class="questions">
-      <div class="q">
-        <h3>Is this address in a Low-Income Community, and how distressed is the tract?</h3>
-        <p>Geocode the address, resolve the 2020 tract, return LIC status and the tract median-family-income ratio straight from the CDFI Fund workbook — no ArcGIS, no manual lookup.</p>
-        <span class="answered-by">nmtc-mapper</span>
+    <div class="demos">
+      <div class="demo">
+        <div class="demo-q">
+          <h3>Is this address in a Low-Income Community, and how distressed is the tract?</h3>
+          <p>Geocode, resolve the tract, and return eligibility against the CDFI Fund's own file. An address that can't be resolved comes back indeterminate — never a silent “ineligible.”</p>
+          <span class="answered-by">nmtc-mapper</span>
+        </div>
+        <pre class="code">from nmtcmapper import NMTCMapper
+
+mapper = NMTCMapper()
+result = mapper.check_address("1234 S Michigan Ave, Chicago, IL 60605")
+
+result.nmtc_eligible            # True / False / None — None is indeterminate
+result.eligibility_status       # verified-eligible | verified-ineligible
+                                # | not-found | geocode-failed
+result.distress_level           # deep | severe | lic | ineligible
+result.opportunity_zone_status  # designated | not-confirmed | no-tract
+
+# Or score an entire pipeline at once
+df = mapper.enrich(df, address_col="address")
+df["nmtc_eligible"].value_counts()</pre>
       </div>
-      <div class="q">
-        <h3>How does our bank compare to its real peer group?</h3>
-        <p>Pull FDIC call-report metrics — NIM, ROAA, ROAE, efficiency ratio, Tier 1, loans-to-deposits, NPLs — for a bank CDFI or MDI and its peers, on the same basis.</p>
-        <span class="answered-by">cdfi-benchmark</span>
+
+      <div class="demo">
+        <div class="demo-q">
+          <h3>How does our bank compare to its real peer group?</h3>
+          <p>FDIC call-report metrics for a bank CDFI or MDI and the banks nearest it in asset size — with the selection basis and every caveat about the group attached to the result.</p>
+          <span class="answered-by">cdfi-benchmark</span>
+        </div>
+        <pre class="code">from cdfibenchmark import get_financials, build_peer_group, summary_table
+
+institution = get_financials(cert=34352)   # find CERTs with search_institutions()
+peers = build_peer_group(institution, same_state=True)
+
+peers.selection_basis      # how the group was chosen, in words
+peers.asset_percentile     # near 50 means the group brackets you
+for caveat in peers.caveats:
+    print("CAVEAT:", caveat)   # size skew, mixed periods, dropped constraints
+
+summary_table(institution, peers)   # NIM, ROAA, efficiency, Tier 1, NPLs</pre>
       </div>
-      <div class="q">
-        <h3>What does mortgage lending actually look like in this county?</h3>
-        <p>Pull HMDA LAR records by county, state, lender LEI or multiple years, with FFIEC MSA median family income and tract income percentage attached to every record.</p>
-        <span class="answered-by">hmda-analyzer</span>
+
+      <div class="demo">
+        <div class="demo-q">
+          <h3>What does mortgage lending actually look like in this county?</h3>
+          <p>Multi-year HMDA LAR pulls with provenance on every row. Aggregations that would pool incompatible census-tract vintages refuse to run rather than return a plausible wrong number.</p>
+          <span class="answered-by">hmda-analyzer</span>
+        </div>
+        <pre class="code">from hmdaanalyzer import (
+    load_range, denial_rate_by_race, disparity_ratio, lending_desert_score,
+)
+
+df = load_range(2021, 2023, state="IL", county="17031", limit=10_000)
+# df["activity_year"] tags each row's year; filters apply to every year
+
+denial_rate_by_race(df)
+disparity_ratio(df)          # ratios vs White applicants
+lending_desert_score(df)     # low volume AND high denial rate — both required</pre>
       </div>
     </div>
   </div>
@@ -569,8 +615,8 @@
   <div class="wrap">
     <div class="section-head">
       <p class="eyebrow">The index</p>
-      <h2>Sixteen packages, four workflows</h2>
-      <p>Grouped by the job, not by the dataset. Versions shown are what's live on PyPI today. Every package installs with <code>pip</code> and works from a notebook, a script, or a CLI.</p>
+      <h2>Twenty-one packages, grouped by the job</h2>
+      <p>Grouped by the work, not by the dataset. Versions shown are what's live on PyPI today. Every package installs with <code>pip</code> and works from a notebook, a script, or a CLI.</p>
     </div>
 
     <div class="family">
@@ -582,7 +628,8 @@
 
       <div class="pkg">
         <div class="pkg-id"><a class="pkg-name" href="https://pypi.org/project/nmtc-mapper/">nmtc-mapper</a><span class="pkg-ver">0.5.0</span></div>
-        <p class="pkg-desc">Automated NMTC eligibility checking — geocode an address or tract and return Low-Income Community status, distress criteria, and the tract MFI ratio. Bulk table access for portfolio-wide screening.</p>
+        <p class="pkg-desc">Automated NMTC eligibility checking — geocode an address or tract and return Low-Income Community status, distress tier, poverty rate, tract MFI ratio and Opportunity Zone status. Enriches a whole DataFrame; bulk access to the full 85,395-tract table.</p>
+        <p class="pkg-note">Eligibility is tri-state. An address that can't be resolved returns <code>None</code>, not <code>False</code> — treating it as ineligible would fabricate a verified answer.</p>
       </div>
 
       <div class="pkg">
@@ -635,7 +682,7 @@
       <div class="family-head">
         <span class="family-swatch" style="background: var(--ramp-2)"></span>
         <h3>Institution &amp; portfolio data</h3>
-        <span class="family-count">4 packages</span>
+        <span class="family-count">6 packages</span>
       </div>
 
       <div class="pkg">
@@ -659,13 +706,23 @@
         <div class="pkg-id"><a class="pkg-name" href="https://pypi.org/project/impact-ledger/">impact-ledger</a><span class="pkg-ver">0.2.1</span></div>
         <p class="pkg-desc">Portfolio tracker for impact investment, private debt and community development finance — positions, cash flows and impact metrics in one ledger.</p>
       </div>
+
+      <div class="pkg">
+        <div class="pkg-id"><a class="pkg-name" href="https://pypi.org/project/cdfi-val/">cdfi-val</a><span class="pkg-ver">0.1.0</span></div>
+        <p class="pkg-desc">Valuation toolkit for CDFIs and Minority Depository Institutions — tangible common equity and book-value-per-share work on institutions that trade thinly or not at all.</p>
+      </div>
+
+      <div class="pkg">
+        <div class="pkg-id"><a class="pkg-name" href="https://pypi.org/project/cdfi-stress-tester/">cdfi-stress-tester</a><span class="pkg-ver">0.2.0</span></div>
+        <p class="pkg-desc">Portfolio stress-testing engine — Monte Carlo simulation with correlated net-operating-income, interest-rate and property-value shocks.</p>
+      </div>
     </div>
 
     <div class="family">
       <div class="family-head">
         <span class="family-swatch" style="background: var(--ramp-1)"></span>
         <h3>Credit, pricing &amp; structuring</h3>
-        <span class="family-count">4 packages</span>
+        <span class="family-count">5 packages</span>
       </div>
 
       <div class="pkg">
@@ -686,6 +743,33 @@
       <div class="pkg">
         <div class="pkg-id"><a class="pkg-name" href="https://pypi.org/project/bond-issuer-screener/">bond-issuer-screener</a><span class="pkg-ver">0.1.0</span></div>
         <p class="pkg-desc">CDFI Bond Guarantee Program eligibility screening — net asset, lending volume and portfolio quality thresholds, and whether an issuance is feasible at all.</p>
+      </div>
+
+      <div class="pkg">
+        <div class="pkg-id"><a class="pkg-name" href="https://pypi.org/project/credit-memo/">credit-memo</a><span class="pkg-ver">0.2.0</span></div>
+        <p class="pkg-desc">Generate investment-committee credit memos from structured deal inputs — CDFI loans, NMTC transactions and impact investments, on one consistent template.</p>
+      </div>
+    </div>
+
+    <div class="family">
+      <div class="family-head">
+        <span class="family-swatch" style="background: var(--signal)"></span>
+        <h3>Published, with the defect stated on the tin</h3>
+        <span class="family-count">2 packages</span>
+      </div>
+
+      <p style="max-width: var(--measure); margin: 1.15rem 0 .35rem; font-size: var(--step--1);">These two are listed here rather than quietly delisted. Both are installable, both do less than their name suggests, and both say so in their own PyPI summary before you install them. That is the standard the rest of the suite is held to as well — it's only more visible here.</p>
+
+      <div class="pkg">
+        <div class="pkg-id"><a class="pkg-name" href="https://pypi.org/project/oz-tracker/">oz-tracker</a><span class="pkg-ver">0.2.0</span></div>
+        <p class="pkg-desc">Opportunity Zone tracker — Qualified Opportunity Fund tax-benefit and portfolio modeling.</p>
+        <p class="pkg-note">OZ tract lookup is non-functional in 0.2.0. Both upstream data sources return 404, so the package raises a typed error rather than returning a fabricated result. The QOF modeling works.</p>
+      </div>
+
+      <div class="pkg">
+        <div class="pkg-id"><a class="pkg-name" href="https://pypi.org/project/sbic-tracker/">sbic-tracker</a><span class="pkg-ver">0.2.0</span></div>
+        <p class="pkg-desc">SBIC investment portfolio analyzer — fund-level IRR, TVPI and DPI, and licensee modeling.</p>
+        <p class="pkg-note">Unmaintained. Live SBA data loading is not implemented; the package returns sample data only when explicitly asked for it.</p>
       </div>
     </div>
   </div>
@@ -791,7 +875,7 @@
     <p>Built and maintained by <strong style="color: var(--ink)">Jay Patel</strong> — Impact Investing &amp; Community Development Finance Professional, Chicago. Seven years in NMTC, CDFI lending and structured finance.</p>
     <div class="links">
       <a href="https://github.com/Jaypatel1511">GitHub</a>
-      <a href="#index">All sixteen packages</a>
+      <a href="#index">All twenty-one packages</a>
     </div>
   </div>
 </footer>
@@ -813,6 +897,15 @@
       }
     });
   }
+
+  // Dim inline comments in the code samples so the API reads first.
+  document.querySelectorAll('pre.code').forEach(function (pre) {
+    pre.innerHTML = pre.textContent
+      .replace(/[&<>]/g, function (ch) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[ch];
+      })
+      .replace(/(#[^\n]*)/g, '<span class="c">$1</span>');
+  });
 
   // Ambient tract field: irregular census-tract-like cells shaded on the distress ramp.
   var canvas = document.getElementById('tractfield');
