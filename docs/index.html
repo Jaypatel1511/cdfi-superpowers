@@ -615,7 +615,8 @@ result = mapper.check_address("1234 S Michigan Ave, Chicago, IL 60605")
 
 result.nmtc_eligible            # True / False / None — None is indeterminate
 result.eligibility_status       # verified-eligible | verified-ineligible
-                                # | not-found | geocode-failed
+                                # | not-found | not-covered-territory
+                                # | geocode-failed
 result.distress_level           # deep | severe | lic | ineligible
 result.opportunity_zone_status  # designated | not-confirmed | no-tract
 
@@ -680,7 +681,7 @@ lending_desert_score(df)     # low volume AND high denial rate — both required
       </div>
 
       <div class="pkg">
-        <div class="pkg-id"><a class="pkg-name" href="https://pypi.org/project/nmtc-mapper/">nmtc-mapper</a><span class="pkg-ver">0.5.0</span></div>
+        <div class="pkg-id"><a class="pkg-name" href="https://pypi.org/project/nmtc-mapper/">nmtc-mapper</a><span class="pkg-ver">0.6.0</span></div>
         <p class="pkg-desc">Automated NMTC eligibility checking — geocode an address or tract and return Low-Income Community status, distress tier, poverty rate, tract MFI ratio and Opportunity Zone status. Enriches a whole DataFrame; bulk access to the full 85,395-tract table.</p>
         <p class="pkg-note">Eligibility is tri-state. An address that can't be resolved returns <code>None</code>, not <code>False</code> — treating it as ineligible would fabricate a verified answer.</p>
       </div>

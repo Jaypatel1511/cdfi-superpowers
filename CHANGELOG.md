@@ -2,6 +2,94 @@
 
 All notable changes to `cdfi-superpowers`. Versioning is CalVer (`YYYY.M.MINOR`).
 
+## 2026.9.1
+
+**Syncs `nmtc-eligibility` to `nmtc-mapper` 0.6.0** (PyPI, 2026-09-13). 0.6.0
+added a **fifth** `eligibility_status` value and exported the vocabulary as a
+constant; this skill carried the four-way list and a two-value indeterminate
+rule, which is wrong for anyone who has upgraded. Documentation and plugin
+metadata only — no change to nmtc-mapper.
+
+Ground truth was taken from the package, not the skill, and by execution rather
+than from a docstring: 0.6.0 installed from PyPI into a clean venv,
+`ELIGIBILITY_STATUS_VALUES == ('verified-eligible', 'verified-ineligible',
+'not-found', 'not-covered-territory', 'geocode-failed')`, and
+`EligibilityResult` + `enrich_dataframe` driven across all five — the four
+`Optional[bool]` supporting fields and `nmtc_eligible` are `None` on exactly
+`not-found`, `not-covered-territory` and `geocode-failed`. 0.5.0 was installed
+alongside to reproduce the pre-0.6.0 behaviour: no constant (`AttributeError`),
+and an Island Area GEOID reported as a plain `not-found`.
+
+### Fixed
+
+- **The `eligibility_status` list is five-way, at every site.** `SKILL.md`
+  listed four values (`:143`), called the property "four-way" (`:140`, `:505`),
+  said "`not-found` and `geocode-failed` are the two indeterminate cases"
+  (`:146`), keyed the `Optional[bool]` table on "either indeterminate branch"
+  (`:160-164`), stated the tying rule as "`not-found` or `geocode-failed`"
+  (`:167`), and wrote the third-state membership test as `{not-found,
+  geocode-failed}` (`:205`). All now name three. `docs/index.html:617-618`
+  carried the same four-way list in its code sample; now five.
+- **`not-covered-territory` has a sentence of its own, not just a slot in a
+  list.** It is indeterminate, never a negative; it means the tract is *outside
+  the loaded table's universe*, not missing from it — the CDFI Fund's 2016–2020
+  ACS LIC table covers the 50 states + DC + Puerto Rico (981 rows, verified on
+  the live table), and the four DECIA Island Areas (FIPS 60/66/69/78) are not in
+  it. Their LIC status is in the Fund's separate *2020 Island Areas Decennial
+  Census* file, which nmtc-mapper does not load, so the skill must not claim a
+  territory answer the package cannot produce. Puerto Rico is covered, so a PR
+  miss is a real `not-found` (`72001956300` → `verified-eligible`,
+  `72001999999` → `not-found`, `66010950100` → `not-covered-territory`, all
+  executed). The Island Areas paragraph under the vintage-scope rule and the
+  Failure-modes list now say which status the package returns and what
+  `summary()` prints for it.
+- **The `>=0.5.0` install floor was a new instance of the defect being fixed.**
+  A skill describing five values while allowing 0.5.0 — which has four — is one
+  enumeration updated in prose and not in the pin. Floor raised to `>=0.6.0` at
+  every site: `SKILL.md` install block and remedy line, `README.md` (table and
+  the load-bearing-floor sentence, which now gives the 0.6.0 reason and keeps
+  the 0.5.0 one), `llms.txt`, `references/package-index.md`, and the
+  `docs/index.html` version chip (0.5.0 → 0.6.0, ahead of the nightly refresh).
+  A "fifth reason" paragraph in the install section says why, with the executed
+  constant.
+
+### Added
+
+- **Input shape.** 0.6.0 does not normalize GEOIDs, and the skill never said the
+  id must be the 11-digit zero-padded string. Executed on the live table:
+  `"06037101110"` → `verified-ineligible`, `"6037101110"` and the int
+  `6037101110` → `not-found`. A new section names the seven 0-prefixed states
+  (AL, AK, AZ, AR, CA, CO, CT), gives the `zfill(11)` remedy for a scalar and
+  for a DataFrame column, and records 0.6.0's guarantee that a stripped id is
+  never mistaken for a territory (a stripped California id begins with `60`,
+  American Samoa's FIPS). The absent-tract failure mode now says to check the
+  id's length before reporting "could not be determined".
+- **A scope note on what 0.6.0's `summary()` prints that the recorded blocks do
+  not show.** Every block in the skill was recorded on 0.5.0; on 0.6.0 the same
+  calls print two further lines (`OZ 2.0 Eligible:`, `Rural-Area QOZ:`) from
+  Treasury's OZ 2.0 nomination-eligibility file. The skill says so once, says
+  every shown line is unchanged, and says it does **not** yet document the OZ
+  2.0 flags. That sync is deferred, deliberately — it is a separate 0.6.0
+  feature with its own methodology file and is not part of this fix.
+
+### Not done, and why
+
+- **No test gate.** nmtc-mapper closed this defect class by binding every prose
+  copy of the vocabulary to the constant with a test. This repo has no test
+  suite (no `tests/`, no `pyproject`, no CI test job — the only workflow is the
+  nightly version refresh), so none was added in this round. The equivalent
+  check was run as a scratch script against the installed constant — red on the
+  pre-edit tree (two documents listing four of five; nine stale count words; one
+  two-value membership test — twelve failures), green after — and is not
+  committed.
+- **OZ 2.0 flags** (`is_oz2_nomination_eligible`, `is_rural_area_qoz_eligible`,
+  `oz2_nomination_status`, `oz2_inputs_missing`) are not documented beyond the
+  scope note above.
+- **`cdfifund.gov` returned 403 from this session**, so the live table was read
+  from this machine's existing `~/.nmtcmapper/cache/` copy of the Aug-2025b
+  workbook (85,395 rows), not a cold download. Every count above was executed
+  against that copy.
+
 ## 2026.9.0
 
 **Syncs `cdfi-peer-benchmark` to `cdfi-benchmark` 0.3.1.** The last sync was
