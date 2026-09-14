@@ -1,18 +1,57 @@
 name: Refresh package versions
 
-# Keeps the version numbers in docs/index.html matching what is actually live
-# on PyPI. Runs every morning, and on demand from the Actions tab.
+# Two jobs.
+#
+# refresh — keeps the version numbers in docs/index.html matching what is
+# actually live on PyPI. Runs every morning, and on demand from the Actions tab.
+#
+# vocabulary-gate — asserts every document that describes nmtc-mapper's
+# eligibility_status vocabulary agrees with the INSTALLED package
+# (scripts/check_status_vocabulary.py). Runs on the same schedule, on demand,
+# and on every push and pull request, so drift is caught before merge and
+# again each morning. The nmtc-mapper version is PINNED below: a failure on an
+# unchanged pin means the documents drifted; when a new release changes the
+# vocabulary, bumping the pin is what turns that release into a failing run —
+# the notification this gate exists to produce. Three nmtc-mapper releases
+# silently falsified this plugin's prose before it existed (CHANGELOG 2026.9.1).
 
 on:
   schedule:
     - cron: "17 11 * * *"      # 06:17 America/Chicago (CDT) / 05:17 (CST)
   workflow_dispatch:
+  push:
+  pull_request:
 
 permissions:
   contents: write
 
+env:
+  # The nmtc-mapper release the vocabulary gate certifies the documents against.
+  # Bump deliberately, after re-reading the skill against the new release.
+  NMTC_MAPPER_PIN: "0.6.1"
+
 jobs:
+  vocabulary-gate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install the pinned nmtc-mapper
+        run: python3 -m pip install --quiet "nmtc-mapper==${NMTC_MAPPER_PIN}"
+
+      - name: Check every document against the installed vocabulary
+        run: python3 scripts/check_status_vocabulary.py
+
   refresh:
+    # The version refresh commits to main; it must not run on pushes or PRs,
+    # only on the schedule and on demand, exactly as before the gate was added.
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -26,10 +65,24 @@ jobs:
           html = open(PAGE, encoding="utf-8").read()
 
           # Matches:  <a class="pkg-name" href=".../project/SLUG/">NAME</a><span class="pkg-ver">VERSION</span>
+          #
+          # EVERY group here is NAMED, and the replacement refers to them by name.
+          # It did not, once, and the numbering was not what it looked like: `slug`
+          # is nested INSIDE the opening group, so it took number 2, `ver` took 3 and
+          # `</span>` took 4. `m.group(1) + new + m.group(3)` therefore emitted
+          # prefix + NEW + OLD and dropped the closing tag, rewriting every chip on
+          # the page as `0.2.10.2.0</div>` on 2026-09-10. Never index these by number.
           PATTERN = re.compile(
-              r'(href="https://pypi\.org/project/(?P<slug>[^/"]+)/"[^>]*>'
-              r'[^<]+</a><span class="pkg-ver">)(?P<ver>[^<]+)(</span>)'
+              r'(?P<prefix>href="https://pypi\.org/project/(?P<slug>[^/"]+)/"[^>]*>'
+              r'[^<]+</a><span class="pkg-ver">)(?P<ver>[^<]+)(?P<suffix></span>)'
           )
+
+          # How many chips the page actually has, counted WITHOUT the pattern above.
+          # This is the guard that was missing: once the corruption dropped `</span>`,
+          # PATTERN stopped matching those lines, and every run afterwards reported
+          # "No change - every version on the page matches PyPI" while the page it
+          # maintains was broken. A refresh that silently matches nothing must fail.
+          CHIP_COUNT = len(re.findall(r'<span class="pkg-ver">', html))
 
           changes, failures = [], []
 
@@ -48,9 +101,21 @@ jobs:
                   return m.group(0)
               if new != old:
                   changes.append(f"{slug}: {old} -> {new}")
-              return m.group(1) + new + m.group(3)
+              return m.group("prefix") + new + m.group("suffix")
 
-          out = PATTERN.sub(swap, html)
+          out, matched = PATTERN.subn(swap, html)
+
+          # Two structural gates, both of which this script failed silently once.
+          if matched != CHIP_COUNT:
+              print(f"REFUSING: the page has {CHIP_COUNT} version chips but the "
+                    f"pattern matched {matched}. The page markup and this script "
+                    f"disagree; a partial rewrite is worse than none.")
+              sys.exit(1)
+
+          if re.search(r'<span class="pkg-ver">[^<]*</div>', out):
+              print("REFUSING: a version chip would be written without its "
+                    "closing </span>.")
+              sys.exit(1)
 
           # A network failure must never silently blank a version or commit a partial
           # refresh. If any lookup failed, write nothing and fail the run loudly.
