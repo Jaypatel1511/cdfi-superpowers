@@ -176,10 +176,21 @@ and an Island Area GEOID reported as a plain `not-found`.
   print `No` (the address example and `11001980000`) and a narrower True set
   cannot turn a `No` into a `Yes`, and three print `❓ UNKNOWN — tract not
   read` (`36061980000`, the geocode-failed branch, and `66010950100`). The
-  prose figures derived from that column — 1,422 and the 168, 1,185, and the
-  `01013953500` HMR check — were **not** re-derived and must be re-checked
-  before they are quoted again. Re-rendering needs a machine with egress to
-  `cdfifund.gov`.
+  prose figures derived from that column have since been corrected in the skill
+  **from 0.6.1's pinned constants, not from a live table** — this repo has no
+  route to `cdfifund.gov`. What moved: the current high-migration-rural count is
+  **1,318**, and the field now carries the §45D(e)(5) income route only. What did
+  not: the **168** are unchanged and provably so — they fail the ≥20%-poverty
+  prong, the 104 dropped tracts all pass it, so the two sets are disjoint — and
+  **no eligibility verdict moved (0 of 85,395)**. The 1,422 is kept in place,
+  relabelled as the **July-2026 file's** figure, because the pre-0.4.2 argument
+  around it is about that era. The `01013953500` check is re-attributed from
+  0.6.0 to **0.6.1** and marked derived rather than re-executed: 0.6.1's fixture
+  puts the tract at MFI 0.8377, inside the ≤ 85% band the narrowed column keeps.
+  **1,185 could not be re-derived and no replacement is asserted** — how many of
+  the 104 were deep-distress is pinned nowhere, so the current value lies in
+  **1,081–1,185**; the figure stays, labelled as the July-2026 file's.
+  Re-rendering the worked examples still needs egress to `cdfifund.gov`.
 
 ## 2026.9.0
 

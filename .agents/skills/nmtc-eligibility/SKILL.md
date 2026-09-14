@@ -81,18 +81,35 @@ published the poverty and 80%-AMI routes in the workbook's **column C** and the
 net out-migration over 20 years) in **column N** (the layout in force through
 June 2026 — see the note below). Pre-0.4.2 read column C alone as the entire
 verdict while separately parsing, storing and surfacing column N as
-`is_high_migration_rural`. Verified against the live table this session:
-**1,422 tracts carry the high-migration-rural designation, and 168 of them fail
-both the ≥20%-poverty and ≤80%-AMI prongs** — all non-metro, all in the
-(80%, 85%] MFI band, so §45D(e)(5) is the only route by which they qualify.
+`is_high_migration_rural`. **On the July-2026 file that argument is measured
+against, 1,422 tracts carried the high-migration-rural designation, and 168 of
+them fail both the ≥20%-poverty and ≤80%-AMI prongs** — all non-metro, all in
+the (80%, 85%] MFI band, so §45D(e)(5) is the only route by which they qualify.
 Those 168 were reported ineligible by a package that was, in the same object,
 reporting the evidence of their eligibility. 0.4.2 reads the verdict as **C or
 N**. That is why no floor below 0.4.2 is defensible and none of this is
 version-hygiene preference: 0.4.2 is the line below which this skill's central
-rule is violated by its own dependency. (All four figures re-derived against the
-live table on 0.5.0 this session, not carried forward: 1,422 HMR tracts, 168
-failing both prongs, all non-metro, all in the (80%, 85%] band, and all 168 now
-`nmtc_eligible=True`.)
+rule is violated by its own dependency.
+
+**On the file the Fund publishes today the count is 1,318, and the 168 are
+untouched.** The September-2026 replacement retitled column N *"High Migration
+Rural County Census Tract for Deep Distress"* and narrowed it to **1,318 YES**.
+The 104 tracts it dropped are all column-E **YES** — they reach LIC by the
+≥20%-poverty route — with MFI between 85.7% and 134.4%, so the field now carries
+the §45D(e)(5) income-route determination only and no longer flags "any LIC tract
+in a high-migration-rural county." The 168 *fail* the poverty prong (column E
+**NO**), so they are disjoint from the 104 and not one of them was dropped; every
+one also sits at MFI ≤ 85%, the band the narrowed column keeps. And **no
+eligibility verdict moved — 0 of 85,395 differ** — because the 1,318 are a strict
+subset of the 1,422 and all 104 are column C YES in both files. The argument
+above therefore stands on both files; what moves is `is_high_migration_rural`'s
+True count, nothing else.
+
+*Provenance, stated precisely because this round turns on it: 1,318, the 104,
+85.7%–134.4%, and 0-of-85,395 are **derived from `nmtc-mapper` 0.6.1's pinned
+constants and source comments** (read 2026-09-14), **not** re-measured against a
+live table — this session has no route to `cdfifund.gov`. 1,422 and the 168 are
+the **July-2026 file's** figures, measured on 0.5.0 in an earlier session.*
 
 **On the current workbook a pre-0.4.2 install does not answer at all.** The Fund
 moved the C/N boundary in **July 2026**, folding the high-migration-rural route
@@ -494,10 +511,17 @@ the package *does* return.
 **The same holds one tier down, and harder.** Q25(b)'s 20% tier is not Deep
 Distress alone — it is **any one of four**: Deep Distress, NMTC Native Areas,
 **High Migration Rural Counties**, and U.S. Island Areas. A `deep_distress=False`
-says nothing about the other three. **1,185 tracts are high-migration-rural and
-not deep** (live table, this session), and `is_high_migration_rural` is a field
-this package returns — so here too a negative on the flag the label names is not
-a negative on the commitment.
+says nothing about the other three. **High-migration-rural-and-not-deep is a
+large set that a `deep_distress=False` hides**: on the **July-2026 file** it was
+**1,185 tracts**, and `is_high_migration_rural` is a field this package returns
+— so here too a negative on the flag the label names is not a negative on the
+commitment. *The September-2026 figure has not been counted, and none is
+asserted here: that file narrows the high-migration-rural column to 1,318, but
+how many of the 104 dropped tracts were deep-distress is pinned nowhere in
+`nmtc-mapper` 0.6.1, so the current value lies somewhere in **1,081–1,185** and
+cannot be narrowed without the workbook. The deep column itself is byte-identical
+between the two files (77,334 / 8,061), which fixes the deep set but not this
+intersection.*
 
 **The two commitments nest, and the Fund says so as a rule** — *"A QLICI that
 meets this commitment will also automatically meet the commitment made in
@@ -633,10 +657,20 @@ verdict is wrong or absent**: against the current workbook the loader raises
 `EligibilitySchemaError` and returns nothing; against a cached pre-July-2026
 workbook it returns `is_high_migration_rural=True` alongside
 `nmtc_eligible=False` — a result contradicting itself. The remedy for both is
-the same: **upgrade to the `>=0.6.1` floor.** Check it with tract
-**`01013953500`**, the first of the 168 — on 0.6.0 it returns
-`nmtc_eligible=True`, `is_high_migration_rural=True`, `distress_level='lic'`,
-`eligibility_status='verified-eligible'` (re-executed this session on 0.6.0).
+same: **upgrade to the `>=0.6.1` floor.** Check it with tract
+**`01013953500`**, the first of the 168 — on **0.6.1**, against the Fund's
+September-2026 file, it returns `nmtc_eligible=True`,
+`is_high_migration_rural=True`, `distress_level='lic'`,
+`eligibility_status='verified-eligible'`. **That expectation is derived from
+0.6.1's pinned constants and test fixtures, not re-executed** — this session has
+no route to `cdfifund.gov`, so treat it as a prediction the package should
+satisfy rather than a recording. It is derivable because 0.6.1's own fixture
+records the tract as Butler County AL, non-metro, poverty 15.0%, MFI 0.8377:
+that fails both the ≥20%-poverty and ≤80%-AMI prongs, which is what puts it in
+the (80%, 85%] §45D(e)(5) band, and at 83.77% it sits at MFI ≤ 85% — inside the
+1,318 the September file keeps, not the 104 it dropped, every one of which is at
+MFI ≥ 85.7%. If the four values do not come back, that is a finding worth
+reporting, not a stale note.
 The pre-0.4.2 load failure was re-executed too: a
 0.4.1 install against the workbook the Fund serves today raises
 `EligibilitySchemaError` naming column index 2's renamed header, and loads
