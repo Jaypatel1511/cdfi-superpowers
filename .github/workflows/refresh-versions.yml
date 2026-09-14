@@ -1,18 +1,57 @@
 name: Refresh package versions
 
-# Keeps the version numbers in docs/index.html matching what is actually live
-# on PyPI. Runs every morning, and on demand from the Actions tab.
+# Two jobs.
+#
+# refresh — keeps the version numbers in docs/index.html matching what is
+# actually live on PyPI. Runs every morning, and on demand from the Actions tab.
+#
+# vocabulary-gate — asserts every document that describes nmtc-mapper's
+# eligibility_status vocabulary agrees with the INSTALLED package
+# (scripts/check_status_vocabulary.py). Runs on the same schedule, on demand,
+# and on every push and pull request, so drift is caught before merge and
+# again each morning. The nmtc-mapper version is PINNED below: a failure on an
+# unchanged pin means the documents drifted; when a new release changes the
+# vocabulary, bumping the pin is what turns that release into a failing run —
+# the notification this gate exists to produce. Three nmtc-mapper releases
+# silently falsified this plugin's prose before it existed (CHANGELOG 2026.9.1).
 
 on:
   schedule:
     - cron: "17 11 * * *"      # 06:17 America/Chicago (CDT) / 05:17 (CST)
   workflow_dispatch:
+  push:
+  pull_request:
 
 permissions:
   contents: write
 
+env:
+  # The nmtc-mapper release the vocabulary gate certifies the documents against.
+  # Bump deliberately, after re-reading the skill against the new release.
+  NMTC_MAPPER_PIN: "0.6.0"
+
 jobs:
+  vocabulary-gate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install the pinned nmtc-mapper
+        run: python3 -m pip install --quiet "nmtc-mapper==${NMTC_MAPPER_PIN}"
+
+      - name: Check every document against the installed vocabulary
+        run: python3 scripts/check_status_vocabulary.py
+
   refresh:
+    # The version refresh commits to main; it must not run on pushes or PRs,
+    # only on the schedule and on demand, exactly as before the gate was added.
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

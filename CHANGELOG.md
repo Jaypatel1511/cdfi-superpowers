@@ -64,31 +64,85 @@ and an Island Area GEOID reported as a plain `not-found`.
   never mistaken for a territory (a stripped California id begins with `60`,
   American Samoa's FIPS). The absent-tract failure mode now says to check the
   id's length before reporting "could not be determined".
-- **A scope note on what 0.6.0's `summary()` prints that the recorded blocks do
-  not show.** Every block in the skill was recorded on 0.5.0; on 0.6.0 the same
-  calls print two further lines (`OZ 2.0 Eligible:`, `Rural-Area QOZ:`) from
-  Treasury's OZ 2.0 nomination-eligibility file. The skill says so once, says
-  every shown line is unchanged, and says it does **not** yet document the OZ
-  2.0 flags. That sync is deferred, deliberately — it is a separate 0.6.0
-  feature with its own methodology file and is not part of this fix.
+- **Every worked example re-recorded on 0.6.0 and pasted as rendered** — the
+  address example (live Census geocoder), `11001980000` (now the whole
+  `summary()` block, not two excerpted lines), `36061980000`, the
+  geocode-failed branch (now a real block against a named unresolvable address
+  instead of a prose quote), the `01013953500` HMR check, and the screener.
+  **No example value changed**: every line the 0.5.0 blocks showed re-executed
+  byte-identical; the only difference is the two lines 0.6.0 appends to every
+  block (`OZ 2.0 Eligible:`, `Rural-Area QOZ:`) from Treasury's OZ 2.0
+  nomination-eligibility file. The skill says once, at the first block, that
+  those two lines are new and that it does **not** yet document the OZ 2.0
+  flags. The four geocoder failure branches were re-executed on 0.6.0 too
+  (transport failure and ambiguous address induced, as before) and are
+  unchanged. The CDFI Fund workbook was read from `~/.nmtcmapper/cache/`
+  (Aug-2025b edition) because `cdfifund.gov` answered 403 to a cold download.
+- **A worked example for the fifth state.** `check_tract("66010950100")` (Guam)
+  with the full rendered block, the report wording, and where the
+  `Description` string lives (`NOT_COVERED_DESCRIPTION` in
+  `eligibility/checker.py`, selected on `eligibility_status`, with
+  `distress_level` staying `"unknown"`).
+- **The 133 Island Area tracts is now a measured figure, not a relayed one.**
+  The previous revision took it from nmtc-mapper's README and said so. Counted
+  this session in Treasury's OZ 2.0 table, which 0.6.0 loads and which carries
+  the Island Areas: 133 GEOIDs with prefixes 60/66/69/78 — AS 18, GU 57, MP 26,
+  VI 32 — plus PR's 981, matching the eligibility table's PR count; the
+  eligibility table has zero. The skill now states both halves as counted.
+- **A vocabulary gate, wired into CI** (`scripts/check_status_vocabulary.py`,
+  run by `.github/workflows/refresh-versions.yml`). This is the third time a
+  nmtc-mapper release silently falsified this plugin's prose; the gate is what
+  stops the fourth. It imports `ELIGIBILITY_STATUS_VALUES` from the installed
+  package — the five strings are never retyped in the gate — and derives the
+  indeterminate subset **by execution** (`NMTCMapper.from_sample()` driven
+  through `check_tract`, `check_address` with the geocoder stubbed to a
+  genuine no-match, and `enrich`; no network), then checks every skill,
+  reference, `llms.txt`, README and the docs page: a document listing two or
+  more statuses must list all of them; a membership set or an
+  `eligibility_status`-is-X-or-Y sentence stating the `None` contract must name
+  every indeterminate status; no stale count word (`four-way`, `two
+  indeterminate`, `either indeterminate`) beside the enumeration; and a floor —
+  at least two vocabulary-bearing documents, the nmtc-eligibility SKILL.md
+  among them, and a scan matching nothing fails. The workflow pins
+  `nmtc-mapper==0.6.0` (`NMTC_MAPPER_PIN`), so a failure on an unchanged pin
+  means the documents drifted, and bumping the pin on a new release is what
+  turns that release into a failing run. It runs on push, pull request, the
+  nightly schedule and on demand; the version-refresh job is now conditioned
+  to the schedule and manual dispatch only, exactly its previous behaviour.
+  **Red proof, two ways.** Against `main` (the pre-2026.9.1 tree) it reports
+  14 failures — every one found by hand this round plus the tying-rule
+  sentence at `:167` the hand sweep had folded into a neighbour. With one
+  stale phrase reinstated on the fixed tree (*"`not-found` and `geocode-failed`
+  are the **two** indeterminate cases"*) it reports exactly that file and
+  line; restored, it reports `OK` with 2 vocabulary-bearing documents of 10
+  scanned. That second proof caught a gate defect before it shipped: the first
+  draft matched count words line-by-line and passed a bolded, line-wrapped
+  reinstatement; the rules now run on an offset-preserving flattened text.
 
 ### Not done, and why
 
-- **No test gate.** nmtc-mapper closed this defect class by binding every prose
-  copy of the vocabulary to the constant with a test. This repo has no test
-  suite (no `tests/`, no `pyproject`, no CI test job — the only workflow is the
-  nightly version refresh), so none was added in this round. The equivalent
-  check was run as a scratch script against the installed constant — red on the
-  pre-edit tree (two documents listing four of five; nine stale count words; one
-  two-value membership test — twelve failures), green after — and is not
-  committed.
+- **No test framework.** The gate is one script and one CI job; no pytest,
+  `pyproject.toml` or package layout was added. The repo still has no test
+  suite in the conventional sense, and that is deliberate for a plugin of
+  three documents.
 - **OZ 2.0 flags** (`is_oz2_nomination_eligible`, `is_rural_area_qoz_eligible`,
-  `oz2_nomination_status`, `oz2_inputs_missing`) are not documented beyond the
-  scope note above.
-- **`cdfifund.gov` returned 403 from this session**, so the live table was read
-  from this machine's existing `~/.nmtcmapper/cache/` copy of the Aug-2025b
-  workbook (85,395 rows), not a cold download. Every count above was executed
-  against that copy.
+  `oz2_nomination_status`, `oz2_inputs_missing`) appear in every re-recorded
+  block and are named once, but their methodology is not documented. That is
+  a separate 0.6.0 feature with its own methodology file and its own sync.
+- **The CDFI Fund replaced the LIC workbook on 2026-09-03 and 0.6.0's pinned
+  URL now 403s — a fresh 0.6.0 install cannot load the table at all.** Found
+  while re-recording: the 403 the first revision of this entry attributed to
+  "this session" is the Fund's Drupal access-denied page on the August-2025b
+  `.xlsb` (host 200; replacement `NMTC_LIC_Eligibility_Dataset_9_3_2026.xlsx`
+  present, both HEAD-checked), and `NMTCMapper()` with an empty `HOME` raises
+  `EligibilityDownloadError`. Every count and example in this entry was
+  executed against a pre-Sept-3 `~/.nmtcmapper/cache/` copy (85,395 rows); the
+  geocoder calls were live. The skill's fragility section now carries a dated
+  note saying exactly this and telling the reader not to point the loader at
+  the new file. **Not done here**: whether 0.6.0 can read the replacement
+  (`.xlsx`, not `.xlsb`) and whether its columns mean what the old ones did are
+  nmtc-mapper questions, out of this plugin's scope, and this round did not
+  verify either.
 
 ## 2026.9.0
 
