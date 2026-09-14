@@ -111,14 +111,31 @@ constants and source comments** (read 2026-09-14), **not** re-measured against a
 live table — this session has no route to `cdfifund.gov`. 1,422 and the 168 are
 the **July-2026 file's** figures, measured on 0.5.0 in an earlier session.*
 
-**On the current workbook a pre-0.4.2 install does not answer at all.** The Fund
-moved the C/N boundary in **July 2026**, folding the high-migration-rural route
-into column C and renaming that column's header. 0.4.1 pins column C's exact
-header string, so against the workbook the loader downloads today it raises
-`EligibilitySchemaError` and loads nothing (executed this session). The 168-tract
-divergence was real against the pre-July-2026 edition; today the same defect
-presents as a hard load failure. Either way 0.4.2 is the release that reads
-`C or N` and is therefore correct on both sides of the boundary move.
+**A pre-0.4.2 install does not answer at all — and since 2026-09-03 it fails one
+step earlier than this skill used to say.** The Fund moved the C/N boundary in
+**July 2026**, folding the high-migration-rural route into column C and renaming
+that column's header. 0.4.1 pins column C's exact *pre*-July-2026 header string,
+so against the **July-2026** workbook — while that file was still being served at
+the URL 0.4.1 pins — its positional header validation raised
+`EligibilitySchemaError` at column index 2 and loaded nothing. That is no longer
+the error a reader will see. On **2026-09-03** the Fund retired that URL, and the
+retired route answers **403**; 0.4.1 still pins the dead literal, so on a **cold
+start today** it fails at *download* — `EligibilityDownloadError` naming the 403 —
+and never reaches the header guard at all. The schema path survives in exactly one
+case: a machine with a **warm** `~/.nmtcmapper/cache/` holding the July-2026
+workbook, where the loader returns the cached file without downloading and the
+header check then raises `EligibilitySchemaError`. The 168-tract divergence was
+real against the pre-July-2026 edition; after it the same defect presents as a
+hard load failure — download if cold, schema if warm. Either way 0.4.2 is the
+release that reads `C or N` and is therefore correct on both sides of the boundary
+move, and `>=0.6.1` is the floor that can load anything at all.
+
+*Provenance: **derived, not executed.** The download-before-parse control flow,
+the retired URL literal and column index 2's two header strings were read from the
+`nmtc-mapper` **0.4.1 and 0.6.1 sdists** on **2026-09-14**
+(`nmtcmapper/data/loader.py`, `nmtcmapper/data/schema.py`,
+`nmtcmapper/exceptions.py`). No 0.4.1 install was run and no request was made to
+`cdfifund.gov` — this session has no route to it.*
 
 **The fourth reason is the same defect one field over, and it is why the floor
 moved to `>=0.5.0`.** Through 0.4.3 `is_opportunity_zone` was a plain `bool`, so
@@ -652,12 +669,15 @@ package constant into prose.
 **`is_high_migration_rural` is the field that exposes a stale install.** It is
 one of the three routes to LIC status (§45D(e)(5)), and pre-0.4.2 the package
 surfaced it while excluding it from the verdict — see the install note. On a
-pre-0.4.2 install one of two things happens, and **both mean the eligibility
-verdict is wrong or absent**: against the current workbook the loader raises
-`EligibilitySchemaError` and returns nothing; against a cached pre-July-2026
-workbook it returns `is_high_migration_rural=True` alongside
-`nmtc_eligible=False` — a result contradicting itself. The remedy for both is
-same: **upgrade to the `>=0.6.1` floor.** Check it with tract
+pre-0.4.2 install one of three things happens, and **all three mean the
+eligibility verdict is wrong or absent**: on a **cold start** it never gets a file
+at all — the URL it pins was retired on 2026-09-03 and answers **403**, so it
+raises `EligibilityDownloadError` before any header is read; from a **warm cache**
+holding the **July-2026** workbook it reaches the header guard and raises
+`EligibilitySchemaError` at column index 2, returning nothing; from a cached
+**pre**-July-2026 workbook it returns `is_high_migration_rural=True` alongside
+`nmtc_eligible=False` — a result contradicting itself. The remedy for all three is
+the same: **upgrade to the `>=0.6.1` floor.** Check it with tract
 **`01013953500`**, the first of the 168 — on **0.6.1**, against the Fund's
 September-2026 file, it returns `nmtc_eligible=True`,
 `is_high_migration_rural=True`, `distress_level='lic'`,
@@ -671,10 +691,13 @@ the (80%, 85%] §45D(e)(5) band, and at 83.77% it sits at MFI ≤ 85% — inside
 1,318 the September file keeps, not the 104 it dropped, every one of which is at
 MFI ≥ 85.7%. If the four values do not come back, that is a finding worth
 reporting, not a stale note.
-The pre-0.4.2 load failure was re-executed too: a
-0.4.1 install against the workbook the Fund serves today raises
-`EligibilitySchemaError` naming column index 2's renamed header, and loads
-nothing.
+The pre-0.4.2 load failure is **derived, not
+executed**: read from the `nmtc-mapper` 0.4.1 sdist on 2026-09-14,
+`download_eligibility_file()` raises `EligibilityDownloadError` on the retired
+URL's 403 and returns before `_validate_xlsb_header()` can run, so a cold start
+today fails at the download. The `EligibilitySchemaError` naming column index 2's
+renamed header is what 0.4.1 did against the **July-2026** workbook while it was
+served, and what it still does from a warm cache holding that file.
 
 **`is_nmtc_native_area` was REMOVED in 0.5.0 — and Native Area status cannot be
 determined from this package at all.** Through 0.4.3 the field existed and was
