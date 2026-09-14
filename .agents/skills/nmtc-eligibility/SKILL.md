@@ -47,23 +47,25 @@ tract up in the CDFI Fund's NMTC Low-Income Community (LIC) eligibility table.
 ## Install
 
 ```
-pip install "nmtc-mapper>=0.6.0" nmtc-screener
+pip install "nmtc-mapper>=0.6.1" nmtc-screener
 ```
 
-Verified 2026-09-13 (PyPI) against **`nmtc-mapper>=0.6.0`** (resolved 0.6.0,
-published 2026-09-13) and **nmtc-screener 0.1.0** (`nmtc-calc 0.2.1` is pulled
+Verified 2026-09-14 (PyPI) against **`nmtc-mapper>=0.6.1`** (resolved 0.6.1,
+published 2026-09-14) and **nmtc-screener 0.1.0** (`nmtc-calc 0.2.1` is pulled
 in as a dependency). Quote the floor, not the resolved point version — the point
-version moves on every release and this line does not. The `>=0.6.0` floor is
+version moves on every release and this line does not. The `>=0.6.1` floor is
 not cosmetic — 0.4.0 is where `nmtc_eligible` became tri-state (see below), 0.4.1
 binds the geocoder vintage to the eligibility table's 2020 tract basis (see Data
 dependencies & fragility), **0.4.2 is the release that stopped reporting 168
 statutorily-eligible tracts as ineligible**, **0.5.0 is the release that
 stopped returning a confident `False` for every unconfirmed Opportunity Zone and
-for every field of a tract it never read**, and **0.6.0 is the release whose
+for every field of a tract it never read**, **0.6.0 is the release whose
 `eligibility_status` vocabulary this skill describes** — it added a fifth value,
 `not-covered-territory`, and exported the vocabulary as a constant (see the
-fifth reason below). A reader on 0.3.x following this skill's third-state
-guidance would never see `None`, because 0.3.x collapses "could not determine"
+fifth reason below) — and **0.6.1 is the release that can still download the
+CDFI Fund eligibility table at all** (see the sixth reason below). A reader on
+0.3.x following this skill's third-state guidance would never see `None`,
+because 0.3.x collapses "could not determine"
 into `False`; a reader on 0.5.0 following this skill's five-way guidance would
 never see `not-covered-territory`, because 0.5.0 reports an Island Area tract as
 a plain `not-found`.
@@ -117,10 +119,11 @@ prose on every OZ answer, which is exactly the posture the third-state rule
 exists to make unnecessary. 0.5.0 also drops `is_nmtc_native_area`, a field that
 could only ever say "I don't know" (see the note under the field list).
 
-**The fifth reason is why the floor is now `>=0.6.0`: the `eligibility_status`
-vocabulary this skill teaches is only true from 0.6.0.** Through 0.5.0 the
-property had four values and an Island Area tract — American Samoa, Guam, the
-CNMI, the US Virgin Islands — came back as `not-found`, the same word as a
+**The fifth reason is why the floor can never again sit below 0.6.0: the
+`eligibility_status` vocabulary this skill teaches is only true from 0.6.0.**
+Through 0.5.0 the property had four values and an Island Area tract — American
+Samoa, Guam, the CNMI, the US Virgin Islands — came back as `not-found`, the
+same word as a
 mistyped GEOID, even though nothing about it was *missing*: those four
 jurisdictions are outside the loaded table's universe by scope (see the
 vintage-scope rule). 0.6.0 separates the two with a fifth value,
@@ -140,6 +143,15 @@ wheel this session). A skill that describes five values while allowing 0.5.0 to
 be installed is the same defect as this skill's own pre-0.6.0 list was — one
 enumeration copied into prose and left behind by the package — which is why the
 floor moved with the vocabulary rather than after it.
+
+**The sixth reason is why the floor is `>=0.6.1`, and it has nothing to do with
+vocabulary: `>=0.6.0` is a floor that admits an install which cannot load its
+data.** On 2026-09-03 the CDFI Fund retired the workbook URL that every release
+through 0.6.0 pins, and that URL now answers **403**; 0.6.1 retargets the loader
+to the replacement. A reader who resolves `>=0.6.0` to 0.6.0 gets
+`EligibilityDownloadError` on the first cold call and no answer to any question
+in this skill. Whoever raises this floor next: it is a data-availability floor,
+not version hygiene — see the dated note under Data dependencies & fragility.
 
 Import names (dist name ≠ import name):
 
@@ -621,7 +633,7 @@ verdict is wrong or absent**: against the current workbook the loader raises
 `EligibilitySchemaError` and returns nothing; against a cached pre-July-2026
 workbook it returns `is_high_migration_rural=True` alongside
 `nmtc_eligible=False` — a result contradicting itself. The remedy for both is
-the same: **upgrade to the `>=0.6.0` floor.** Check it with tract
+the same: **upgrade to the `>=0.6.1` floor.** Check it with tract
 **`01013953500`**, the first of the 168 — on 0.6.0 it returns
 `nmtc_eligible=True`, `is_high_migration_rural=True`, `distress_level='lic'`,
 `eligibility_status='verified-eligible'` (re-executed this session on 0.6.0).
@@ -1081,22 +1093,34 @@ is only as honest as this input.
   demos only, `NMTCMapper.from_sample()` exists and stamps `data_source ==
   "sample"`; its 12 synthetic tracts are NEVER valid for a real answer.)
 
-  **It has moved, as of this revision (verified 2026-09-13).** The URL 0.6.0
-  pins — `…/system/files?file=2025-08/NMTC_2016-2020_Severe_Deep_Distress_August-2025b.xlsb`
-  — returns **403** (a Drupal access-denied page; the host itself is 200), and
-  the Fund now serves a replacement at
-  `…/system/files?file=2026-09/NMTC_LIC_Eligibility_Dataset_9_3_2026.xlsx`,
-  which 0.6.0 does not know about. Executed this session with an empty `HOME`:
-  `NMTCMapper()` on a fresh 0.6.0 install raises `EligibilityDownloadError`
-  (*"access blocked (403 Forbidden)"*) and answers nothing. **A 0.6.0 install
-  without a `~/.nmtcmapper/cache/` populated before 2026-09-03 cannot run any
-  worked example in this skill.** Report that error verbatim, per the hard
-  failure rule; do not work around it by pointing the loader at the new file —
-  it is a different format (`.xlsx`, not `.xlsb`) and this skill has not
-  verified that 0.6.0 reads it or that its columns mean the same thing. The
-  examples in this skill were executed against a cache of the August-2025b
-  edition; a green `NMTCMapper()` on a machine with that cache is not evidence
-  the download works.
+  **It moved on 2026-09-03, and `nmtc-mapper` 0.6.1 is the release that follows
+  it (verified 2026-09-14).** The URL every release **through 0.6.0** pins —
+  `…/system/files?file=2025-08/NMTC_2016-2020_Severe_Deep_Distress_August-2025b.xlsb`
+  — began returning **403** (a Drupal access-denied page; the host itself is
+  200) when the Fund replaced that workbook with
+  `…/system/files?file=2026-09/NMTC_LIC_Eligibility_Dataset_9_3_2026.xlsx`. On a
+  fresh 0.6.0 install with an empty `HOME`, `NMTCMapper()` raises
+  `EligibilityDownloadError` (*"access blocked (403 Forbidden)"*) and answers
+  nothing — 0.4.3, 0.5.0 and 0.6.0 all pin the same dead literal, so **no
+  release before 0.6.1 can cold-load the eligibility table at all.**
+
+  **The durable lesson is the status code: a relocated CDFI Fund file answers
+  403, not 404.** A moved file does not announce itself as missing — it looks
+  like a blocked client, which invites the wrong diagnosis (user agent, proxy,
+  WAF) and hides a dead pin. A warm `~/.nmtcmapper/cache/` hides it further, on
+  every machine that already has one. Expect the Fund to do this again.
+
+  **The remedy is `pip install -U nmtc-mapper`, not a hand-pointed URL.** 0.6.1
+  (PyPI, 2026-09-14) retargets the loader to the replacement and chooses its
+  parser by sniffing the ZIP member list rather than trusting the URL's
+  extension, so the `.xlsb` → `.xlsx` flip needs no further release. If a user
+  reports `EligibilityDownloadError` naming a 403, tell them to upgrade; that is
+  why this skill's floor is `>=0.6.1`. Still report the error verbatim, per the
+  hard failure rule, and never guess eligibility around it. (This session read
+  the retarget from 0.6.1's own `CDFI_FUND_LIC_URL_2020` and
+  `ELIGIBILITY_CACHE_FILENAME`; it has no route to `cdfifund.gov` and did not
+  re-run the download. Note also that 0.6.1 does a plain cold download on
+  upgrade rather than reusing the `.xlsb` cache — the cache filename changed.)
 - **Tract vintage in force (verified this session):** the cached table is
   `NMTC_LIC_Eligibility_2016_2020.xlsb`, **85,395 census tracts**, sourced from
   the CDFI Fund's Aug-2025b Severe/Deep Distress release. As of 0.5.0 the

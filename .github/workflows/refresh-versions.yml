@@ -28,7 +28,7 @@ permissions:
 env:
   # The nmtc-mapper release the vocabulary gate certifies the documents against.
   # Bump deliberately, after re-reading the skill against the new release.
-  NMTC_MAPPER_PIN: "0.6.0"
+  NMTC_MAPPER_PIN: "0.6.1"
 
 jobs:
   vocabulary-gate:

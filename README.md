@@ -24,20 +24,25 @@ correctly, with the methodology caveats those tools ship with.
 
 | Skill | What it does | Backed by |
 |---|---|---|
-| **nmtc-eligibility** | Is this address/tract NMTC eligible? Distress tier? Project feasibility? | nmtc-mapper >=0.6.0, nmtc-screener 0.1.0 |
+| **nmtc-eligibility** | Is this address/tract NMTC eligible? Distress tier? Project feasibility? | nmtc-mapper >=0.6.1, nmtc-screener 0.1.0 |
 | **cdfi-peer-benchmark** | Benchmark a **bank** CDFI against FDIC peers (NIM, ROAA, capital, …) | cdfi-benchmark >=0.3.0 |
 | **hmda-analysis** | Pull HMDA LAR data and produce **descriptive** cuts + a CRA-**proxy** distribution | hmda-analyzer >=0.6.0 |
 
 Versions were verified against live PyPI at time of writing; every code example
 in each skill was actually executed and shows real output. Where a floor is shown
-as `>=`, it is **load-bearing** and the skill says why: `nmtc-mapper >=0.6.0` is
-where `eligibility_status` gains its fifth value, `not-covered-territory`, and
-exports the vocabulary as `ELIGIBILITY_STATUS_VALUES` — below it an Island Area
+as `>=`, it is **load-bearing** and the skill says why. `nmtc-mapper >=0.6.1` is
+the floor because **`>=0.6.0` admits an install that cannot load its data**: the
+CDFI Fund retired the eligibility-workbook URL on 2026-09-03, every release
+through 0.6.0 pins it, and it answers **403** — so a 0.6.0 install raises
+`EligibilityDownloadError` on its first cold call and answers nothing. 0.6.1
+retargets the loader. (0.6.0 remains the release where `eligibility_status`
+gains its fifth value, `not-covered-territory`, and exports the vocabulary as
+`ELIGIBILITY_STATUS_VALUES` — below it an Island Area
 tract (AS, GU, MP, VI — outside the CDFI Fund table's universe by scope) is
 reported with the same status as a mistyped GEOID, indistinguishable from it, and
-the five-way vocabulary the skill teaches does not exist (0.5.0 was where
+the five-way vocabulary the skill teaches does not exist; 0.5.0 was where
 `is_opportunity_zone` stopped returning a confident `False` about 78,039 tracts
-it cannot distinguish from a 2010/2020 vintage miss); and
+it cannot distinguish from a 2010/2020 vintage miss.) And
 `hmda-analyzer >=0.6.0` is where the geography-vintage refusal exists at all;
 and `cdfi-benchmark >=0.3.0` is where `loans_to_deposits` stops being graded
 backwards — below it a bank lending 200% of its deposits grades STRONG and one

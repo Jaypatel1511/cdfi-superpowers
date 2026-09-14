@@ -10,6 +10,14 @@ constant; this skill carried the four-way list and a two-value indeterminate
 rule, which is wrong for anyone who has upgraded. Documentation and plugin
 metadata only — no change to nmtc-mapper.
 
+**The install floor this release sets is `>=0.6.1`, not `>=0.6.0`.** 0.6.1
+(PyPI, 2026-09-14) retargets the CDFI Fund eligibility-workbook URL the Fund
+retired on 2026-09-03; every release through 0.6.0 pins the retired URL, which
+answers 403, so a `>=0.6.0` floor would admit an install that cannot load its
+data at all. 0.6.1 changes nothing about the five-way vocabulary above
+(`ELIGIBILITY_STATUS_VALUES` is identical, verified by import from the
+published 0.6.1 wheel).
+
 Ground truth was taken from the package, not the skill, and by execution rather
 than from a docstring: 0.6.0 installed from PyPI into a clean venv,
 `ELIGIBILITY_STATUS_VALUES == ('verified-eligible', 'verified-ineligible',
@@ -45,13 +53,21 @@ and an Island Area GEOID reported as a plain `not-found`.
   `summary()` prints for it.
 - **The `>=0.5.0` install floor was a new instance of the defect being fixed.**
   A skill describing five values while allowing 0.5.0 — which has four — is one
-  enumeration updated in prose and not in the pin. Floor raised to `>=0.6.0` at
-  every site: `SKILL.md` install block and remedy line, `README.md` (table and
-  the load-bearing-floor sentence, which now gives the 0.6.0 reason and keeps
-  the 0.5.0 one), `llms.txt`, `references/package-index.md`, and the
-  `docs/index.html` version chip (0.5.0 → 0.6.0, ahead of the nightly refresh).
-  A "fifth reason" paragraph in the install section says why, with the executed
-  constant.
+  enumeration updated in prose and not in the pin. Floor raised at every site:
+  `SKILL.md` install block and remedy line, `README.md` (table and the
+  load-bearing-floor sentence), `llms.txt`, `references/package-index.md`, and
+  the `docs/index.html` version chip (ahead of the nightly refresh). A "fifth
+  reason" paragraph in the install section says why, with the executed constant.
+- **The floor is `>=0.6.1`, not `>=0.6.0` — because `>=0.6.0` is a floor that
+  admits an install which cannot load its data.** `nmtc-mapper` 0.6.1 (PyPI,
+  2026-09-14) retargets the eligibility-workbook URL the CDFI Fund retired on
+  2026-09-03; 0.6.0 satisfies a `>=0.6.0` specifier and 403s on every cold
+  start. A "sixth reason" paragraph in the install section says so, and says it
+  is a data-availability floor rather than version hygiene, so the next person
+  raising it knows it is not cosmetic. `nmtc-screener` needs no such change:
+  its PyPI `requires_dist` is `nmtc-calc>=0.1.0`, `click>=8.0`, `rich>=13.0` —
+  it does not depend on `nmtc-mapper` at all (checked against PyPI
+  2026-09-14), and neither does `nmtc-calc`.
 
 ### Added
 
@@ -104,7 +120,7 @@ and an Island Area GEOID reported as a plain `not-found`.
   indeterminate`, `either indeterminate`) beside the enumeration; and a floor —
   at least two vocabulary-bearing documents, the nmtc-eligibility SKILL.md
   among them, and a scan matching nothing fails. The workflow pins
-  `nmtc-mapper==0.6.0` (`NMTC_MAPPER_PIN`), so a failure on an unchanged pin
+  `nmtc-mapper==0.6.1` (`NMTC_MAPPER_PIN`), so a failure on an unchanged pin
   means the documents drifted, and bumping the pin on a new release is what
   turns that release into a failing run. It runs on push, pull request, the
   nightly schedule and on demand; the version-refresh job is now conditioned
@@ -129,20 +145,41 @@ and an Island Area GEOID reported as a plain `not-found`.
   `oz2_nomination_status`, `oz2_inputs_missing`) appear in every re-recorded
   block and are named once, but their methodology is not documented. That is
   a separate 0.6.0 feature with its own methodology file and its own sync.
-- **The CDFI Fund replaced the LIC workbook on 2026-09-03 and 0.6.0's pinned
-  URL now 403s — a fresh 0.6.0 install cannot load the table at all.** Found
-  while re-recording: the 403 the first revision of this entry attributed to
-  "this session" is the Fund's Drupal access-denied page on the August-2025b
+- **The CDFI Fund replaced the LIC workbook on 2026-09-03; the retired URL
+  answers 403, not 404, and every nmtc-mapper release through 0.6.0 pins it.**
+  Found while re-recording: the 403 the first revision of this entry attributed
+  to "this session" is the Fund's Drupal access-denied page on the August-2025b
   `.xlsb` (host 200; replacement `NMTC_LIC_Eligibility_Dataset_9_3_2026.xlsx`
   present, both HEAD-checked), and `NMTCMapper()` with an empty `HOME` raises
-  `EligibilityDownloadError`. Every count and example in this entry was
+  `EligibilityDownloadError`. **That is now fixed upstream: `nmtc-mapper` 0.6.1
+  (PyPI, 2026-09-14) retargets the loader** to the replacement and picks its
+  parser by sniffing the ZIP member list rather than trusting the URL's
+  extension, so the remedy a reader should be given is `pip install -U
+  nmtc-mapper` — not a hand-pointed URL, and not "report it and stop". The
+  skill's dated fragility note now says this, and keeps the durable lesson: a
+  relocated CDFI Fund file answers **403, not 404**, so a dead pin looks like a
+  blocked client rather than a moved file, and a warm `~/.nmtcmapper/cache/`
+  hides it. Read from 0.6.1's own `CDFI_FUND_LIC_URL_2020` and
+  `ELIGIBILITY_CACHE_FILENAME` in the installed wheel; the download itself was
+  not re-run, this session having no route to `cdfifund.gov`.
+  `references/data-source-map.md` carried the same mistake in its durable form —
+  its `cdfifund.gov` row said a relocated file "can 404" — and now says 403,
+  with the diagnosis that follows from it.
+- **Not done: the worked examples are still the 0.6.0 recordings, against a
+  cached August-2025b workbook.** Every count and example in this entry was
   executed against a pre-Sept-3 `~/.nmtcmapper/cache/` copy (85,395 rows); the
-  geocoder calls were live. The skill's fragility section now carries a dated
-  note saying exactly this and telling the reader not to point the loader at
-  the new file. **Not done here**: whether 0.6.0 can read the replacement
-  (`.xlsx`, not `.xlsb`) and whether its columns mean what the old ones did are
-  nmtc-mapper questions, out of this plugin's scope, and this round did not
-  verify either.
+  geocoder calls were live. 0.6.1's own loader notes that the Fund's
+  September-2026 file **narrows the high-migration-rural column from 1,422 YES
+  to 1,318** — the 104 dropped are poverty-route LICs with MFI above 85%, so
+  the column now carries the income route only. No *rendered* value in the
+  skill changes: of the five blocks printing a `High Migration:` line, two
+  print `No` (the address example and `11001980000`) and a narrower True set
+  cannot turn a `No` into a `Yes`, and three print `❓ UNKNOWN — tract not
+  read` (`36061980000`, the geocode-failed branch, and `66010950100`). The
+  prose figures derived from that column — 1,422 and the 168, 1,185, and the
+  `01013953500` HMR check — were **not** re-derived and must be re-checked
+  before they are quoted again. Re-rendering needs a machine with egress to
+  `cdfifund.gov`.
 
 ## 2026.9.0
 
