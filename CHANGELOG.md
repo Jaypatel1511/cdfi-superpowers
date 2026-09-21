@@ -4,6 +4,27 @@ All notable changes to `cdfi-superpowers`. Versioning is CalVer (`YYYY.M.MINOR`)
 
 ## 2026.9.1
 
+**Repairs every version chip on the docs page, and fixes the workflow that broke
+them.** On 2026-09-10 the nightly `Refresh package versions from PyPI` job
+rewrote all 21 chips in `docs/index.html` as `0.5.00.5.0</div>` — the new
+version concatenated with the old, and the closing `</span>` dropped. Cause: in
+`refresh-versions.yml` the `slug` group is nested **inside** the opening capture
+group, so the numbering is `prefix=1, slug=2, ver=3, </span>=4`; the replacement
+read `m.group(1) + new + m.group(3)`, which is prefix + new + **old**, with the
+closing tag discarded. Reproduced exactly before fixing.
+
+The second failure is the one that let it stand for four days: once `</span>`
+was gone the pattern no longer matched those lines, so every subsequent run
+printed *"No change — every version on the page matches PyPI"* while the page it
+maintains was broken. **A refresh that silently matches nothing now fails the
+run** — the script counts the chips on the page independently of the pattern and
+refuses if the two disagree, and refuses again if a rewrite would emit a chip
+without its closing tag. Every group in the pattern is now named and referenced
+by name; the numbering is never indexed. All 21 chips were re-derived from PyPI
+and checked well-formed, and the fixed script was verified idempotent against
+the repaired page.
+
+
 **Syncs `nmtc-eligibility` to `nmtc-mapper` 0.6.0** (PyPI, 2026-09-13). 0.6.0
 added a **fifth** `eligibility_status` value and exported the vocabulary as a
 constant; this skill carried the four-way list and a two-value indeterminate

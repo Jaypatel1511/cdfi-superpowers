@@ -65,10 +65,24 @@ jobs:
           html = open(PAGE, encoding="utf-8").read()
 
           # Matches:  <a class="pkg-name" href=".../project/SLUG/">NAME</a><span class="pkg-ver">VERSION</span>
+          #
+          # EVERY group here is NAMED, and the replacement refers to them by name.
+          # It did not, once, and the numbering was not what it looked like: `slug`
+          # is nested INSIDE the opening group, so it took number 2, `ver` took 3 and
+          # `</span>` took 4. `m.group(1) + new + m.group(3)` therefore emitted
+          # prefix + NEW + OLD and dropped the closing tag, rewriting every chip on
+          # the page as `0.2.10.2.0</div>` on 2026-09-10. Never index these by number.
           PATTERN = re.compile(
-              r'(href="https://pypi\.org/project/(?P<slug>[^/"]+)/"[^>]*>'
-              r'[^<]+</a><span class="pkg-ver">)(?P<ver>[^<]+)(</span>)'
+              r'(?P<prefix>href="https://pypi\.org/project/(?P<slug>[^/"]+)/"[^>]*>'
+              r'[^<]+</a><span class="pkg-ver">)(?P<ver>[^<]+)(?P<suffix></span>)'
           )
+
+          # How many chips the page actually has, counted WITHOUT the pattern above.
+          # This is the guard that was missing: once the corruption dropped `</span>`,
+          # PATTERN stopped matching those lines, and every run afterwards reported
+          # "No change - every version on the page matches PyPI" while the page it
+          # maintains was broken. A refresh that silently matches nothing must fail.
+          CHIP_COUNT = len(re.findall(r'<span class="pkg-ver">', html))
 
           changes, failures = [], []
 
@@ -87,9 +101,21 @@ jobs:
                   return m.group(0)
               if new != old:
                   changes.append(f"{slug}: {old} -> {new}")
-              return m.group(1) + new + m.group(3)
+              return m.group("prefix") + new + m.group("suffix")
 
-          out = PATTERN.sub(swap, html)
+          out, matched = PATTERN.subn(swap, html)
+
+          # Two structural gates, both of which this script failed silently once.
+          if matched != CHIP_COUNT:
+              print(f"REFUSING: the page has {CHIP_COUNT} version chips but the "
+                    f"pattern matched {matched}. The page markup and this script "
+                    f"disagree; a partial rewrite is worse than none.")
+              sys.exit(1)
+
+          if re.search(r'<span class="pkg-ver">[^<]*</div>', out):
+              print("REFUSING: a version chip would be written without its "
+                    "closing </span>.")
+              sys.exit(1)
 
           # A network failure must never silently blank a version or commit a partial
           # refresh. If any lookup failed, write nothing and fail the run loudly.
