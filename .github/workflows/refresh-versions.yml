@@ -1,9 +1,28 @@
 name: Refresh package versions
 
-# Two jobs.
+# Three jobs.
 #
 # refresh — keeps the version numbers in docs/index.html matching what is
 # actually live on PyPI. Runs every morning, and on demand from the Actions tab.
+# It rewrites docs/index.html and NOTHING ELSE — see version-claims-gate.
+#
+# version-claims-gate — asserts every version this repo STATES agrees with live
+# PyPI (scripts/check_package_versions.py). It exists because `refresh` covered
+# only one of the four surfaces that state versions, so docs/index.html stayed
+# nearly right while references/package-index.md — the machine-readable package
+# reference an agent loading this plugin actually reads — drifted to ten wrong
+# rows out of twenty-two, three of them pointing at releases YANKED for
+# presenting fabricated or sample data as federal data. A stale chip is
+# cosmetic; that is not.
+#
+# It is a GATE, not a second rewriter, deliberately. The version cell in
+# package-index.md carries install floors and resolution notes, and a floor is a
+# load-bearing judgment (README.md argues at length that the cdfi-benchmark
+# floor is deliberately NOT the newest release). Mechanically bumping floors
+# would erase that reasoning; a regex cannot tell a floor that should move from
+# one that must not. So the file is checked and a disagreement fails loudly.
+# Expect this to go red on main when a package publishes: that red IS the
+# notification, and the fix is a one-line edit to the row.
 #
 # vocabulary-gate — asserts every document that describes nmtc-mapper's
 # eligibility_status vocabulary agrees with the INSTALLED package
@@ -47,6 +66,24 @@ jobs:
 
       - name: Check every document against the installed vocabulary
         run: python3 scripts/check_status_vocabulary.py
+
+  version-claims-gate:
+    # Same triggers as vocabulary-gate: before merge, and again each morning.
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # Reads PyPI over HTTPS with the standard library only — nothing to
+      # install, so a PyPI outage cannot make this job pass by accident. A
+      # lookup failure is a hard failure inside the script.
+      - name: Check every stated version against live PyPI
+        run: python3 scripts/check_package_versions.py
 
   refresh:
     # The version refresh commits to main; it must not run on pushes or PRs,
