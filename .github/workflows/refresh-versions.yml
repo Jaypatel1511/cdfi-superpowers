@@ -51,6 +51,11 @@ env:
 
 jobs:
   vocabulary-gate:
+    # Deliberately NOT pinned to ubuntu-24.04. `ubuntu-latest` moves to Ubuntu 26
+    # on 2026-10-19; the break that causes elsewhere is actions/setup-python, which
+    # has no Python 3.9 build for ubuntu-26.04. No job in this repo asks for 3.9 —
+    # `vocabulary-gate` pins 3.12 (which has a 26.04 build) and `refresh` runs no
+    # setup-python at all — so this repo has no exposure and needs no pin.
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -89,6 +94,11 @@ jobs:
     # The version refresh commits to main; it must not run on pushes or PRs,
     # only on the schedule and on demand, exactly as before the gate was added.
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    # Deliberately NOT pinned to ubuntu-24.04. `ubuntu-latest` moves to Ubuntu 26
+    # on 2026-10-19; the break that causes elsewhere is actions/setup-python, which
+    # has no Python 3.9 build for ubuntu-26.04. No job in this repo asks for 3.9 —
+    # `vocabulary-gate` pins 3.12 (which has a 26.04 build) and `refresh` runs no
+    # setup-python at all — so this repo has no exposure and needs no pin.
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
