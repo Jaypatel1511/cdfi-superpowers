@@ -2,6 +2,91 @@
 
 All notable changes to `cdfi-superpowers`. Versioning is CalVer (`YYYY.M.MINOR`).
 
+## 2026.9.2
+
+**`references/package-index.md` was pointing agents at three releases that were
+yanked for presenting fabricated data as federal data.** That file is the
+machine-readable package reference an AI loading this plugin reads to decide what
+to install. It is hand-maintained, and on 2026-09-21 it was wrong on **ten of its
+twenty-two rows**:
+
+| dist | row said | PyPI | |
+|---|---|---|---|
+| cdfi-fund-tracker | 0.1.0 | 0.2.0 | **0.1.0 YANKED** — returned a synthetic sample as CDFI Fund data on HTTP success |
+| oz-tracker | 0.1.0 | 0.2.0 | **0.1.0 YANKED** — confident `False` for 99.91% of designated OZ tracts via a silent sample fallback |
+| sbic-tracker | 0.1.0 | 0.2.0 | **0.1.0 YANKED** — returned fabricated sample data as live SBA program data |
+| fair-lending-screener | 0.2.1 | 0.2.2 | 0.1.1 yanked (undisclosed) — breaking API in a patch release |
+| nmtc-application-builder | 1.1.4 | 1.7.1 | 22 releases behind |
+| credit-memo | 0.1.0 | 0.2.2 | |
+| cdfi-benchmark | 0.3.1 | 0.3.2 | |
+| cdfi-loan-pricing | 0.1.0 | 0.2.0 | |
+| cdfi-stress-tester | 0.1.0 | 0.2.0 | |
+| waterfall-py | 0.1.0 | 0.2.0 | |
+
+Every row now states the current non-yanked release, and **every package with a
+withdrawn release says so in its row, with the reason in a clause** — a reader
+who pins an old version is told it was withdrawn and why, because `pip` installs
+a yanked release without complaint when you name it exactly. Three rows also had
+purpose prose describing capability the package does not have (`sbic-tracker`
+"SBA program data" — live SBA loading is not implemented and the package is
+unmaintained; `cdfi-fund-tracker` "awards with compliance status" — no ingestion
+path exists; `oz-tracker` "OZ 1.0/2.0 eligibility" — tract lookup is
+non-functional in 0.2.0). `docs/index.html` already carried those caveats; the
+index did not. It does now.
+
+**The structural cause, and the fix.** Versions are stated on four surfaces —
+`references/package-index.md`, `llms.txt`, `.agents/skills/*/SKILL.md` and
+`docs/index.html` — and `refresh-versions.yml` rewrote **only the fourth**. That
+is precisely why the automated surface stayed nearly right while the
+hand-maintained one an agent reads drifted to half wrong. Fixed by adding
+`scripts/check_package_versions.py` and a third CI job, `version-claims-gate`,
+on the same triggers as the vocabulary gate: every push, every pull request, and
+each morning.
+
+It is a **gate, not a second rewriter**, and deliberately so. The version cell in
+`package-index.md` carries install floors and resolution notes, and a floor is a
+load-bearing judgment — `README.md` argues at length that the `cdfi-benchmark`
+floor is deliberately *not* the newest release, because 0.3.1 changed no library
+code. A regex cannot tell a floor that should move from one that must not, so
+mechanically bumping them would erase exactly that reasoning. The gate checks:
+an exact version cell equals the current non-yanked release; a `>=` floor names a
+real, non-yanked release no newer than current; any present-tense "resolves to X"
+or "latest is X" claim, in any of the four surfaces, equals current; a package
+with any yanked release says `yanked` in its row; and no version stated in a row
+is itself yanked. It also re-checks the `docs/index.html` chips, so a red there
+now means the refresh job has not run since that package published.
+
+Seen red before green, on the real defect and on five mutations of the corrected
+tree: a wrong version in a row; a **correct** version with the yank disclosure
+stripped; a stale docs chip; a floor naming a release PyPI does not have; and the
+table shape broken, which trips a `REFUSING: parsed 0 package rows` guard copied
+from the shape of the two guards the refresh script grew in 2026.9.1. Those two
+guards are untouched; the refresh script's body is unchanged, and it was
+re-run against the corrected page to confirm it still reports *"No change"*.
+
+**Claims that decay are now either removed or machine-checked.** `llms.txt`
+carried *"cdfi-benchmark >=0.3.0 (resolves to 0.3.1)"*, false since 0.3.2
+published on 2026-09-09; the resolution claims are gone from `llms.txt`, leaving
+floors, which do not decay. The `hmda-analyzer` line keeps the substance that
+mattered — 0.6.0 needs Python >=3.11, 0.6.1 relaxed it to >=3.9 — restated as two
+facts about two named releases rather than a claim about what a floor resolves to
+today. `cdfi-peer-benchmark/SKILL.md` carried *"Latest on PyPI 2026-09-07:
+cdfi-benchmark 0.3.1"*, false two days after it was written and unchallenged for
+a fortnight; it no longer names a newest release at all. **A date stamp does not
+make a false statement true — it records when it stopped being checked.**
+
+`CHANGELOG.md` is deliberately excluded from the gate. A version here narrates a
+past release and is a true statement about the past, not a claim about what is
+current; a sweep that "corrected" it would falsify the history.
+
+**Two things found and not fixed.** `docs/index.html` has 21 package cards for 22
+packages — `h1b-tracker` has never had one — so the landing page is not a
+substitute for the index; the index now says so. And `h1b-tracker`'s GitHub
+homepage, the evidence that put it in this portfolio, no longer resolves
+anonymously (`git ls-remote` exits 128 where all 21 other repos succeed). The
+dist is live on PyPI at 0.1.0, not yanked, so the row stays — but its repo column
+now says **none reachable** rather than implying a repo anyone can open.
+
 ## 2026.9.1
 
 **Repairs every version chip on the docs page, and fixes the workflow that broke
