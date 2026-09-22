@@ -1,7 +1,7 @@
 {
   "name": "cdfi-superpowers",
-  "version": "2026.9.2",
-  "description": "An AI skill layer over Jay Patel's published CDFI Python portfolio. Grounds an AI assistant in audited, empirically-verified CDFI tooling (NMTC eligibility, bank-CDFI peer benchmarking, HMDA descriptive analysis) instead of hallucinating tract eligibility, peer metrics, or lending distributions. No new analytical code — thin skills that pip-install and call the already-published PyPI packages.",
+  "version": "2026.9.3",
+  "description": "An AI skill layer over Jay Patel's published CDFI Python portfolio. Grounds an AI assistant in audited, empirically-verified CDFI tooling (NMTC eligibility, bank-CDFI peer benchmarking, HMDA descriptive analysis, credit memo generation, and fair-lending disparity screening) instead of hallucinating tract eligibility, peer metrics, or lending distributions. No new analytical code — thin skills that pip-install and call the already-published PyPI packages.",
   "author": {
     "name": "Jay Patel"
   },
@@ -13,6 +13,7 @@
     "nmtc",
     "hmda",
     "fair-lending",
+    "credit-memo",
     "cra",
     "community-reinvestment-act",
     "community-development-finance",
@@ -26,6 +27,8 @@
   "skills": [
     "./.agents/skills/nmtc-eligibility",
     "./.agents/skills/cdfi-peer-benchmark",
-    "./.agents/skills/hmda-analysis"
+    "./.agents/skills/hmda-analysis",
+    "./.agents/skills/credit-memo",
+    "./.agents/skills/fair-lending-screening"
   ]
 }
