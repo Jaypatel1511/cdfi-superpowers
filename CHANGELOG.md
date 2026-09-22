@@ -2,6 +2,58 @@
 
 All notable changes to `cdfi-superpowers`. Versioning is CalVer (`YYYY.M.MINOR`).
 
+## 2026.9.3
+
+**Two skills join the plugin: `credit-memo` and `fair-lending-screening`.** Five
+skills, not three; `plugin.json` enumerates five paths.
+
+- **credit-memo** (`.agents/skills/credit-memo/`) wraps `credit-memo >=0.2.2`
+  (import `creditmemo`): structured IC credit memos from the user's deal inputs
+  — CDFI loans, NMTC deals, equity, grants, guarantees — rendered to Markdown
+  or Word. The skill collects and structures; it never invents a figure, never
+  computes a ratio the user did not supply, and never chooses the
+  recommendation. It documents the package's own 0.2.2 traps: `revenue_y1` is
+  the *oldest* year; `jobs_created`/`jobs_retained` default to `0` and render
+  as `0`, moving the derived Cost per Job; `FinancialData.ltv` is the one
+  percentage-point field while every other rate is a fraction; four `NMTCTerms`
+  inputs are required and never rendered; the Benchmark column is uncited
+  defaults.
+- **fair-lending-screening** (`.agents/skills/fair-lending-screening/`) wraps
+  `fair-lending-screener >=0.2.2` (import `fair_lending_screener`; 0.1.1 is
+  yanked): adjusted denial-disparity screening on public HMDA data — logistic
+  regression with FFIEC-standard controls, reporting an odds ratio with 95% CI
+  and p-value. This is the inferential analysis `hmda-analysis` firewalls, and
+  the two skills now route to each other across that line. The skill carries the
+  package's 0.2.2 self-description — lending-disparity screening *informed by*
+  FFIEC, **not** examiner methodology and **not** disparate-impact analysis, both
+  labels the package retracted in 0.2.2 — and its non-negotiables: every result
+  is a screening signal, never a finding of discrimination; the adjusted OR is an
+  upper bound (no credit score, no AUS in public HMDA); `derived_race` only, no
+  ethnicity in 0.2.2; typed errors surfaced verbatim.
+
+Both SKILL.md files were written against the packages installed from PyPI on
+2026-09-21, and each worked example was executed; the output each file quotes is
+what the package rendered.
+
+Integration surfaces updated together: `plugin.json` and `marketplace.json`
+(version, description, keywords, skill paths); `README.md` (five skills, the two
+new version floors and why, the fair-lending commitment rewritten so
+hmda-analysis stays descriptive while the plugin now *offers* inference through
+its own guarded skill); `llms.txt`; `references/package-index.md` (purpose cells
+only — `(wrapped: credit-memo)` and `(wrapped: fair-lending-screening)`, and
+the fair-lending-screener purpose no longer carries the "examiner methodology /
+disparate-impact" label that 0.2.2 withdrew; version cells untouched);
+`references/caveats-and-limits.md` §1 (the firewall now names the inferential
+skill and its boundaries instead of saying nothing wraps `fair-lending-screener`);
+`.agents/skills/hmda-analysis/SKILL.md` (its two "decline" lines now route to
+`fair-lending-screening` instead of forbidding any pointer to a fair-lending
+tool — the descriptive-only firewall itself is unchanged); `docs/index.html`
+(the plugin section's skill list gains both skills; the credit-memo card gains a
+note; no version chip changed, so the refresh cron is unaffected — it discovers
+chips by pattern, not by an explicit list).
+
+Not in this release: no change to any wrapped package; no tag or publish.
+
 ## 2026.9.2
 
 **`references/package-index.md` was pointing agents at three releases that were

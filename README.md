@@ -4,8 +4,9 @@
 eligibility.**
 
 `cdfi-superpowers` is an **AI skill layer for the CDFI industry** — NMTC
-eligibility, bank CDFI peer benchmarking, and HMDA lending analysis, built for
-lenders, CDEs, compliance teams, and community development researchers.
+eligibility, bank CDFI peer benchmarking, HMDA lending analysis, IC credit
+memos, and fair-lending disparity screening, built for lenders, CDEs,
+compliance teams, and community development researchers.
 
 Generic AI assistants confidently invent answers in this domain: wrong tract
 eligibility, fabricated peer medians, "CRA performance" claims from proxy data.
@@ -20,13 +21,15 @@ independently versioned, openly published Python packages (MIT-licensed, on
 [PyPI](https://pypi.org/user/thejaypatel1511/)) and teaches the AI to use them
 correctly, with the methodology caveats those tools ship with.
 
-## The three skills
+## The five skills
 
 | Skill | What it does | Backed by |
 |---|---|---|
 | **nmtc-eligibility** | Is this address/tract NMTC eligible? Distress tier? Project feasibility? | nmtc-mapper >=0.6.1, nmtc-screener 0.1.0 |
 | **cdfi-peer-benchmark** | Benchmark a **bank** CDFI against FDIC peers (NIM, ROAA, capital, …) | cdfi-benchmark >=0.3.0 |
 | **hmda-analysis** | Pull HMDA LAR data and produce **descriptive** cuts + a CRA-**proxy** distribution | hmda-analyzer >=0.6.0 |
+| **credit-memo** | Generate a structured IC credit memo from the user's deal inputs — CDFI loans, NMTC deals, equity, grants, guarantees | credit-memo >=0.2.2 |
+| **fair-lending-screening** | Adjusted denial-disparity **screening** on public HMDA data — logistic regression with FFIEC-standard controls; the **inferential** counterpart to hmda-analysis | fair-lending-screener >=0.2.2 |
 
 Versions were verified against live PyPI at time of writing; every code example
 in each skill was actually executed and shows real output. Where a floor is shown
@@ -57,14 +60,32 @@ floor, which resolved to 0.6.1 at the time; its `__all__` still exports
 `GeographyVintageError` and the three basis maps). The pinned floor stays
 `>=0.6.0` because 0.6.1 changed nothing the skill layer depends on.
 
+`credit-memo >=0.2.2` is the floor because 0.2.2 is where the memo itself
+discloses that four `NMTCTerms` inputs (the leverage-loan rate, both QLICI
+rates, and the compliance period) are accepted and never rendered — below it an
+NMTC Structure table reaches the committee with nothing marking it partial.
+`fair-lending-screener >=0.2.2` is the floor because **0.1.1 is yanked** (a
+breaking API change in a patch release) and because 0.2.2 is where the package
+retracted its own "methodology federal examiners use" and "disparate-impact
+analysis" labels — below it the generated report describes itself falsely.
+
 ### What these skills refuse to do
 
 - **Fabricate eligibility or metrics.** If a tool errors, the skill reports the
   error; it never estimates NMTC eligibility from general knowledge or fills a
   NaN with a number.
-- **Inferential fair-lending analysis.** hmda-analysis is descriptive only — no
-  disparate-impact, disparity-ratio, protected-class, or fair-lending inference,
-  and no reading the CRA-proxy as CRA performance.
+- **Inferential fair-lending analysis from descriptive data.** hmda-analysis is
+  descriptive only — no disparity-ratio, protected-class, or fair-lending
+  inference, and no reading the CRA-proxy as CRA performance. The plugin now
+  **offers** inferential work through the dedicated fair-lending-screening
+  skill, which carries its own guardrails: alpha-status package, a required
+  screening-not-finding statement on every result, the omitted-variable
+  (credit score, AUS) upper-bound caveat, race-only comparisons, and typed
+  errors surfaced rather than smoothed. Neither skill crosses into the other's
+  side of the descriptive/inferential line.
+- **Invent a number for a credit memo.** credit-memo structures the user's
+  inputs; a field the user did not supply stays unset, and the recommendation
+  is the user's, never the skill's.
 - **Benchmark non-banks.** cdfi-peer-benchmark is FDIC bank CDFIs only — no
   credit unions, no unregulated loan funds.
 
@@ -72,7 +93,7 @@ See `references/caveats-and-limits.md` for the full boundary list.
 
 ## Version
 
-**cdfi-superpowers 2026.9.1** (CalVer, `YYYY.M.MINOR`; MINOR restarts at 0 when
+**cdfi-superpowers 2026.9.3** (CalVer, `YYYY.M.MINOR`; MINOR restarts at 0 when
 the month changes). The version lives at **five sites and they move together**:
 `.claude-plugin/plugin.json` (1), `.claude-plugin/marketplace.json` (2 — the
 marketplace `metadata` block and the plugin entry), this line, and the top
@@ -91,8 +112,8 @@ Antigravity, Amp, Cline, OpenCode and Warp, which is the list `gh skill install
 --help` names as resolving to it.
 
 **Claude Code is not in that list and does not scan `.agents/skills/`** — it
-scans `.claude/skills/`. It reaches these three skills through the plugin
-manifest instead: `.claude-plugin/plugin.json` enumerates the three paths
+scans `.claude/skills/`. It reaches these five skills through the plugin
+manifest instead: `.claude-plugin/plugin.json` enumerates the five paths
 explicitly, which is what makes install method (a) work. Dropping a skill folder
 into a project's `.agents/skills/` does nothing in Claude Code, silently.
 
@@ -105,7 +126,9 @@ into a project's `.agents/skills/` does nothing in Claude Code, silently.
 > - **Python >=3.9** and **pip**
 > - **Network access to `pypi.org`**, plus the endpoints the skill you use hits:
 >   `geocoding.geo.census.gov` and `www.cdfifund.gov` (nmtc-eligibility),
->   `api.fdic.gov` (cdfi-peer-benchmark), `ffiec.cfpb.gov` (hmda-analysis)
+>   `api.fdic.gov` (cdfi-peer-benchmark), `ffiec.cfpb.gov` (hmda-analysis and
+>   fair-lending-screening). credit-memo calls no endpoint — every figure is
+>   user-supplied.
 >
 > In a locked-down enterprise environment where PyPI or those hosts are blocked,
 > **these skills cannot work** — the agent will load the skill and then fail at the
@@ -138,8 +161,9 @@ Build the archives and upload the one(s) you want in the claude.ai skills UI:
 bash scripts/make_skills.sh
 ```
 
-This writes `dist/nmtc-eligibility.skill`, `dist/cdfi-peer-benchmark.skill`, and
-`dist/hmda-analysis.skill` — each a zip with `SKILL.md` at its root.
+This writes `dist/nmtc-eligibility.skill`, `dist/cdfi-peer-benchmark.skill`,
+`dist/hmda-analysis.skill`, `dist/credit-memo.skill`, and
+`dist/fair-lending-screening.skill` — each a zip with `SKILL.md` at its root.
 
 ### (c) GitHub Copilot
 
@@ -163,7 +187,7 @@ mkdir -p ~/.copilot/skills
 cp -R /tmp/cdfi-superpowers/.agents/skills/* ~/.copilot/skills/
 ```
 
-Then in Copilot CLI run `/skills reload` and confirm the three skills are listed.
+Then in Copilot CLI run `/skills reload` and confirm the five skills are listed.
 
 **Or with the GitHub CLI** (requires `gh` >= 2.90; installs one skill at a time):
 
@@ -174,10 +198,11 @@ gh skill install Jaypatel1511/cdfi-superpowers nmtc-eligibility \
 
 `--allow-hidden-dirs` is **required**, not optional: `gh skill` treats
 `.agents/skills/` as a hidden directory and finds nothing without it (it reports
-"no standard skills found, but 3 skill(s) exist in hidden directories"). The
+"no standard skills found, but 5 skill(s) exist in hidden directories"). The
 skill name is also required when running non-interactively. Repeat for
-`cdfi-peer-benchmark` and `hmda-analysis`, or drop `--scope user` to install into
-the current repository instead.
+`cdfi-peer-benchmark`, `hmda-analysis`, `credit-memo` and
+`fair-lending-screening`, or drop `--scope user` to install into the current
+repository instead.
 
 ### (d) Cursor, Codex, Warp and the other agents that read `.agents/skills/`
 

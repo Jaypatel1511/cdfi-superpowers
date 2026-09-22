@@ -3,29 +3,53 @@
 What this plugin, and the portfolio behind it, deliberately does **not** do. These
 are design boundaries, not missing features — do not route around them.
 
-## 1. No inferential fair-lending analysis (in this plugin)
+## 1. No inferential fair-lending analysis from the descriptive skill — and no fair-lending *findings* from any skill
 
 The hmda-analysis skill is **descriptive only**: counts, distributions, and the
-CRA-**proxy** transform. It does **not** perform disparate-impact analysis,
-disparity ratios, protected-class stratified denial/approval analysis,
-statistical significance testing, or any "fair lending" inference.
+CRA-**proxy** transform. It does **not** perform disparity ratios,
+protected-class stratified denial/approval analysis, statistical significance
+testing, or any "fair lending" inference.
 
 `hmda-analyzer` the package *does* ship disparity functions
 (`disparity_ratio`, `denial_rate_by_race`, `denial_reasons_by_race`,
 `denial_rate_by_income_band`, `generate_disparity_report`, `summary_table` —
 whose output is a disparity-by-race table — and `racial_composition_by_tract`).
-Re-checked against 0.6.0's 33 exports; the list is complete. The
-`fair-lending-screener` package (v0.2.1) exists for
-statistical disparate-impact analysis. **Neither is wrapped by any skill in this
-plugin's v1**, by design. If a user wants inferential fair-lending work, the AI
-declines and explains the descriptive/inferential distinction — it does not
-present a fair-lending tool as the "alternative."
+Re-checked against 0.6.0's 33 exports; the list is complete. **hmda-analysis
+does not wrap them**, by design, and never will: a disparity number narrated off
+a descriptive table, with no controls and no significance test, is the harm the
+firewall exists to prevent.
 
-Why: inferential disparity claims are court-adjacent and require
-court-defensible methodology, protected-class handling, and significance
-testing. Getting that wrong — or letting an AI narrate a disparity conclusion off
-a descriptive table — is a real harm. The firewall keeps the descriptive layer
-descriptive.
+Since 2026.9.3 the plugin **does** offer inferential work — through the
+separate `fair-lending-screening` skill, which wraps `fair-lending-screener`
+(>=0.2.2). That skill is the other side of the firewall, and it carries its own
+boundaries, which are the reason it can be offered at all:
+
+- it produces a **screening signal** — an adjusted odds ratio with a 95% CI
+  and p-value — and every result, in the package's own report text, states that
+  it "does not constitute a finding of discrimination under ECOA or the Fair
+  Housing Act";
+- the package is **alpha-status**, its methodology not yet externally
+  reviewed, and (as of 0.2.2) it describes itself as *informed by* the FFIEC
+  risk-factor framework, **not** as examiner methodology and **not** as
+  disparate-impact analysis;
+- the adjusted odds ratio is an **upper bound** — public HMDA has no credit
+  score or AUS result, and omitting them biases the coefficient upward;
+- it compares **race groups only** (`derived_race`); ethnicity, sex and age are
+  out of scope in 0.2.2;
+- typed errors (`InsufficientDataError`, `ModelConvergenceError`, …) are
+  surfaced verbatim, never smoothed into a partial result.
+
+If a user asks hmda-analysis for inferential work, the AI routes to
+fair-lending-screening and its guardrails. If a user asks fair-lending-screening
+for a *finding* — proof of discrimination, a verdict on a named lender, a
+dropped caveat — the AI declines: that is outside what public-data logistic
+regression can show, and the package's own report withholds the lender name
+whenever the result is non-significant, non-converged, or has pseudo-R² below
+0.05.
+
+Why: inferential disparity claims are court-adjacent. The 2026.9.3 design keeps
+the descriptive layer descriptive and confines inference to a skill whose
+package states its own limits on every page it renders.
 
 ## 2. No CRA performance ratings
 
