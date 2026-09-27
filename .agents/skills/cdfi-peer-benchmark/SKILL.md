@@ -312,7 +312,10 @@ Executed this session (0.3.3, python3.11) — one profile at `report_date =
 "20260331"` (Q1), with and without FDIC's published ratios. All dollar inputs in
 thousands: total assets 78,100; interest income 2,000 and interest expense 200;
 non-interest income 150; non-interest expense 1,250; net income 240; equity
-9,000. The published-path profile adds `reported_nim=3.08`,
+9,000; plus total deposits 65,000, net loans 50,000, gross loans 51,000,
+non-current loans 400, loan-loss allowance 600 and `tier1_ratio=11.5`. Those
+last six do not affect the printed lines: re-run with all six changed, the
+output was identical. The published-path profile adds `reported_nim=3.08`,
 `reported_roaa=1.24`, `reported_roae=10.6`, `reported_efficiency_ratio=61.2`:
 
 ```
@@ -494,9 +497,12 @@ Net Interest Margin over total assets (NIM)              None
    have elected the CBLR framework** — "greater than 9%" at this report date,
    because 20241231 is after the framework took effect and after the 2020–2021
    relief window. The package's schedule constant `CBLR_LEVELS`
-   (`cdfibenchmark.data.schema`) also holds a later, lower level; 0.3.3 cites it
-   only through that row's citation string, and it does not apply at this report
-   date. It is not a
+   (`cdfibenchmark.data.schema`) also holds a later, lower level, but no
+   quarter-end report date resolves to it under 0.3.3 (checked this session:
+   `benchmark_for("tier1_ratio", d)` over every quarter-end 2015–2030 gives 19
+   dates at 9%, 20200331–20260630, 45 refused, none at the lower level). So no
+   0.3.3 report grades against it; it appears only in the `BENCHMARKS` default
+   `source` (see the refused-functions table above). It is not a
    finding that this bank elected CBLR or qualifies for it; cdfi-benchmark 0.3.3
    does not model election. Say so. Had the same profile carried a report date
    in a refused class, this row would read N/A with a reason — see

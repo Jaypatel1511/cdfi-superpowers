@@ -94,7 +94,8 @@ ETL — a different dataset from HMDA LAR.)
 - Under cdfi-benchmark 0.3.3, every Tier 1 grade for a report date after
   20260922 (20260930 onward) comes back refused until a later release extends
   `LEVELS_VERIFIED_THROUGH`, and `get_financials(cert)` with no date returns the
-  latest filing. The skill must not silently fall back to an older quarter to
+  latest filing (read from the 0.3.3 source — `sort_by=REPDTE` descending,
+  `records[0]` — not probed live). The skill must not silently fall back to an older quarter to
   produce a grade.
 
 ## 6. The fabrication firewall (portfolio-wide)
