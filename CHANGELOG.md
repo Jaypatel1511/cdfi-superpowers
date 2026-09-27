@@ -2,6 +2,62 @@
 
 All notable changes to `cdfi-superpowers`. Versioning is CalVer (`YYYY.M.MINOR`).
 
+## 2026.9.4
+
+**`cdfi-peer-benchmark` raises its floor to `cdfi-benchmark >=0.3.3` and
+re-records its examples on 0.3.3.** cdfi-benchmark 0.3.3 (PyPI, 2026-09-24) is a
+disclosure release: its CHANGELOG `[0.3.3]` records defects A–G in how every
+earlier release graded the Tier 1 leverage ratio against the community bank
+leverage ratio (CBLR) level. Examples: grades for report dates before the
+framework existed, grades in the 2020–2021 relief window, `>=` where the rule
+says "greater than", and a Benchmark line reading *"12 CFR 324.12 (CBLR
+qualifying, lowered 9%->8% eff. 2026-07-01)"*. 0.3.3 refuses those grades with a
+stated reason instead of asserting them.
+
+This plugin repeated the false strings. Through 2026.9.3 the skill pinned
+`>=0.3.0`, called that floor load-bearing, and its worked examples quoted 0.3.1
+output: the `threshold_source` cell and the Tier 1 **Benchmark:** line above,
+with `Strong >= 8%`. An agent loading the skill was told those strings were the
+package's current output. They were not, and they were false.
+
+- **Floor.** `>=0.3.0` → `>=0.3.3` in the skill, `README.md` and `llms.txt`.
+  The "load-bearing" prose now gives the real reason: below 0.3.3 the package
+  asserts Tier 1 grades its own CHANGELOG says are false. The
+  "deliberately not `>=0.3.1`" argument, which was true of 0.3.1, is removed
+  because the floor is now above it. The skill tells an agent on an older install
+  to upgrade before presenting any Tier 1 grade.
+- **Examples re-recorded on 0.3.3** (installed from PyPI, python3.11) by
+  executing the skill's own code blocks, not by editing the text. The worked
+  example keeps its report date, 20241231, which 0.3.3 grades. Tier 1 is still
+  STRONG, now against "greater than 9% at this report date". The example gains
+  the `not_graded_reason` column (`summary_table` has eleven columns in 0.3.3).
+  The quoted **Benchmark:** lines, the `vs Peer Median` line (0.3.2 relabelled it
+  `pp` and added a relative gap), the `-700`/`999` demo, the loans-to-deposits
+  grades, the caveat block and the exception hierarchy were all re-run on 0.3.3.
+  The caveat matrix was re-derived on 0.3.3 and matched. Two blocks that do not
+  involve Tier 1 were not re-run and say so.
+- **A new Tier 1 state.** A present value with a gradeable basis can now be
+  N/A with a `not_graded_reason`: a report date before 2020-01-01, in
+  2020-06-30–2021-12-31, after 2026-09-22 (0.3.3's `LEVELS_VERIFIED_THROUGH`),
+  or missing, malformed or not a quarter-end; or a value that displays as the
+  level. The skill lists these, shows two refusals rendered by 0.3.3, tells an
+  agent to quote the reason and never supply a grade itself, and extends its
+  `present_but_ungraded` test to read `not_graded_reason`. It also warns that
+  `BENCHMARKS["tier1_ratio"]` is a default no graded report uses, and that a
+  Tier 1 STRONG is a comparison with the level for institutions that have
+  *elected* CBLR, not a finding that the bank did.
+- **Stale package facts corrected against 0.3.3:** `__all__` has 21 names, not
+  19. `CBLRScheduleError` joins the typed-error table. Source line references
+  now point at 0.3.3's files.
+- `scripts/check_package_versions.py` and `.github/workflows/refresh-versions.yml`
+  had comments saying the cdfi-benchmark floor is "deliberately not the newest
+  release". That is no longer true, so the comments now cite the hmda-analyzer
+  floor as the example. Comment-only change; no behaviour changed.
+
+Not in this release: no change to any wrapped package, and no change to
+`references/package-index.md` (its cdfi-benchmark row already read 0.3.3). No
+tag and no publish.
+
 ## 2026.9.3
 
 **Two skills join the plugin: `credit-memo` and `fair-lending-screening`.** Five
