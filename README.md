@@ -54,6 +54,12 @@ the framework existed; parts of the 2020–2021 relief window) or with `>=` wher
 the rule says "greater than" — cdfi-benchmark's CHANGELOG `[0.3.3]` discloses these
 as defects A–G. 0.3.3 refuses those grades with a stated reason instead. (Below
 0.3.0 it also graded `loans_to_deposits` backwards.)
+Under 0.3.3 every Tier 1 grade for a report date after 20260922 (20260930
+onward) comes back refused, with a reason, until a later cdfi-benchmark release
+extends `LEVELS_VERIFIED_THROUGH`; and `get_financials(cert)` with no date
+returns the latest filing (the 0.3.3 source sorts `REPDTE` descending and takes
+the first row), so once 20260930 filings post, a no-date benchmark shows Tier 1
+as not graded.
 
 `hmda-analyzer 0.6.0` alone required **Python >=3.11**; **0.6.1 relaxed that back
 to >=3.9** while keeping the refusal (verified 2026-08-13 against the `>=0.6.0`
@@ -94,7 +100,7 @@ See `references/caveats-and-limits.md` for the full boundary list.
 
 ## Version
 
-**cdfi-superpowers 2026.9.3** (CalVer, `YYYY.M.MINOR`; MINOR restarts at 0 when
+**cdfi-superpowers 2026.9.4** (CalVer, `YYYY.M.MINOR`; MINOR restarts at 0 when
 the month changes). The version lives at **five sites and they move together**:
 `.claude-plugin/plugin.json` (1), `.claude-plugin/marketplace.json` (2 — the
 marketplace `metadata` block and the plugin entry), this line, and the top

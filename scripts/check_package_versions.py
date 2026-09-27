@@ -24,10 +24,9 @@ Why a gate and not a second rewriter
 The version cell in ``references/package-index.md`` is not a bare literal. It
 carries install floors (``>=0.6.1``), resolution notes
 (``>=0.6.0 (pin resolves 0.6.1, py>=3.9; ...)``) and yank warnings. A floor is a
-deliberate, load-bearing judgment -- README.md explains why the
-``hmda-analyzer`` floor *deliberately stays below* the latest release (the
-latest changed nothing the skill layer depends on). An automatic rewriter would
-have to decide whether a floor should move, which is a semantic call it cannot
+deliberate, load-bearing judgment -- a floor is deliberately allowed to trail
+the latest release, and README.md gives each floor's rationale. An automatic
+rewriter would have to decide whether a floor should move, which is a semantic call it cannot
 make, and bumping floors mechanically would erase exactly that reasoning. So this file is
 CHECKED, not rewritten, and a disagreement fails the run loudly.
 

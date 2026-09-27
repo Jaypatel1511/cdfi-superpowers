@@ -34,8 +34,10 @@ package's current output. They were not, and they were false.
   The quoted **Benchmark:** lines, the `vs Peer Median` line (0.3.2 relabelled it
   `pp` and added a relative gap), the `-700`/`999` demo, the loans-to-deposits
   grades, the caveat block and the exception hierarchy were all re-run on 0.3.3.
-  The caveat matrix was re-derived on 0.3.3 and matched. Two blocks that do not
-  involve Tier 1 were not re-run and say so.
+  The caveat matrix was re-derived on 0.3.3 and matched. The Q1-profile basis
+  demo and the two-peer mixed-basis demo were re-recorded on 0.3.3 from inputs
+  that first reproduced their 0.3.1 blocks byte for byte, and the skill now
+  states those inputs.
 - **A new Tier 1 state.** A present value with a gradeable basis can now be
   N/A with a `not_graded_reason`: a report date before 2020-01-01, in
   2020-06-30–2021-12-31, after 2026-09-22 (0.3.3's `LEVELS_VERIFIED_THROUGH`),
@@ -46,13 +48,23 @@ package's current output. They were not, and they were false.
   `BENCHMARKS["tier1_ratio"]` is a default no graded report uses, and that a
   Tier 1 STRONG is a comparison with the level for institutions that have
   *elected* CBLR, not a finding that the bank did.
+- **Q3 2026 onward.** Under 0.3.3 every Tier 1 grade for a report date after
+  20260922 (20260930 onward) is refused until a later cdfi-benchmark release
+  extends `LEVELS_VERIFIED_THROUGH`. `get_financials(cert)` with no date returns
+  the latest filing. This is stated in the skill, `README.md`, `llms.txt` and
+  `references/caveats-and-limits.md` §5. The skill forbids silently switching to
+  an older `report_date` to obtain a grade.
 - **Stale package facts corrected against 0.3.3:** `__all__` has 21 names, not
   19. `CBLRScheduleError` joins the typed-error table. Source line references
   now point at 0.3.3's files.
 - `scripts/check_package_versions.py` and `.github/workflows/refresh-versions.yml`
   had comments saying the cdfi-benchmark floor is "deliberately not the newest
-  release". That is no longer true, so the comments now cite the hmda-analyzer
-  floor as the example. Comment-only change; no behaviour changed.
+  release". That is no longer true; the comments now say, without naming a
+  package or version, that a floor may trail the latest release and README gives
+  each floor's rationale. Comment-only change; no behaviour changed.
+- Version 2026.9.3 → 2026.9.4 at all five sites `README.md` names:
+  `plugin.json` (1), `marketplace.json` (2), the README **Version** line, and
+  this heading.
 
 Not in this release: no change to any wrapped package, and no change to
 `references/package-index.md` (its cdfi-benchmark row already read 0.3.3). No

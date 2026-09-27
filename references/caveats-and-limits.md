@@ -91,6 +91,11 @@ ETL — a different dataset from HMDA LAR.)
   underwriting.
 - Peer benchmarks reflect **FDIC-reported** call-report data and heuristic peer
   groups, not an independent audit.
+- Under cdfi-benchmark 0.3.3, every Tier 1 grade for a report date after
+  20260922 (20260930 onward) comes back refused until a later release extends
+  `LEVELS_VERIFIED_THROUGH`, and `get_financials(cert)` with no date returns the
+  latest filing. The skill must not silently fall back to an older quarter to
+  produce a grade.
 
 ## 6. The fabrication firewall (portfolio-wide)
 

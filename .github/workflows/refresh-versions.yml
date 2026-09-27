@@ -17,8 +17,8 @@ name: Refresh package versions
 #
 # It is a GATE, not a second rewriter, deliberately. The version cell in
 # package-index.md carries install floors and resolution notes, and a floor is a
-# load-bearing judgment (README.md explains why the hmda-analyzer floor
-# deliberately stays below the newest release). Mechanically bumping floors
+# load-bearing judgment (a floor is deliberately allowed to trail the latest
+# release; README.md gives each floor's rationale). Mechanically bumping floors
 # would erase that reasoning; a regex cannot tell a floor that should move from
 # one that must not. So the file is checked and a disagreement fails loudly.
 # Expect this to go red on main when a package publishes: that red IS the
