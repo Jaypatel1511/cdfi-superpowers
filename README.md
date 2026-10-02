@@ -106,7 +106,7 @@ See `references/caveats-and-limits.md` for the full boundary list.
 
 ## Version
 
-**cdfi-superpowers 2026.10.1** (CalVer, `YYYY.M.MINOR`; MINOR restarts at 0 when
+**cdfi-superpowers 2026.10.0** (CalVer, `YYYY.M.MINOR`; MINOR restarts at 0 when
 the month changes). The version lives at **five sites and they move together**:
 `.claude-plugin/plugin.json` (1), `.claude-plugin/marketplace.json` (2 — the
 marketplace `metadata` block and the plugin entry), this line, and the top

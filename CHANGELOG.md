@@ -2,7 +2,7 @@
 
 All notable changes to `cdfi-superpowers`. Versioning is CalVer (`YYYY.M.MINOR`).
 
-## 2026.10.1
+## 2026.10.0
 
 **`cdfi-peer-benchmark` raises its floor to `cdfi-benchmark >=0.3.4` and
 re-records its examples on 0.3.4.** cdfi-benchmark 0.3.4 prints each metric's
@@ -62,7 +62,7 @@ recorded block was produced by a wheel built from the 0.3.4 source (commit
   cdfi-peer-benchmark skill's recorded-on stamp names a different cdfi-benchmark
   version from its `cdfi-benchmark>=` install floor. It is a local check and
   needs no PyPI lookup.
-- Version 2026.9.4 → 2026.10.1 at all five sites `README.md` names:
+- Version 2026.9.4 → 2026.10.0 at all five sites `README.md` names:
   `plugin.json` (1), `marketplace.json` (2), the README **Version** line, and
   this heading.
 
