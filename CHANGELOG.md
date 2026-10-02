@@ -40,9 +40,10 @@ recorded block was produced by a wheel built from the 0.3.4 source (commit
   minimum for showing them is 5 peers with a value for that metric)."*
 - **The n = 1 `vs_median` example.** It told an agent to "take the line from
   generate_report", and at n < 5 the report prints no such line. It is
-  re-recorded at one peer and at five, and the instruction now holds at every n:
-  print no difference where the report withholds one; otherwise compute it from
-  the rounded operands, or quote the report's line.
+  re-recorded at one peer and at five, and the instruction now covers every
+  row: print no difference where the report withholds one or where the
+  institution has no value (`vs_median` NaN); otherwise compute it from the
+  rounded operands, or quote the report's line.
 - **Thin peer cells: a reading rule (new).** Quote `report_withholds_peer_stats`
   when it is set. Never present or compute a peer median or percentile the
   report withheld (the DataFrame still carries it). Never present a peer

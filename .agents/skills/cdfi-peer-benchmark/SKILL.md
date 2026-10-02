@@ -1011,8 +1011,12 @@ insured bank's, an efficiency or ROAA median out of line with the subject's
 size class — **check the peer list before presenting it.** Read the names off
 the `PeerGroup` (`[(p.cert, p.name) for p in pg]`) and, for `INSFDIC` /
 `BKCLASS`, query `https://api.fdic.gov/banks/financials` with
-`filters=REPDTE:<date> AND CERT:(<certs>)` and
-`fields=CERT,NAME,INSFDIC,BKCLASS`. If uninsured trust companies are in the
+`filters=REPDTE:<date> AND CERT:(<cert> OR <cert> OR …)`,
+`fields=CERT,NAME,INSFDIC,BKCLASS` and `limit=100`. Join the CERTs with ` OR `:
+a space- or comma-separated list is rejected with HTTP 400. Set the limit: the
+default of 10 silently truncated CERT 16583's 19 peers to 10 rows holding 4 of
+the 12 trust companies (this session). Check that `meta.total` equals the rows
+returned before you count. If uninsured trust companies are in the
 group, say so beside every affected peer statistic, with how many of the n they
 are. Do **not** filter them out of the `PeerGroup` and hand the result to
 `generate_report` — a filtered group is a plain `list` and loses the caveats
@@ -1104,11 +1108,15 @@ thin. The rule, true at every n:
   If it is set, or `peer_count` is 0, the report shows no vs-median for that
   metric, and neither do you: no difference, rounded or raw (see *Thin peer
   cells*, below).
-- **Otherwise** (5 or more peers with a value), if you print a rounded
-  difference, **compute it from the rounded operands** —
+- **Then read `vs_median`.** If it is NaN, the institution has no value for
+  the metric (meaning (1) of the N/A contract). At any n, including 5 or more,
+  the report then prints the peer median with its n but no **vs Peer Median:**
+  line, and you print no difference either: render it N/A.
+- **Otherwise** (5 or more peers with a value, and an institution value), if
+  you print a rounded difference, **compute it from the rounded operands** —
   `round(inst, 2) - round(median, 2)` — label it percentage points, not `%`,
   and give its n; or quote the report's own **vs Peer Median:** line, which
-  exists only on such a row.
+  the report prints on exactly such a row.
 
 The package fixed the rounding on its report face and left `vs_median` exact on
 purpose; it left it present on a withheld row on purpose too.
