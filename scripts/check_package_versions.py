@@ -45,7 +45,8 @@ For every distribution named in the package-index table:
   * no version token stated anywhere in a row may itself be yanked.
 
 And for the cdfi-peer-benchmark ``SKILL.md``: the cdfi-benchmark version in its
-"recorded against" stamp must equal its ``cdfi-benchmark>=`` install floor(s). A
+"recorded against" stamp must equal its ``cdfi-benchmark>=`` install floor(s) in
+that file, ``README.md`` and ``llms.txt`` (a space around ``>=`` is allowed). A
 floor raised without re-recording the examples, or examples re-recorded without
 raising the floor, leaves the skill's output blocks describing a version it does
 not install. This check is local; it needs no PyPI lookup.
@@ -89,9 +90,10 @@ VERSION = r"\d+\.\d+\.\d+"
 RESOLVES = re.compile(rf"resolves(?:\s+to)?\s+(?:the\s+)?({VERSION})", re.I)
 # "Latest on PyPI 2026-09-07: cdfi-benchmark 0.3.1" / "LATEST: 0.3.1"
 LATEST = re.compile(rf"latest\b[^\n]*?({VERSION})", re.I)
-# The cdfi-peer-benchmark recorded-on stamp, and its install floor(s).
-STAMP = re.compile(rf"recorded against cdfi-benchmark ({VERSION})")
-BENCH_FLOOR = re.compile(rf"cdfi-benchmark>=({VERSION})")
+# The cdfi-peer-benchmark recorded-on stamp, and its install floor(s). A token
+# ends at whitespace or punctuation, so 0.3.4rc1 is not read as 0.3.4.
+STAMP = re.compile(rf"recorded against cdfi-benchmark ({VERSION})(?!\w|\.\d)")
+BENCH_FLOOR = re.compile(rf"cdfi-benchmark\s*>=\s*({VERSION})(?!\w|\.\d)")
 # A docs chip: <a ... href=".../project/SLUG/">NAME</a><span class="pkg-ver">VER</span>
 CHIP = re.compile(
     r'href="https://pypi\.org/project/(?P<slug>[^/"]+)/"[^>]*>'
@@ -227,20 +229,26 @@ def main() -> int:
 
     # ---- cdfi-peer-benchmark stamp vs install floor ------------------------
     skill = BENCH_SKILL.read_text(encoding="utf-8")
-    stamps = set(STAMP.findall(skill))
+    stamp_list = STAMP.findall(skill)
+    stamps = set(stamp_list)
     floors = set(BENCH_FLOOR.findall(skill))
     where = BENCH_SKILL.relative_to(ROOT)
-    if len(stamps) != 1 or not floors:
+    if len(stamp_list) != 1 or not floors:
         failures.append(
-            f"{where}: found stamp(s) {sorted(stamps)} and floor(s) {sorted(floors)}; "
+            f"{where}: found stamp(s) {stamp_list} and floor(s) {sorted(floors)}; "
             "expected exactly one 'recorded against cdfi-benchmark X' stamp and at "
-            "least one 'cdfi-benchmark>=X' floor"
+            "least one 'cdfi-benchmark>=X' floor (local check, not PyPI)"
         )
-    elif floors != stamps:
-        failures.append(
-            f"{where}: examples recorded against cdfi-benchmark {min(stamps)}, "
-            f"but the install floor is >={', >='.join(sorted(floors))}"
-        )
+    else:
+        # README.md and llms.txt restate the floor; they must agree with it too.
+        for path in (ROOT / "README.md", LLMS):
+            floors |= set(BENCH_FLOOR.findall(path.read_text(encoding="utf-8")))
+        if floors != stamps:
+            failures.append(
+                f"{where}: examples recorded against cdfi-benchmark {min(stamps)}, "
+                f"but the install floor is >={', >='.join(sorted(floors))} "
+                "(local check, not PyPI: re-record the examples or move the floor)"
+            )
 
     # ---- docs/index.html chips -------------------------------------------
     html = DOCS.read_text(encoding="utf-8")

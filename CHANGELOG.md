@@ -61,10 +61,12 @@ recorded block was produced by a wheel built from the 0.3.4 source (commit
   0.3.4's files (`schema.py`, `selector.py`, `generator.py`; `fdic.py` is
   unchanged). The *How to read Status* note's no-median ending is quoted. The
   "not verified here" note now records the live FDIC calls this session made.
-- **Stamp gate.** `scripts/check_package_versions.py` now also fails when the
-  cdfi-peer-benchmark skill's recorded-on stamp names a different cdfi-benchmark
-  version from its `cdfi-benchmark>=` install floor. It is a local check and
-  needs no PyPI lookup.
+- **Stamp gate.** `scripts/check_package_versions.py` now also fails unless the
+  cdfi-peer-benchmark skill carries exactly one recorded-on stamp and at least
+  one `cdfi-benchmark>=` install floor, and fails when the stamp names a
+  different cdfi-benchmark version from any such floor in the skill,
+  `README.md` or `llms.txt`. A space around `>=` is allowed, and `0.3.4rc1` is
+  not read as `0.3.4`. It is a local check and needs no PyPI lookup.
 - Version 2026.9.4 → 2026.10.0 at all five sites `README.md` names:
   `plugin.json` (1), `marketplace.json` (2), the README **Version** line, and
   this heading.
