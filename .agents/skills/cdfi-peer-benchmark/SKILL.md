@@ -61,7 +61,7 @@ absent below is unruled, not endorsed.
 | `build_peer_group` | the real peer group, live from FDIC. |
 | `build_sample_peer_group` | a deterministic **synthetic** demo group. Label any output built on it as illustrative. |
 | `benchmark_institution` | the per-metric `BenchmarkResult` objects behind the table. |
-| `rank_institution` | a percentile on one metric — and read its `reason` when `rank` is `None`. It ranks over as few as one peer (at n = 1 it returns percentile 100.0) and does not apply the report's minimum of 5: on a row where `report_withholds_peer_stats` is set, do not present its rank or percentile (see *Thin peer cells*). Its `peer_count` is the metric's n on success but the group size on its two refusal paths (cdfi-benchmark's CHANGELOG `[0.3.4]`, Known limitations 2). |
+| `rank_institution` | a percentile on one metric — and read its `reason` when `rank` is `None`. It ranks over as few as one peer (at n = 1 it returns percentile 100.0 or 0.0) and does not apply the report's minimum of 5: on a row where `report_withholds_peer_stats` is set, do not present its rank or percentile (see *Thin peer cells*). Its `peer_count` is the metric's n on success and when no peer has a value (0), but the group size on its other two refusal paths, institution value missing and banded metric (cdfi-benchmark's CHANGELOG `[0.3.4]`, Known limitations 2). |
 
 **Refused — do not reach for these to answer a benchmarking question:**
 
@@ -1113,10 +1113,11 @@ thin. The rule, true at every n:
   If it is set, or `peer_count` is 0, the report shows no vs-median for that
   metric, and neither do you: no difference, rounded or raw (see *Thin peer
   cells*, below).
-- **Then read `vs_median`.** If it is NaN, the institution has no value for
-  the metric (meaning (1) of the N/A contract). At any n, including 5 or more,
-  the report then prints the peer median with its n but no **vs Peer Median:**
-  line, and you print no difference either: render it N/A.
+- **Then, if the first bullet did not apply, read `vs_median`.** If it is NaN,
+  the institution has no value for the metric (meaning (1) of the N/A
+  contract). Such a row has 5 or more peers with a value, so the report prints
+  the peer median with its n but no **vs Peer Median:** line; you print no
+  difference either: render it N/A.
 - **Otherwise** (5 or more peers with a value, and an institution value), if
   you print a rounded difference, **compute it from the rounded operands** —
   `round(inst, 2) - round(median, 2)` — label it percentage points, not `%`,

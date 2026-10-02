@@ -66,7 +66,8 @@ recorded block was produced by a wheel built from the 0.3.4 source (commit
   one `cdfi-benchmark>=` install floor, and fails when the stamp names a
   different cdfi-benchmark version from any such floor in the skill,
   `README.md` or `llms.txt`. A space around `>=` is allowed, and `0.3.4rc1` is
-  not read as `0.3.4`. It is a local check and needs no PyPI lookup.
+  not read as `0.3.4`. It reads no PyPI data, though the script reaches it
+  only after every PyPI lookup succeeds.
 - **Docs chip.** `docs/index.html`'s cdfi-benchmark chip reads 0.3.4. The
   refresh job maintains it from PyPI; it was set by hand here, byte-identical to
   what that job writes, so the chip does not fail the gate after 0.3.4
