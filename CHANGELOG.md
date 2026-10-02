@@ -20,6 +20,8 @@ recorded block was produced by a wheel built from the 0.3.4 source (commit
   `llms.txt`. The "load-bearing" prose gives the 0.3.4 reason (a peer statistic
   with no n, including over a single peer) and keeps the 0.3.3 Tier 1 reason.
 - **Package index.** The cdfi-benchmark row's version cell reads 0.3.4.
+- **Package index, nmtc-application-builder row: 1.7.1 → 1.7.2.** The row had
+  been stale since nmtc-application-builder 1.7.2 published on 2026-09-29.
 - **Examples re-recorded on 0.3.4** by running each block's inputs and pasting
   the output. Every output block in the skill is byte-identical to a saved run,
   or (three blocks) an in-order excerpt of one. Every block that existed under
@@ -66,10 +68,14 @@ recorded block was produced by a wheel built from the 0.3.4 source (commit
   `plugin.json` (1), `marketplace.json` (2), the README **Version** line, and
   this heading.
 
-Not in this release: no change to any wrapped package, and no change to
-`docs/index.html` (its cdfi-benchmark chip is maintained from PyPI by the
-refresh job and still reads 0.3.3). The version-claims gate fails on the
-package-index row until 0.3.4 is on PyPI. No tag and no publish.
+- **Docs chip.** `docs/index.html`'s cdfi-benchmark chip reads 0.3.4. The
+  refresh job maintains it from PyPI; it was set by hand here, byte-identical to
+  what that job writes, so the chip does not fail the gate after 0.3.4
+  publishes. Until then, a refresh run would set it back to 0.3.3.
+
+Not in this release: no change to any wrapped package. The version-claims gate
+fails on the cdfi-benchmark package-index row and docs chip until 0.3.4 is on
+PyPI. No tag and no publish.
 
 ## 2026.9.4
 
