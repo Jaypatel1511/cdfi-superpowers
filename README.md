@@ -26,7 +26,7 @@ correctly, with the methodology caveats those tools ship with.
 | Skill | What it does | Backed by |
 |---|---|---|
 | **nmtc-eligibility** | Is this address/tract NMTC eligible? Distress tier? Project feasibility? | nmtc-mapper >=0.6.1, nmtc-screener 0.1.0 |
-| **cdfi-peer-benchmark** | Benchmark a **bank** CDFI against FDIC peers (NIM, ROAA, capital, …) | cdfi-benchmark >=0.3.3 |
+| **cdfi-peer-benchmark** | Benchmark a **bank** CDFI against FDIC peers (NIM, ROAA, capital, …) | cdfi-benchmark >=0.3.4 |
 | **hmda-analysis** | Pull HMDA LAR data and produce **descriptive** cuts + a CRA-**proxy** distribution | hmda-analyzer >=0.6.0 |
 | **credit-memo** | Generate a structured IC credit memo from the user's deal inputs — CDFI loans, NMTC deals, equity, grants, guarantees | credit-memo >=0.2.2 |
 | **fair-lending-screening** | Adjusted denial-disparity **screening** on public HMDA data — logistic regression with FFIEC-standard controls; the **inferential** counterpart to hmda-analysis | fair-lending-screener >=0.2.2 |
@@ -47,19 +47,25 @@ the five-way vocabulary the skill teaches does not exist; 0.5.0 was where
 `is_opportunity_zone` stopped returning a confident `False` about 78,039 tracts
 it cannot distinguish from a 2010/2020 vintage miss.) And
 `hmda-analyzer >=0.6.0` is where the geography-vintage refusal exists at all;
-and `cdfi-benchmark >=0.3.3` is where the package stops asserting false Tier 1
+and `cdfi-benchmark >=0.3.4` is where the report prints each metric's peer n and
+withholds a metric's peer median, percentiles and vs-median line when only 1 to 4
+peers have a value for it (cdfi-benchmark's CHANGELOG `[0.3.4]`; no grade or value
+changes). Below 0.3.3 the package also asserts false Tier 1
 leverage grades: 0.2.1 through 0.3.2 graded Tier 1 against a community bank
 leverage ratio (CBLR) level that was not in force at some report dates (before
 the framework existed; parts of the 2020–2021 relief window) or with `>=` where
 the rule says "greater than" — cdfi-benchmark's CHANGELOG `[0.3.3]` discloses these
 as defects A–G. 0.3.3 refuses those grades with a stated reason instead. (Below
 0.3.0 it also graded `loans_to_deposits` backwards.)
-Under 0.3.3 every Tier 1 grade for a report date after 20260922 (20260930
+Under 0.3.4, as under 0.3.3, every Tier 1 grade for a report date after 20260922 (20260930
 onward) comes back refused, with a reason, until a later cdfi-benchmark release
 extends `LEVELS_VERIFIED_THROUGH`; and `get_financials(cert)` with no date
-returns the latest filing (read from the 0.3.3 source — `sort_by=REPDTE`
+returns the latest filing (read from the 0.3.4 source — `sort_by=REPDTE`
 descending, `records[0]` — not probed live), so once 20260930 filings post, a
-no-date benchmark shows Tier 1 as not graded.
+no-date benchmark shows Tier 1 as not graded. Peer groups can include
+uninsured, non-lending trust companies (FDIC `INSFDIC` 0, `BKCLASS` NC), which
+0.3.4 does not exclude and which can distort peer medians; the skill tells an
+agent to check the peer list when a peer statistic looks implausible.
 
 `hmda-analyzer 0.6.0` alone required **Python >=3.11**; **0.6.1 relaxed that back
 to >=3.9** while keeping the refusal (verified 2026-08-13 against the `>=0.6.0`

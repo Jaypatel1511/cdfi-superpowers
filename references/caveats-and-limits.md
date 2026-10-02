@@ -91,10 +91,20 @@ ETL — a different dataset from HMDA LAR.)
   underwriting.
 - Peer benchmarks reflect **FDIC-reported** call-report data and heuristic peer
   groups, not an independent audit.
-- Under cdfi-benchmark 0.3.3, every Tier 1 grade for a report date after
+- cdfi-benchmark computes each metric's peer statistics over the peers with a
+  value for that metric, which can be far fewer than the group. Since 0.3.4 the
+  report prints that n and withholds the peer median, percentiles and vs-median
+  line when 1 to 4 peers have a value; `summary_table` keeps those numbers and
+  says so in `report_withholds_peer_stats`. The skill must not present a
+  withheld statistic, or any peer statistic without its n.
+- Peer groups can include FDIC filers that are not FDIC-insured (`INSFDIC` 0,
+  `BKCLASS` NC; non-lending trust companies), which cdfi-benchmark 0.3.4 does
+  not exclude. They can distort peer medians (CERT 16583 at 20260630: Tier 1
+  peer median 87.19%, 12 of its 19 peers such trust companies).
+- Under cdfi-benchmark 0.3.4, as under 0.3.3, every Tier 1 grade for a report date after
   20260922 (20260930 onward) comes back refused until a later release extends
   `LEVELS_VERIFIED_THROUGH`, and `get_financials(cert)` with no date returns the
-  latest filing (read from the 0.3.3 source — `sort_by=REPDTE` descending,
+  latest filing (read from the 0.3.4 source — `sort_by=REPDTE` descending,
   `records[0]` — not probed live). The skill must not silently fall back to an older quarter to
   produce a grade.
 
