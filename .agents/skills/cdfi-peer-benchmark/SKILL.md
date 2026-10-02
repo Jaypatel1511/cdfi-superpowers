@@ -60,7 +60,7 @@ absent below is unruled, not endorsed.
 | `build_peer_group` | the real peer group, live from FDIC. |
 | `build_sample_peer_group` | a deterministic **synthetic** demo group. Label any output built on it as illustrative. |
 | `benchmark_institution` | the per-metric `BenchmarkResult` objects behind the table. |
-| `rank_institution` | a percentile on one metric — and read its `reason` when `rank` is `None`. |
+| `rank_institution` | a percentile on one metric — and read its `reason` when `rank` is `None`. It ranks over as few as one peer (at n = 1 it returns percentile 100.0) and does not apply the report's minimum of 5: on a row where `report_withholds_peer_stats` is set, do not present its rank or percentile (see *Thin peer cells*). Its `peer_count` is the metric's n on success but the group size on its two refusal paths (cdfi-benchmark's CHANGELOG `[0.3.4]`, Known limitations 2). |
 
 **Refused — do not reach for these to answer a benchmarking question:**
 
@@ -256,10 +256,11 @@ multiply it by anything. It is gradeable and the package grades it.
 can earn is a threshold comparison, nothing more.** `reported_is_trustworthy`
 decides only whether FDIC's published ratio is a *measurement* rather than a
 fill. It does not ask whether the measurement is meaningful, and the package
-says so on its face. Executed this session (0.3.4, python3.12), on a **hand-built**
-profile whose `reported_*` fields carry the values FDIC's published series would
-occupy — the same stand-in this skill uses above, since FDIC was not reachable
-here. The `-700` is not invented for the demo: it is a value the package records
+says so on its face. Executed this session (0.3.4, python3.12), on a
+**hand-built** profile whose `reported_*` fields carry the values FDIC's
+published series would occupy — the same stand-in this skill uses above; no
+live filing with these values was probed. The `-700` is not invented for the
+demo: it is a value the package records
 as really present in the population, cited below.
 
 ```
@@ -614,8 +615,8 @@ session.
 > (cdfi-benchmark 0.3.4, 2026-10-01) reached `api.fdic.gov` and ran
 > `get_financials`, `build_peer_group`, `summary_table`, `generate_report` and
 > `get_institution` live for CERT 16583 at 20260630 (see *Peer groups can
-> include uninsured trust companies*). The signatures above are read from the
-> installed wheel; the host constants from package source. Earlier sessions
+> include uninsured trust companies*). The signatures and both host constants
+> above are read from the installed wheel. Earlier sessions
 > could not reach FDIC, and the passages that say so describe those sessions.
 > Reachability from your own environment is yours to check.
 
@@ -950,7 +951,8 @@ you keep the refusal for the latest period on the page.
 
 **On a graded row,** the comparison is with the level for institutions that
 **have elected** the CBLR framework. 0.3.4 does not model election (its CHANGELOG
-plans it for 0.4.0). Never turn a Tier 1 STRONG into "this bank qualifies for /
+`[0.3.3]`, Known limitations 1). Never turn a Tier 1 STRONG into "this bank
+qualifies for /
 has elected CBLR", and cite only what the Benchmark line cites (FDIC's 12 CFR
 Part 324; the package makes no claim about the OCC's or Federal Reserve's
 parallel rules).
@@ -1141,13 +1143,14 @@ own minimum, HOUSE, `PEER_STAT_MIN_N` in `cdfibenchmark.data.schema`), and flags
 2. **Never present or compute a peer median or percentile the report
    withheld.** `summary_table` still carries `peer_median`, `peer_25th`,
    `peer_75th` and `vs_median` on that row, computed over those 1–4 peers. Do
-   not print them, do not compute your own from `compute_peer_metrics`, and do
-   not derive a vs-median, a rank or a "above/below peers" sentence from them.
+   not print them, do not compute your own from `compute_peer_metrics`, do not
+   take a rank or percentile from `rank_institution` for that metric, and do
+   not derive a vs-median, a rank or an "above/below peers" sentence from them.
    At `peer_count == 0` they are already absent; render N/A, as the report does.
 3. **Never present any peer statistic without its n** — the metric's
    `peer_count`, not the group size. A loans-to-deposits median presented as
-   "n = 19" when 7 of the 19 peers have a value (CERT 16583 at 20260630, below)
-   is the error 0.3.4 fixed on its own page.
+   "n = 19" when 7 of the 19 peers have a value (CERT 16583 at 20260630; see
+   *Install*, above) is the error 0.3.4 fixed on its own page.
 4. **At 5–9 peers with a value, say the comparison is thin.** Quote the
    report's **Thin peer cell:** line, or say in plain words that the median and
    percentiles rest on that few peers and are indicative only.
