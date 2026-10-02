@@ -48,20 +48,21 @@ the five-way vocabulary the skill teaches does not exist; 0.5.0 was where
 it cannot distinguish from a 2010/2020 vintage miss.) And
 `hmda-analyzer >=0.6.0` is where the geography-vintage refusal exists at all;
 and `cdfi-benchmark >=0.3.4` is where the report prints each metric's peer n and
-withholds a metric's peer median, percentiles and vs-median line when only 1 to 4
-peers have a value for it (cdfi-benchmark's CHANGELOG `[0.3.4]`; no grade or value
-changes). Below 0.3.3 the package also asserts false Tier 1
+withholds a metric's peer median, percentiles and vs-median line when only 1 to
+4 peers have a value for it (cdfi-benchmark's CHANGELOG `[0.3.4]`; no grade or
+value changes). Below 0.3.3 the package also asserts false Tier 1
 leverage grades: 0.2.1 through 0.3.2 graded Tier 1 against a community bank
 leverage ratio (CBLR) level that was not in force at some report dates (before
 the framework existed; parts of the 2020–2021 relief window) or with `>=` where
 the rule says "greater than" — cdfi-benchmark's CHANGELOG `[0.3.3]` discloses these
 as defects A–G. 0.3.3 refuses those grades with a stated reason instead. (Below
 0.3.0 it also graded `loans_to_deposits` backwards.)
-Under 0.3.4, as under 0.3.3, every Tier 1 grade for a report date after 20260922 (20260930
-onward) comes back refused, with a reason, until a later cdfi-benchmark release
-extends `LEVELS_VERIFIED_THROUGH`; and `get_financials(cert)` with no date
-returns the latest filing (read from the 0.3.4 source — `sort_by=REPDTE`
-descending, `records[0]` — not probed live), so once 20260930 filings post, a
+Under 0.3.4, as under 0.3.3, every Tier 1 grade for a report date after
+20260922 (20260930 onward) comes back refused, with a reason, until a later
+cdfi-benchmark release extends `LEVELS_VERIFIED_THROUGH`; and
+`get_financials(cert)` with no date returns the most recent filing (read from
+the 0.3.4 source — `sort_by=REPDTE` descending, `records[0]` — not probed
+live), so once 20260930 filings post, a
 no-date benchmark shows Tier 1 as not graded. Peer groups can include
 uninsured, non-lending trust companies (FDIC `INSFDIC` 0, `BKCLASS` NC), which
 0.3.4 does not exclude and which can distort peer medians; the skill tells an

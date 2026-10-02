@@ -16,18 +16,18 @@ recorded block was produced by a wheel built from the 0.3.4 source (commit
 `d1fad78`) on python 3.12.13 with pandas 3.0.6.
 
 - **Floor.** `>=0.3.3` → `>=0.3.4` in the skill (its three `cdfi-benchmark>=`
-  sites and the prose around them), `README.md` and
-  `llms.txt`. The "load-bearing" prose gives the 0.3.4 reason (a peer statistic
-  with no n, including over a single peer) and keeps the 0.3.3 Tier 1 reason.
+  sites and the prose around them), `README.md` and `llms.txt`. The
+  "load-bearing" prose gives the 0.3.4 reason (a peer statistic with no n,
+  including over a single peer) and keeps the 0.3.3 Tier 1 reason.
 - **Package index.** The cdfi-benchmark row's version cell reads 0.3.4.
 - **Package index, nmtc-application-builder row: 1.7.1 → 1.7.2.** The row had
   been stale since nmtc-application-builder 1.7.2 published on 2026-09-29.
 - **Examples re-recorded on 0.3.4** by running each block's inputs and pasting
   the output. Every output block in the skill is byte-identical to a saved run,
   or (three blocks) an in-order excerpt of one. Every block that existed under
-  0.3.3 came out with the same grades and values. The worked example's fourth print gains the
-  `report_withholds_peer_stats` column. The recorded-on stamp names 0.3.4, the
-  Python and pandas versions, and 2026-10-01.
+  0.3.3 came out with the same grades and values. The worked example's fourth
+  print gains the `report_withholds_peer_stats` column. The recorded-on stamp
+  names 0.3.4, the Python and pandas versions, and 2026-10-01.
 - **Column count.** "eleven columns" → twelve in the skill, in two places,
   naming `report_withholds_peer_stats`. `__all__` is still 21 (counted on 0.3.4).
 - **Caveat count measured, not carried.** `PeerGroup.caveats` has nine
@@ -67,14 +67,13 @@ recorded block was produced by a wheel built from the 0.3.4 source (commit
   different cdfi-benchmark version from any such floor in the skill,
   `README.md` or `llms.txt`. A space around `>=` is allowed, and `0.3.4rc1` is
   not read as `0.3.4`. It is a local check and needs no PyPI lookup.
-- Version 2026.9.4 → 2026.10.0 at all five sites `README.md` names:
-  `plugin.json` (1), `marketplace.json` (2), the README **Version** line, and
-  this heading.
-
 - **Docs chip.** `docs/index.html`'s cdfi-benchmark chip reads 0.3.4. The
   refresh job maintains it from PyPI; it was set by hand here, byte-identical to
   what that job writes, so the chip does not fail the gate after 0.3.4
   publishes. Until then, a refresh run would set it back to 0.3.3.
+- Version 2026.9.4 → 2026.10.0 at all five sites `README.md` names:
+  `plugin.json` (1), `marketplace.json` (2), the README **Version** line, and
+  this heading.
 
 Not in this release: no change to any wrapped package. The version-claims gate
 fails on the cdfi-benchmark package-index row and docs chip until 0.3.4 is on

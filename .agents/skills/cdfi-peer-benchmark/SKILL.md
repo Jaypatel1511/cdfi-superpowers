@@ -45,8 +45,9 @@ below.
 The refusals above are about *packages*. This section is about *functions*, so a
 request maps to a call rather than to a guess. `cdfibenchmark.__all__` has **21**
 names in 0.3.4 (counted this session; 19 in 0.3.1 — 0.3.2 added
-`UNKNOWN_VERSION`, 0.3.3 added `CBLRScheduleError`, 0.3.4 added none); the ones that decide what
-a user is shown are named here. This is not a design pass over all 21 — a name
+`UNKNOWN_VERSION`, 0.3.3 added `CBLRScheduleError`, 0.3.4 added none); the ones
+that decide what a user is shown are named here. This is not a design pass over
+all 21 — a name
 absent below is unruled, not endorsed.
 
 **Endorsed — reach for these:**
@@ -643,7 +644,8 @@ exception — it arrives as `status == "N/A"` with a `not_graded_reason`.
 **`FDICResponseError` does not always mean FDIC misbehaved.**
 `build_peer_group` raises it when the *institution's* `total_assets` is unknown,
 because the asset window is then undefined. The FDIC response can be perfectly
-well-formed. Reproduced this session (0.3.4, python3.12; a profile with CERT 34352 and every dollar field `None`):
+well-formed. Reproduced this session (0.3.4, python3.12; a profile with CERT
+34352 and every dollar field `None`):
 
 ```
 FDICResponseError: cannot select peers for an institution with unknown assets: CERT 34352
@@ -908,9 +910,9 @@ prefix (its CHANGELOG `[0.3.4]`, Fixed) — so quote what the report prints:
 - the report date is **2020-06-30 through 2021-12-31** (the level was set by the
   temporary 12 CFR 324.303, which 0.3.4 does not encode);
 - the report date is **after 2026-09-22**, the date the CBLR schedule was
-  verified through, the same in 0.3.3 and 0.3.4 (`LEVELS_VERIFIED_THROUGH`, shown on every report as **CBLR
-  schedule verified through:**). This includes **20260930 and every later
-  quarter** until a later release extends it;
+  verified through, the same in 0.3.3 and 0.3.4 (`LEVELS_VERIFIED_THROUGH`,
+  shown on every report as **CBLR schedule verified through:**). This includes
+  **20260930 and every later quarter** until a later release extends it;
 - the report date is **missing, malformed or not a quarter-end**;
 - the value **rounds to the level itself** at the report's 2 decimal places
   (e.g. 9.00% against "greater than 9%").
@@ -942,8 +944,9 @@ it is on.
 
 **Do not silently switch to an older `report_date` to obtain a grade.**
 `get_financials(cert)` with no `report_date` returns the institution's most
-recent filing: the 0.3.4 source (`data/fdic.py` is unchanged from 0.3.3) sorts `REPDTE` descending and takes the first
-row (`data/fdic.py:172-173` and `:188`; read from source, not probed live). Once
+recent filing: the 0.3.4 source (`data/fdic.py` is unchanged from 0.3.3) sorts
+`REPDTE` descending and takes the first row (`data/fdic.py:172-173` and `:188`;
+read from source, not probed live). Once
 20260930 filings are on FDIC, that call returns a Tier 1 value 0.3.4 refuses.
 You may *offer* to benchmark an earlier quarter, but only if you say explicitly
 that it is a different, older period than the one the user asked about, and
