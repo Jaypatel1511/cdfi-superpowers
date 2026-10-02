@@ -1020,8 +1020,8 @@ the `PeerGroup` (`[(p.cert, p.name) for p in pg]`) and, for `INSFDIC` /
 `fields=CERT,NAME,INSFDIC,BKCLASS` and `limit=100`. Join the CERTs with ` OR `:
 a space- or comma-separated list is rejected with HTTP 400. Set the limit: the
 default of 10 silently truncated CERT 16583's 19 peers to 10 rows holding 4 of
-the 12 trust companies (this session). Check that `meta.total` equals the rows
-returned before you count. If uninsured trust companies are in the
+the 12 trust companies (live, 2026-10-02). Check that `meta.total` equals the
+rows returned before you count. If uninsured trust companies are in the
 group, say so beside every affected peer statistic, with how many of the n they
 are. Do **not** filter them out of the `PeerGroup` and hand the result to
 `generate_report` — a filtered group is a plain `list` and loses the caveats
