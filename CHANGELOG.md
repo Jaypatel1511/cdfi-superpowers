@@ -2,6 +2,84 @@
 
 All notable changes to `cdfi-superpowers`. Versioning is CalVer (`YYYY.M.MINOR`).
 
+## 2026.10.0
+
+**`cdfi-peer-benchmark` raises its floor to `cdfi-benchmark >=0.3.4` and
+re-records its examples on 0.3.4.** cdfi-benchmark 0.3.4 prints each metric's
+peer n and withholds a metric's peer median, percentiles and vs-median line
+when 1 to 4 peers have a value for it (at 0 peers they read N/A). Its
+`summary_table()` gains a twelfth column, `report_withholds_peer_stats`, which
+annotates the row and withholds nothing. It rewrites the caveat texts for pages
+that show no peer median. Its CHANGELOG states that no grade or value changes
+against 0.3.3. 0.3.4 was not on PyPI when this entry was written; every
+recorded block was produced by a wheel built from the 0.3.4 source (commit
+`d1fad78`) on python 3.12.13 with pandas 3.0.6.
+
+- **Floor.** `>=0.3.3` → `>=0.3.4` in the skill (its three `cdfi-benchmark>=`
+  sites and the prose around them), `README.md` and `llms.txt`. The
+  "load-bearing" prose gives the 0.3.4 reason (a peer statistic with no n,
+  including over a single peer) and keeps the 0.3.3 Tier 1 reason.
+- **Package index.** The cdfi-benchmark row's version cell reads 0.3.4.
+- **Package index, nmtc-application-builder row: 1.7.1 → 1.7.2.** The row had
+  been stale since nmtc-application-builder 1.7.2 published on 2026-09-29.
+- **Examples re-recorded on 0.3.4** by running each block's inputs and pasting
+  the output. Every output block in the skill is byte-identical to a saved run,
+  or (three blocks) an in-order excerpt of one. Every block that existed under
+  0.3.3 came out with the same grades and values. The worked example's fourth
+  print gains the `report_withholds_peer_stats` column. The recorded-on stamp
+  names 0.3.4, the Python and pandas versions, and 2026-10-01.
+- **Column count.** "eleven columns" → twelve in the skill, in two places,
+  naming `report_withholds_peer_stats`. `__all__` is still 21 (counted on 0.3.4).
+- **Caveat count measured, not carried.** `PeerGroup.caveats` has nine
+  `out.append` branches over eight conditions in 0.3.4 (0.3.3: eight). The
+  below-minimum condition now has two branches. Counted with the skill's own
+  `awk … | grep -c 'out.append('` against `peers/selector.py` at `d1fad78`.
+  `report/generator.py` only renders the list. The rendered caveat block is
+  re-recorded, and its first line is 0.3.4's below-minimum text, *"…; this
+  report shows no peer median or percentile for any metric (this tool's house
+  minimum for showing them is 5 peers with a value for that metric)."*
+- **The n = 1 `vs_median` example.** It told an agent to "take the line from
+  generate_report", and at n < 5 the report prints no such line. It is
+  re-recorded at one peer and at five, and the instruction now covers every
+  row: print no difference where the report withholds one or where the
+  institution has no value (`vs_median` NaN); otherwise compute it from the
+  rounded operands, or quote the report's line.
+- **Thin peer cells: a reading rule (new).** Quote `report_withholds_peer_stats`
+  when it is set. Never present or compute a peer median or percentile the
+  report withheld (the DataFrame still carries it). Never present a peer
+  statistic without its per-metric n. At 5–9 peers, say the comparison is thin.
+  Also stated briefly in `llms.txt` and `references/caveats-and-limits.md` §5.
+- **Uninsured trust companies (new caveat).** Peer groups can include FDIC
+  filers that are not FDIC-insured (`INSFDIC` 0, `BKCLASS` NC; non-lending trust
+  companies), which 0.3.4 does not exclude. Measured live this session: CERT
+  16583 at 20260630 has a Tier 1 peer median of 87.19% over 19 peers, 12 of
+  them such trust companies (`INSFDIC`/`BKCLASS` read from FDIC's `/financials`).
+  The skill tells an agent to check the peer list when a peer statistic looks
+  implausible. Also stated in `README.md`, `llms.txt` and
+  `references/caveats-and-limits.md` §5.
+- **0.3.4 facts carried through the skill.** Source line references now point at
+  0.3.4's files (`schema.py`, `selector.py`, `generator.py`; `fdic.py` is
+  unchanged). The *How to read Status* note's no-median ending is quoted. The
+  "not verified here" note now records the live FDIC calls this session made.
+- **Stamp gate.** `scripts/check_package_versions.py` now also fails unless the
+  cdfi-peer-benchmark skill carries exactly one recorded-on stamp and at least
+  one `cdfi-benchmark>=` install floor, and fails when the stamp names a
+  different cdfi-benchmark version from any such floor in the skill,
+  `README.md` or `llms.txt`. A space around `>=` is allowed, and `0.3.4rc1` is
+  not read as `0.3.4`. It reads no PyPI data, though the script reaches it
+  only after every PyPI lookup succeeds.
+- **Docs chip.** `docs/index.html`'s cdfi-benchmark chip reads 0.3.4. The
+  refresh job maintains it from PyPI; it was set by hand here, byte-identical to
+  what that job writes, so the chip does not fail the gate after 0.3.4
+  publishes. Until then, a refresh run would set it back to 0.3.3.
+- Version 2026.9.4 → 2026.10.0 at all five sites `README.md` names:
+  `plugin.json` (1), `marketplace.json` (2), the README **Version** line, and
+  this heading.
+
+Not in this release: no change to any wrapped package. The version-claims gate
+fails on the cdfi-benchmark package-index row and docs chip until 0.3.4 is on
+PyPI. No tag and no publish.
+
 ## 2026.9.4
 
 **`cdfi-peer-benchmark` raises its floor to `cdfi-benchmark >=0.3.3` and
